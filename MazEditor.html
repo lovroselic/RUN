@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <link href="./coolstyle.css" rel="stylesheet" type="text/css">
+    <link href="./MazEditor.css" rel="stylesheet" type="text/css">
+    <title>MazEditor</title>
+
+</head>
+
+<body>
+    <div id="preload" class="hidden"></div>
+    <div class="win" id="setup">
+        <div id="load">
+        </div>
+        <h1 id="title"></h1>
+        <p></p>
+        <div class="setup_container section" id="selector">
+            <fieldset>
+                <legend>
+                    Size:
+                </legend>
+                Grid dimensions:
+                <input name="gridsize" id="horizontalGrid" type="text" size="2" maxlength="2" value="16">
+                <span> X </span>
+                <input name="gridsize" id="verticalGrid" type="text" size="2" maxlength="2" value="16">
+                <br />
+                Grid size (px):
+                <input name="gridsize" id="gridsize" type="text" size="2" maxlength="2" value="48">
+                <br /><br />
+                <br /> WIDTH (px) = <span id="ENGINEgameWIDTH"></span> / <span id="spacex"></span><br /> HEIGHT (px) =
+                <span id="ENGINEgameHEIGHT"></span> / <span id="spacey"></span><br />
+                <br />
+            </fieldset>
+            <fieldset>
+                <legend>
+                    Renderer:
+                </legend>
+                <input type="radio" name="renderer" value="line">Line <br />
+                <input type="radio" name="renderer" value="block">Block<br />
+                <input type="radio" name="renderer" value="texture" checked="checked">Texture <br />
+                <input type="radio" name="renderer" value="tile" >Tile <br />
+                <input type="checkbox" id="corr" value="corr" name="corr">Draw corridor gridline<br />
+                <input type="checkbox" id="grid" value="grid" name="grid">Main grid<br />
+            </fieldset>
+        </div>
+        <div class="setup_container section" id="paint">
+            <fieldset>
+                <legend>
+                    On click, paint:
+                </legend>
+                <input type="radio" name="painter" value="flip" checked="checked">Flip (Wall <-> Space) <br />
+                <input type="radio" name="painter" value="wall">Wall <br />
+                <input type="radio" name="painter" value="space">Space <br />
+                <input type="radio" name="painter" value="door">Door <br />
+                <input type="radio" name="painter" value="trapdoor">TrapDoor <br />
+
+            </fieldset>
+        </div>
+        <div class="setup_container section" id="paint">
+            <fieldset>
+                <legend>
+                    Version:
+                </legend>
+                ENGINE: <span id="engine_version"></span><br>
+                GRID: <span id="grid_version"></span><br>
+                MAZE: <span id="maze_version"></span><br>
+                Prototype LIB: <span id="lib_version"></span><br>
+
+            </fieldset>
+        </div>
+        <div class="setup_container section" >
+            <fieldset>
+                <legend>
+                    Export:
+                </legend>
+                <textarea id="exp" style="width: 500px; height: 128px;"></textarea>
+
+            </fieldset>
+        </div>
+
+        <p class="cb" id="buttons"></p>
+        <p class="version cb" id="version"></p>
+    </div>
+
+    <div id="game" class="winTrans"></div>
+    <div id="bottom" class="cb" style="margin-top: 1024px"></div>
+    <div id="temp" class="hidden"></div>
+    <div id="temp2" class="hidden"></div>
+    <div id="spacer"></div>
+    <!-- JS -->
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"
+        integrity="sha256-/xUj+3OJU5yExlq6GSYGSHk7tPXikynS7ogEvDej/m4=" crossorigin="anonymous"></script>
+
+    <script src="./Prototype_3_04.js" type="text/javascript"></script>
+    <script src="./ENGINE_.js" type="text/javascript"></script>
+    <script src="./GRID_.js" type="text/javascript"></script>
+    <script src="./MAZE_.js" type="text/javascript"></script>
+    <script src="./BWT_.js" type="text/javascript"></script>
+    <script src="./assets_MazEditor.js" type="text/javascript"></script>
+    <script src="./MazEditor.js" type="text/javascript"></script>
+
+</body>
+
+</html>

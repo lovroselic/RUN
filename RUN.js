@@ -28,7 +28,7 @@ var INI = {
 
 };
 var PRG = {
-    VERSION: "0.01.00",
+    VERSION: "0.01.01",
     NAME: "R.U.N.",
     YEAR: "2022",
     CSS: "color: #239AFF;",
@@ -56,7 +56,6 @@ var PRG = {
         $("#grid_version").html(GRID.VERSION);
         $("#maze_version").html(DUNGEON.VERSION);
         $("#lib_version").html(LIB.VERSION);
-
 
         $("#toggleHelp").click(function () {
             $("#help").toggle(400);
@@ -149,6 +148,9 @@ var GAME = {
     },
     initLevel(level) {
         console.log("...level", level, 'initialization');
+        let data = JSON.parse(MAP[level].data);
+        data.map = GridArray.importMap(data.map);
+        console.log("data", data);
         //let randomDungeon = RAT_ARENA.create(MAP[level].width, MAP[level].height);
         //MAP[level].DUNGEON = randomDungeon;
         //GRID_SOLO_FLOOR_OBJECT.init(MAP[level].DUNGEON);
