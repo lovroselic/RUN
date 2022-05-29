@@ -27,7 +27,7 @@ var INI = {
   SPACE_Y: 2048
 };
 var PRG = {
-  VERSION: "0.03.01",
+  VERSION: "0.03.02",
   NAME: "MazEditor",
   YEAR: "2022",
   CSS: "color: #239AFF;",

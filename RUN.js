@@ -28,7 +28,7 @@ var INI = {
 
 };
 var PRG = {
-    VERSION: "0.01.01",
+    VERSION: "0.01.02",
     NAME: "R.U.N.",
     YEAR: "2022",
     CSS: "color: #239AFF;",
@@ -75,11 +75,11 @@ var PRG = {
         ENGINE.checkProximity = false;
         ENGINE.checkIntersection = false;
         ENGINE.setCollisionsafe(49);
-        $("#bottom").css("margin-top",ENGINE.gameHEIGHT + ENGINE.titleHEIGHT + ENGINE.bottomHEIGHT);
+        $("#bottom").css("margin-top", ENGINE.gameHEIGHT + ENGINE.titleHEIGHT + ENGINE.bottomHEIGHT);
         $(ENGINE.gameWindowId).width(ENGINE.gameWIDTH + ENGINE.sideWIDTH + 4);
         ENGINE.addBOX("TITLE", ENGINE.titleWIDTH, ENGINE.titleHEIGHT, ["title"], null);
         ENGINE.addBOX("ROOM", ENGINE.gameWIDTH, ENGINE.gameHEIGHT,
-            ["background","text", "FPS","button", "click"],
+            ["background", "text", "FPS", "button", "click"],
             "side");
         ENGINE.addBOX("SIDE", ENGINE.sideWIDTH, ENGINE.gameHEIGHT,
             ["sideback",],
@@ -150,7 +150,12 @@ var GAME = {
         console.log("...level", level, 'initialization');
         let data = JSON.parse(MAP[level].data);
         data.map = GridArray.importMap(data.map);
-        console.log("data", data);
+        data.map = GridArray.fromString(data.width, data.height, data.map);
+        MAP[level].map = FREE_MAP.create(data.width, data.height, data.map);
+        console.log(MAP[level].map);
+        MAP[level].pw = MAP[level].width * ENGINE.INI.GRIDPIX;
+        MAP[level].ph = MAP[level].height * ENGINE.INI.GRIDPIX;
+        ENGINE.VIEWPORT.setMax({ x: MAP[level].pw, y: MAP[level].ph });
         //let randomDungeon = RAT_ARENA.create(MAP[level].width, MAP[level].height);
         //MAP[level].DUNGEON = randomDungeon;
         //GRID_SOLO_FLOOR_OBJECT.init(MAP[level].DUNGEON);
@@ -222,13 +227,18 @@ var GAME = {
     },
     drawFirstFrame(level) {
         TITLE.firstFrame();
+        ENGINE.resizeBOX("LEVEL", MAP[level].pw, MAP[level].ph);
+        ENGINE.TEXTUREGRID.configure("floor", "wall", 'BackgroundTile', 'WallTile');
+        ENGINE.TEXTUREGRID.dynamicAssets = { door: "VerticalWall", trapdoor: "HorizontalWall" };
+        ENGINE.TEXTUREGRID.set3D('D3');
+        ENGINE.TEXTUREGRID.drawTiles(MAP[level].map);
     },
     blockGrid(level) {
         GRID.grid();
         GRID.paintCoord("coord", MAP[level].DUNGEON);
     },
     prepareForRestart() {
-        let clear = ["background","text", "FPS", "button"];
+        let clear = ["background", "text", "FPS", "button"];
         ENGINE.clearManylayers(clear);
         ENGINE.TIMERS.clear();
     },
