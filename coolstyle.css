@@ -1,0 +1,1664 @@
+/* coolstyle CSS v3.0 */
+
+@charset "utf-8";
+html,
+body {
+    margin: 0;
+    height: 100%;
+}
+html ul {
+    margin: 1em 0;
+    padding: 0 0 0 40px;
+}
+:root {
+    background-color: orange;
+    background: linear-gradient(90deg, orange, #ffc04d);
+    font-family: "Lora", serif;
+    font-weight: 400;
+}
+a:link,
+a:visited,
+a:active {
+    color: blue;
+}
+h1,
+h2 {
+    text-align: left;
+    font-size: 25px;
+    text-shadow: 1px 1px #666;
+}
+h2 {
+    font-size: 22px;
+}
+h3 {
+    text-align: left;
+}
+h1.logo {
+    text-align: center;
+    font-size: 30px;
+    font-family: "Oxygen", sans-serif;
+    text-shadow: 1px 1px #666;
+}
+p {
+    color: #000;
+    font-size: 18px;
+    text-align: left;
+}
+p.bold, span.bold {
+    font-weight: bolder
+}
+p.italic, span.italic {
+    font-style: italic
+}
+.text-left {
+    text-align: left !important;
+}
+.text-right {
+    text-align: right !important;
+}
+.text-center {
+    text-align: center !important;
+}
+ol,
+ul {
+    text-align: left;
+}
+.op {
+    font-style: italic;
+    font-size: 14px;
+}
+hr {
+    border: 0;
+    height: 1px;
+    background-image: -webkit-linear-gradient(
+        left,
+        rgba(0, 0, 0, 0),
+        rgba(0, 0, 0, 0.75),
+        rgba(0, 0, 0, 0)
+        );
+    background-image: -moz-linear-gradient(
+        left,
+        rgba(0, 0, 0, 0),
+        rgba(0, 0, 0, 0.75),
+        rgba(0, 0, 0, 0)
+        );
+    background-image: -ms-linear-gradient(
+        left,
+        rgba(0, 0, 0, 0),
+        rgba(0, 0, 0, 0.75),
+        rgba(0, 0, 0, 0)
+        );
+    background-image: -o-linear-gradient(
+        left,
+        rgba(0, 0, 0, 0),
+        rgba(0, 0, 0, 0.75),
+        rgba(0, 0, 0, 0)
+        );
+}
+a.cool {
+    font-family: consolas, serif;
+}
+span.cool {
+    font-family: consolas, serif;
+}
+#banners {
+    display: inline-block;
+    margin: 0 auto;
+}
+#banners a {
+    outline: none;
+    outline: 0;
+}
+.banner {
+    width: 474px;
+    margin-left: auto;
+    margin-right: auto;
+    padding: 1px;
+}
+.over {
+    opacity: 0.7;
+}
+p.header {
+    font-size: 11px;
+    float: right;
+    text-align: right;
+}
+p.footer_right {
+    font-size: 11px;
+    text-align: right;
+}
+#social {
+    position: relative;
+    top: 8px;
+}
+p.footer {
+    font-size: 10px;
+    clear: both;
+    text-align: center;
+}
+#head {
+    width: 984px;
+    margin: auto;
+    margin-top: 20px;
+    padding: 10px 20px;
+}
+#logo-img {
+    width: 300px;
+    height: 94px;
+    background: url("/Images/CoolSchool-web-logo-150.png") no-repeat;
+    float: left;
+    outline: none;
+    outline: 0;
+}
+#foot {
+    width: 984px;
+    margin: auto;
+    height: 48px;
+    margin-top: 20px;
+    padding: 10px 20px 20px;
+    clear: both;
+}
+img.pic {
+    margin: 10px;
+    border: 1px solid #000;
+    padding: 2px;
+    max-width: 100%;
+    height: auto;
+}
+img.logo {
+    margin: 10px;
+    padding: 5px;
+}
+img.center {
+    display: block;
+    margin: auto;
+}
+.center {
+    text-align: center;
+}
+.big {
+    font-size: 22px;
+}
+.fr {
+    float: right;
+}
+.fl {
+    float: left;
+}
+.cb {
+    clear: both;
+}
+.cr {
+    clear: right;
+}
+.cl {
+    clear: left;
+}
+.im {
+    margin-top: 5px;
+}
+.utub {
+    width: 480px;
+    height: 385px;
+    border: 2px solid #000;
+    padding: 2px;
+    margin: 10px;
+}
+.utub_center {
+    width: 480px;
+    height: 385px;
+    border: 2px solid #000;
+    padding: 2px;
+    margin: auto;
+    display: block;
+}
+.ut_med {
+    width: 440px;
+    height: 352px;
+    border: 2px solid #000;
+    padding: 2px;
+    margin: 10px;
+}
+.ut_small {
+    width: 400px;
+    height: 320px;
+    border: 2px solid #000;
+    padding: 2px;
+    margin: 10px;
+}
+.win ul {
+    padding-left: 0;
+}
+.win ul li {
+    margin-left: 32px;
+    padding-left: 8px;
+}
+.side {
+    width: 456px;
+    border: 2px #bbb ridge;
+    border-radius: 4px;
+    padding: 10px;
+    float: left;
+}
+.side p {
+    font-size: 15px;
+    font-family: Georgia, serif;
+}
+.sidefl {
+    width: 460px;
+    border: 2px #bbb ridge;
+    border-radius: 4px;
+    padding: 5px;
+    float: left;
+}
+.sidefl img {
+    padding: 10px 10px 5px 5px;
+}
+
+.thn {
+    float: left;
+    width: 285px;
+    border: 1px solid #000;
+    padding: 5px;
+    text-align: center;
+    margin: 10px;
+}
+.thnr {
+    float: right;
+    width: 285px;
+    border: 1px solid #000;
+    padding: 5px;
+    text-align: center;
+    margin: 10px;
+}
+.thn2 {
+    float: left;
+    width: 570px;
+    border: 1px solid #000;
+    padding: 5px;
+    text-align: center;
+    margin: 10px;
+}
+
+#gallery a img {
+    padding: 5px;
+    border: 1px solid #777;
+    margin: 2px;
+    width: 138px;
+}
+#gallery a img:hover {
+    border-color: #03f;
+}
+.clearfix:after {
+    content: ".";
+    display: block;
+    height: 0;
+    clear: both;
+    visibility: hidden;
+}
+.win {
+    margin: auto;
+    margin-top: 20px;
+    padding: 20px 32px 32px;
+    background-color: #ffd78e;
+    background: linear-gradient(
+        to right,
+        #ffd78e,
+        #ffd382,
+        #ffe5b4,
+        #ffd78e,
+        #ffd78e
+        );
+    border-radius: 13px;
+    box-shadow: 5px 5px 20px 7px #e69400;
+}
+.winTrans {
+    margin: auto;
+    margin-top: 20px;
+    padding: 20px 32px 32px;
+}
+.win p,
+.winTrans p {
+    text-align: left;
+}
+.version {
+    font-family: Consolas, serif;
+    font-size: 10px;
+}
+.smallFont p {
+    font-size: 15px;
+}
+.faq h3 {
+    cursor: pointer;
+    text-align: left;
+}
+
+.faq h3:hover {
+    text-shadow: 1px 1px 5px #666;
+}
+.faq p {
+    display: none;
+}
+.ad {
+    margin: auto;
+    width: 728px;
+    height: 90px;
+    background-color: #ffcc80;
+}
+.coollist {
+    list-style-image: url(/Images/Eyes-bullet.png);
+    overflow: hidden;
+}
+.box {
+    border: 1px solid black;
+    border-radius: 3px 3px 3px 3px;
+    padding: 8px;
+}
+.bold {
+    font-weight: bold;
+}
+#cooltable {
+    margin: auto;
+}
+.cooltable {
+    border-collapse: collapse;
+    table-layout: fixed;
+    margin: auto;
+}
+.cooltable thead td {
+    background: #ffad5c;
+    font-weight: bold;
+    font-size: 16px;
+    padding: 6px;
+}
+.cooltable td {
+    border: 1px solid #666;
+    padding: 6px;
+}
+.fcenter {
+    margin: auto;
+    text-align: center;
+}
+.tool_navigation {
+    box-sizing: border-box;
+    font-family: Verdana;
+    font-size: 14px;
+    text-shadow: 2px 2px 3px #333;
+    width: 180px;
+    float: left;
+    padding: 4px;
+    margin-top: 40px;
+    margin-right: 20px;
+    display: inline-block;
+}
+.tool_navigation ul {
+    list-style-type: none;
+    padding-left: 0px;
+}
+.tool_navigation ul li {
+    cursor: pointer;
+    background: linear-gradient(90deg, #ff9900, orange);
+    padding: 8px;
+}
+.tool_navigation ul li a {
+    display: block;
+    text-decoration: none;
+    margin-left: 1px;
+    white-space: nowrap;
+}
+.tool_navigation ul li a:hover {
+    text-decoration: underline;
+}
+.tool_navigation a:link {
+    color: #000;
+}
+.tool_navigation a:visited {
+    color: #000;
+}
+#gameResolutionAlert {
+    width: 95%;
+    background: #ff0000;
+    margin: auto;
+    margin-top: 12px;
+    padding: 8px;
+    border: 1px solid black;
+    border-radius: 4px;
+}
+fieldset {
+    text-align: left;
+}
+.window_orange {
+    box-sizing: border-box;
+    display: inline-block;
+    float: left;
+}
+.theList {
+    overflow: hidden;
+}
+
+/*******************MENU****************************/
+
+span.firstTier_menu:hover {
+    cursor: pointer;
+}
+
+#toggleMenuVisibility {
+    box-sizing: border-box;
+    background: #df8020;
+    color: #000;
+    height: 48px;
+    width: 98%;
+    font-family: "Source Sans Pro", sans-serif;
+    font-size: 14px;
+    font-weight: 500;
+    text-shadow: 1px 1px #666;
+    cursor: pointer;
+    border: 1px solid black;
+    border-radius: 2px;
+    text-align: center;
+    margin: auto;
+    margin-bottom: 8px;
+}
+
+.centered {
+    margin: auto;
+}
+
+#toggleMenuVisibility span {
+    vertical-align: middle;
+    padding: 8px;
+}
+
+.toggleMenuIcon {
+    position: relative;
+    top: 10px;
+}
+
+#banner1 {
+    width: 474px;
+    height: 117px;
+    background: url("/Images/CoolSChool-NAVI-banner.png") no-repeat;
+}
+#banner2 {
+    width: 474px;
+    height: 117px;
+    background: url("/Images/CoolPool-NAVI-banner.png") no-repeat;
+}
+#banner3 {
+    width: 474px;
+    height: 117px;
+    background: url("/Images/CoolPool-NAVI-banner-(ENG).png") no-repeat;
+}
+#banner4 {
+    width: 474px;
+    height: 117px;
+    background: url("/Images/GamesNAVI-banner.png") no-repeat;
+}
+#banner5 {
+    width: 474px;
+    height: 117px;
+    background: url("/Images/Coolschool NAVI - ENG.png") no-repeat;
+}
+#banner6 {
+    width: 474px;
+    height: 117px;
+    background: url("/Images/CoolDoodle-NAVI-banner.png") no-repeat;
+}
+
+/********** ExtraLarge devices only **********/
+@media (min-width: 1200px) {
+    .extraLarge {
+    }
+    .hide_extraLarge {
+        display: none;
+    }
+    #logo-img {
+        width: 300px;
+        height: 94px;
+        background: url("/Images/CoolSchool-web-logo.png") no-repeat;
+        float: left;
+    }
+    #social {
+        float: left;
+    }
+    p.footer_right {
+        float: right;
+    }
+    .win,
+    .winTrans {
+        width: 960px;
+    }
+    .window_orange {
+        padding: 20px;
+        margin-top: 40px;
+    }
+    .main {
+        width: 1280px;
+        margin: auto;
+    }
+
+    /* extraLarge navigation */
+    nav.navigation {
+        width: 984px;
+        margin: auto;
+        margin-top: 32px;
+        margin-bottom: 0;
+        height: 40px;
+    }
+    nav.navigation ul {
+        margin: 0;
+        padding: 0;
+        list-style: none;
+        /* general font for menu*/
+        font-family: "Source Sans Pro", sans-serif;
+        font-size: 14px;
+        font-weight: 500;
+        text-shadow: 1px 1px #666;
+    }
+    nav.navigation ul li {
+        /* first tier menu */
+        display: block;
+        position: relative;
+        float: left;
+    }
+    nav.navigation li ul {
+        display: none;
+    }
+    nav.navigation a:link {
+        color: #000;
+    }
+    nav.navigation a:visited {
+        color: #000;
+    }
+    span.firstTier_menu {
+        /* first tier menu UNCLICKABLE*/
+        display: block;
+        padding: 9px 15px 3px;
+        background: #df8020;
+        color: #000;
+        white-space: nowrap;
+        height: 28px;
+        width: 216px;
+        text-align: center;
+        border-bottom: 1px solid #000;
+        text-transform: uppercase;
+    }
+    nav.navigation ul li a {
+        /* second tier menu CLICKABLE*/
+        display: block;
+        text-decoration: none;
+        padding: 9px 15px 3px;
+        height: 28px;
+        width: 216px;
+    }
+
+    nav.navigation ul li:first-child span {
+        border-radius: 13px 0 0 0;
+    }
+    nav.navigation ul li:last-child span {
+        border-radius: 0 13px 0 0;
+    }
+
+    nav.navigation li:hover ul {
+        /* second tie menu open */
+        display: block;
+        position: absolute;
+        height: 30px;
+    }
+    nav.navigation li:hover li {
+        float: none;
+        font-size: 14px;
+    }
+    nav.navigation li:hover a {
+        /* second tier hover*/
+        background: #df8020;
+        height: 30px;
+    }
+    nav.navigation li:hover li a:hover {
+        /* menu: on select */
+        background: linear-gradient(90deg, #ffdba6, #ffad5c);
+        border: solid black 1px;
+        padding: 8px 14px 2px;
+    }
+    nav.navigation ul li ul li a {
+        /* second tier menu*/
+        text-align: left;
+    }
+
+    /* END: extraLarge navigation */
+
+    .side {
+        width: 456px;
+        border: 2px #bbb ridge;
+        border-radius: 4px;
+        padding: 10px;
+        float: left;
+    }
+    .picap {
+        margin: 10px;
+        border: 1px solid #000;
+        padding: 5px;
+        width: 400px;
+        text-align: left;
+    }
+    #socialFB {
+        display: inline-block;
+    }
+    .im {
+        margin-top: 12px;
+    }
+}
+
+/********** Large devices only **********/
+@media (min-width: 1048px) and (max-width: 1199px) {
+    .large {
+    }
+    .hide_large {
+        display: none;
+    }
+    #logo-img {
+        width: 300px;
+        height: 94px;
+        background: url("/Images/CoolSchool-web-logo.png") no-repeat;
+        float: left;
+    }
+    #social {
+        float: left;
+    }
+    p.footer_right {
+        float: right;
+    }
+    .win,
+    .winTrans {
+        width: 960px;
+        padding: 18px 30px 30px;
+    }
+    .window_orange {
+        padding: 20px;
+        margin-top: 40px;
+        width: 80%;
+    }
+    .main {
+        width: 98%;
+        margin: auto;
+    }
+
+    /* large navigation */
+    nav.navigation {
+        width: 984px;
+        margin: auto;
+        margin-top: 32px;
+        margin-bottom: 0;
+        height: 40px;
+    }
+    nav.navigation ul {
+        margin: 0;
+        padding: 0;
+        list-style: none;
+        /* general font for menu*/
+        font-family: "Source Sans Pro", sans-serif;
+        font-size: 14px;
+        font-weight: 500;
+        text-shadow: 1px 1px #666;
+    }
+    nav.navigation ul li {
+        /* first tier menu */
+        display: block;
+        position: relative;
+        float: left;
+    }
+    nav.navigation li ul {
+        display: none;
+    }
+    nav.navigation a:link {
+        color: #000;
+    }
+    nav.navigation a:visited {
+        color: #000;
+    }
+    span.firstTier_menu {
+        /* first tier menu UNCLICKABLE*/
+        display: block;
+        text-transform: uppercase;
+        padding: 9px 15px 3px;
+        background: #df8020;
+        color: #000;
+        white-space: nowrap;
+        height: 28px;
+        width: 216px;
+        text-align: center;
+        border-bottom: 1px solid #000;
+    }
+    nav.navigation ul li a {
+        /* second tier menu CLICKABLE*/
+        display: block;
+        text-decoration: none;
+        padding: 9px 15px 3px;
+        height: 28px;
+        width: 216px;
+    }
+
+    nav.navigation ul li:first-child span {
+        border-radius: 13px 0 0 0;
+    }
+    nav.navigation ul li:last-child span {
+        border-radius: 0 13px 0 0;
+    }
+
+    nav.navigation li:hover ul {
+        /* second tie menu open */
+        display: block;
+        position: absolute;
+        height: 30px;
+    }
+    nav.navigation li:hover li {
+        float: none;
+        font-size: 14px;
+    }
+    nav.navigation li:hover a {
+        /* second tier hover*/
+        background: #df8020;
+        height: 30px;
+    }
+    nav.navigation li:hover li a:hover {
+        /* menu: on select */
+        background: linear-gradient(90deg, #ffdba6, #ffad5c);
+        border: solid black 1px;
+        padding: 8px 14px 2px;
+    }
+    nav.navigation ul li ul li a {
+        /* second tier menu*/
+        text-align: left;
+    }
+
+    /* END: large navigation */
+
+    .side {
+        width: 456px;
+        border: 2px #bbb ridge;
+        border-radius: 4px;
+        padding: 10px;
+        float: left;
+    }
+    .picap {
+        margin: 10px;
+        border: 1px solid #000;
+        padding: 5px;
+        width: 400px;
+        text-align: left;
+    }
+    #socialFB {
+        display: inline-block;
+    }
+    .im {
+        margin-top: 12px;
+    }
+}
+
+/********** Medium devices only **********/
+@media (min-width: 992px) and (max-width: 1047px) {
+    .hide_medium {
+        display: none;
+    }
+    h1,
+    h2 {
+        font-size: 22px;
+    }
+    h3 {font-size: 18px}
+    p,
+    .coollist {
+        font-size: 14px;
+    }
+    .medium {
+    }
+    #head {
+        width: 95%;
+        margin: auto;
+        margin-top: 20px;
+        padding: 10px 20px;
+    }
+    p.header {
+        font-size: 11px;
+        float: right;
+        text-align: right;
+    }
+    #logo-img {
+        width: 300px;
+        height: 94px;
+        background: url("/Images/CoolSchool-web-logo.png") no-repeat;
+        float: left;
+    }
+    #social {
+        clear: both;
+        display: inline-block;
+        position: static;
+        margin: auto;
+    }
+    p.footer_right {
+        clear: both;
+        text-align: center;
+        margin-top: 15px;
+    }
+    #foot {
+        width: 95%;
+        margin: auto;
+        margin-top: 20px;
+        padding: 10px 20px 20px;
+    }
+    p.footer {
+        margin-top: 32px;
+    }
+    .win,
+    .winTrans {
+        width: 95%;
+        text-align: center;
+        padding: 10px 16px 16px;
+        clear: both;
+    }
+    .window_orange {
+        padding: 20px;
+        margin-top: 40px;
+        width: 77%;
+    }
+    .main {
+        width: 98%;
+        margin: auto;
+    }
+    footer {
+        width: 95%;
+        text-align: center;
+    }
+    img.pic {
+        max-width: 95%;
+    }
+    img.logo {
+        max-width: 95%;
+    }
+    .utub,
+    .utub_center,
+    .ut_med,
+    .ut_small {
+        width: auto;
+        height: auto;
+        max-width: 95%;
+    }
+    .thn,
+    .thn2,
+    .thnr {
+    }
+    nav.navigation ul li ul li a {
+        color: #333;
+        text-shadow: none;
+    }
+    /* medium navigation */
+    nav.navigation {
+        width: 960px;
+        margin: auto;
+        margin-top: 32px;
+        margin-bottom: 0;
+        height: 40px;
+    }
+    nav.navigation ul {
+        margin: 0;
+        padding: 0;
+        list-style: none;
+        /* general font for menu*/
+        font-family: "Source Sans Pro", sans-serif;
+        font-size: 14px;
+        font-weight: 500;
+        text-shadow: 1px 1px #666;
+    }
+    nav.navigation ul li {
+        /* first tier menu */
+        display: block;
+        position: relative;
+        float: left;
+    }
+    nav.navigation li ul {
+        display: none;
+    }
+    nav.navigation a:link {
+        color: #000;
+    }
+    nav.navigation a:visited {
+        color: #000;
+    }
+    span.firstTier_menu {
+        /* first tier menu UNCLICKABLE*/
+        display: block;
+        text-transform: uppercase;
+        padding: 9px 15px 3px;
+        background: #df8020;
+        color: #000;
+        white-space: nowrap;
+        height: 28px;
+        width: 210px;
+        text-align: center;
+        border-bottom: 1px solid #000;
+    }
+    nav.navigation ul li a {
+        /* second tier menu CLICKABLE*/
+        display: block;
+        text-decoration: none;
+        padding: 9px 15px 3px;
+        height: 28px;
+        width: 210px;
+    }
+
+    nav.navigation ul li:first-child span {
+        border-radius: 13px 0 0 0;
+    }
+    nav.navigation ul li:last-child span {
+        border-radius: 0 13px 0 0;
+    }
+
+    nav.navigation li:hover ul {
+        /* second tie menu open */
+        display: block;
+        position: absolute;
+        height: 30px;
+    }
+    nav.navigation li:hover li {
+        float: none;
+        font-size: 14px;
+    }
+    nav.navigation li:hover a {
+        /* second tier hover*/
+        background: #df8020;
+        height: 30px;
+    }
+    nav.navigation li:hover li a:hover {
+        /* menu: on select */
+        background: linear-gradient(90deg, #ffdba6, #ffad5c);
+        border: solid black 1px;
+        padding: 8px 14px 2px;
+    }
+    nav.navigation ul li ul li a {
+        /* second tier menu*/
+        text-align: left;
+    }
+
+    /* END: medium navigation */
+
+    .spacer {
+        height: 0px;
+        clear: both;
+    }
+    .side,
+    .sidefl {
+        width: 98%;
+        border: 2px #bbb ridge;
+        border-radius: 4px;
+        padding: 10px;
+    }
+    .picap {
+        margin: 10px;
+        border: 1px solid #000;
+        padding: 5px;
+        width: 400px;
+        text-align: left;
+    }
+    #socialFB {
+        display: inline-block;
+    }
+}
+/********** Small devices only **********/
+@media (min-width: 768px) and (max-width: 991px) {
+    .hide_small {
+        display: none;
+    }
+    h1,
+    h2 {
+        font-size: 20px;
+    }
+    h3 {font-size: 16px}
+    p,
+    .coollist {
+        font-size: 12px;
+    }
+    .hide_small {
+        display: none;
+    }
+    .small {
+    }
+    #head {
+        width: 95%;
+        margin: auto;
+        margin-top: 20px;
+        padding: 10px 16px;
+    }
+    p.header {
+        font-size: 11px;
+        float: right;
+        text-align: right;
+    }
+    #logo-img {
+        width: 300px;
+        height: 94px;
+        background: url("/Images/CoolSchool-web-logo.png") no-repeat;
+        float: left;
+    }
+    #social {
+        clear: both;
+        display: inline-block;
+        position: static;
+        margin: auto;
+    }
+    p.footer_right {
+        clear: both;
+        text-align: center;
+        margin-top: 30px;
+    }
+    #foot {
+        width: 95%;
+        margin: auto;
+        margin-top: 20px;
+        padding: 10px 20px 20px;
+    }
+    p.footer {
+        margin-top: 32px;
+    }
+    .win,
+    .winTrans {
+        width: 95%;
+        text-align: center;
+        padding: 10px 16px 16px;
+        clear: both;
+    }
+    .window_orange {
+        padding: 20px;
+        margin-top: 40px;
+        width: 71%;
+    }
+    .main {
+        width: 98%;
+        margin: auto;
+    }
+    footer {
+        width: 95%;
+        text-align: center;
+    }
+    img.pic {
+        max-width: 95%;
+        margin: auto;
+        margin-right: 4px;
+        margin-left: 4px;
+    }
+    img.logo {
+        max-width: 95%;
+    }
+    .utub,
+    .utub_center,
+    .ut_med,
+    .ut_small {
+        width: auto;
+        height: auto;
+        max-width: 95%;
+    }
+
+    /* small navigation */
+    nav.navigation {
+        width: 720px;
+        margin: auto;
+        margin-top: 32px;
+        margin-bottom: 0;
+        height: 40px;
+    }
+    nav.navigation ul {
+        margin: 0;
+        padding: 0;
+        list-style: none;
+        /* general font for menu*/
+        font-family: "Source Sans Pro", sans-serif;
+        font-size: 14px;
+        font-weight: 500;
+        text-shadow: 1px 1px #666;
+    }
+    nav.navigation ul li {
+        /* first tier menu */
+        display: block;
+        position: relative;
+        float: left;
+    }
+    nav.navigation li ul {
+        display: none;
+    }
+    nav.navigation a:link {
+        color: #000;
+    }
+    nav.navigation a:visited {
+        color: #000;
+    }
+    span.firstTier_menu {
+        /* first tier menu UNCLICKABLE*/
+        display: block;
+        padding: 9px 15px 3px;
+        background: #df8020;
+        color: #000;
+        white-space: nowrap;
+        height: 28px;
+        width: 150px;
+        text-align: center;
+        border-bottom: 1px solid #000;
+    }
+    nav.navigation ul li a {
+        /* second tier menu CLICKABLE*/
+        display: block;
+        text-decoration: none;
+        padding: 9px 15px 3px;
+        height: 28px;
+        width: 150px;
+    }
+
+    nav.navigation ul li:first-child span {
+        border-radius: 13px 0 0 0;
+    }
+    nav.navigation ul li:last-child span {
+        border-radius: 0 13px 0 0;
+    }
+
+    nav.navigation li:hover ul {
+        /* second tie menu open */
+        display: block;
+        position: absolute;
+        height: 30px;
+    }
+    nav.navigation li:hover li {
+        float: none;
+        font-size: 14px;
+    }
+    nav.navigation li:hover a {
+        /* second tier hover*/
+        background: #df8020;
+        height: 30px;
+    }
+    nav.navigation li:hover li a:hover {
+        /* menu: on select */
+        background: linear-gradient(90deg, #ffdba6, #ffad5c);
+        border: solid black 1px;
+        padding: 8px 14px 2px;
+    }
+    nav.navigation ul li ul li a {
+        /* second tier menu*/
+        text-align: left;
+    }
+
+    /* END: small navigation */
+
+    .spacer {
+        height: 0px;
+        clear: both;
+    }
+    .side,
+    .sidefl {
+        width: 98%;
+        border: 2px #bbb ridge;
+        border-radius: 4px;
+        padding: 5px;
+    }
+    .picap {
+        margin: 5px;
+        border: 1px solid #000;
+        padding: 3px;
+        width: 400px;
+        font-size: 12px;
+        text-align: left;
+    }
+    .thn,
+    .thn2,
+    .thnr {
+        padding: 2px;
+        margin: 2px;
+    }
+    nav.navigation ul li ul li a {
+        color: #333;
+        text-shadow: none;
+    }
+    #socialFB {
+        display: inline-block;
+    }
+}
+/********** Extra small devices only **********/
+@media (min-width: 480px) and (max-width: 767px) {
+    h1,
+    h2 {
+        font-size: 18px;
+    }
+    h3 {font-size: 15px}
+    p,
+    .coollist {
+        font-size: 12px;
+    }
+    .extraSmall {
+    }
+    .hide_extraSmall {
+        display: none;
+    }
+    #head {
+        width: 95%;
+        margin: auto;
+        margin-top: 20px;
+        padding: 10px 10px;
+    }
+    p.header {
+        font-size: 10px;
+        float: right;
+        text-align: right;
+    }
+    #logo-img {
+        width: 200px;
+        height: 63px;
+        background: url("/Images/CoolSchool-web-logo-200.png") no-repeat;
+        float: left;
+        margin-top: 20px;
+    }
+    #social {
+        clear: both;
+        display: inline-block;
+        position: static;
+        margin: auto;
+    }
+    p.footer_right {
+        clear: both;
+        text-align: center;
+        margin-top: 36px;
+    }
+    #foot {
+        width: 95%;
+        margin: auto;
+        margin-top: 20px;
+        padding: 6px 10px 10px;
+    }
+    p.footer {
+        margin-top: 32px;
+    }
+    .win,
+    .winTrans {
+        width: 95%;
+        text-align: center;
+        padding: 4px 10px 10px;
+        clear: both;
+    }
+    .window_orange {
+        padding: 20px;
+        margin-top: 40px;
+        width: 95%;
+    }
+    .main {
+        width: 98%;
+        margin: auto;
+    }
+    footer {
+        width: 95%;
+        text-align: center;
+    }
+    h1.logo {
+        font-size: 24px;
+    }
+    img.pic {
+        max-width: 95%;
+        margin: auto;
+        float: none;
+    }
+    img.logo {
+        width: 150px;
+        height: auto;
+    }
+    .utub,
+    .utub_center,
+    .ut_med,
+    .ut_small {
+        width: auto;
+        height: auto;
+        max-width: 95%;
+        float: none;
+    }
+    nav.navigation {
+        width: 98%;
+        height: auto;
+        margin: auto;
+        margin-bottom: 12px;
+        text-align: center;
+    }
+    nav.navigation ul {
+        margin: 0;
+        padding: 0;
+        list-style: none;
+        font-family: "Source Sans Pro", sans-serif;
+        font-size: 14px;
+        font-weight: 500;
+        text-shadow: 1px 1px #666;
+    }
+    nav.navigation a:link {
+        color: #000;
+    }
+    nav.navigation a:visited {
+        color: #000;
+    }
+    nav.navigation ul li {
+        display: block;
+    }
+    nav.navigation ul li a {
+        box-sizing: border-box;
+        display: block;
+        text-decoration: none;
+        padding: 5px;
+        background: #df8020;
+        color: #000;
+        margin: auto;
+        margin-bottom: 1px;
+        margin-top: 1px;
+        white-space: nowrap;
+        height: 28px;
+        width: 98%;
+        text-align: center;
+        float: left;
+    }
+    nav.navigation ul li a:hover {
+        background: linear-gradient(90deg, #ffdba6, #ffad5c);
+        border: 1px solid #444;
+        padding: 4px;
+    }
+    .spacer {
+        height: 0px;
+        clear: both;
+    }
+    .side,
+    .sidefl {
+        width: 98%;
+        border: 2px #bbb ridge;
+        border-radius: 4px;
+        padding: 5px;
+    }
+    .picap {
+        margin: 4px;
+        border: 1px solid #000;
+        padding: 2px;
+        width: 400px;
+        font-size: 12px;
+        text-align: left;
+    }
+    .thn,
+    .thn2,
+    .thnr {
+        float: none !important;
+    }
+    .thn2,
+    .thn2 > img,
+    .thnr > img,
+    .thn,
+    .thn > img,
+    .thnr {
+        box-sizing: border-box;
+        max-width: 98%;
+        padding: 0;
+        margin: auto;
+    }
+    .ad {
+        width: 98%;
+        height: auto;
+    }
+    .cooltable thead td {
+        font-size: 12px;
+        padding: 2px;
+    }
+    .cooltable {
+        font-size: 11px;
+    }
+    nav.navigation ul li ul li a {
+        color: #333;
+        text-shadow: none;
+    }
+    #socialFB {
+        display: inline-block;
+    }
+    .im {
+        margin-top: 4px;
+    }
+}
+/********** Ultra small devices only **********/
+@media (max-width: 479px) {
+    * {
+        box-sizing: border-box;
+    }
+    h1,
+    h2 {
+        font-size: 16px;
+    }
+    h3 {font-size: 14px}
+    p,
+    .coollist {
+        font-size: 12px;
+    }
+    .ultraSmall {
+    }
+    .hide_ultraSmall {
+        display: none;
+    }
+    #head {
+        width: 95%;
+        margin: auto;
+        margin-top: 20px;
+        padding: 10px 4px;
+    }
+    p.header {
+        font-size: 10px;
+        float: right;
+        text-align: right;
+    }
+    #logo-img {
+        width: 100px;
+        height: 31px;
+        background: url("/Images/CoolSchool-web-logo-100.png") no-repeat;
+        float: left;
+        margin-top: 30px;
+    }
+    #social {
+        clear: both;
+        display: inline-block;
+        position: static;
+        margin: auto;
+    }
+    p.footer_right {
+        clear: both;
+        text-align: center;
+        margin-top: 30px;
+    }
+    p.footer {
+        margin-top: 32px;
+        text-align: center;
+    }
+    #foot {
+        width: 95%;
+        margin: auto;
+        margin-top: 20px;
+        padding: 10px 20px 20px;
+    }
+    .win,
+    .winTrans {
+        width: 95%;
+        text-align: center;
+        padding: 2px 4px 4px;
+        border-radius: 0px;
+        clear: both;
+    }
+    .window_orange {
+        padding: 20px;
+        margin-top: 40px;
+        width: 95%;
+    }
+    .main {
+        width: 98%;
+        margin: auto;
+    }
+    footer {
+        width: 95%;
+        text-align: center;
+    }
+    h1.logo {
+        font-size: 20px;
+    }
+    #banner1 {
+        width: 300px;
+        height: 74px;
+        background: url("/Images/CoolSChool-NAVI-banner-300.png") no-repeat;
+    }
+    #banner2 {
+        width: 300px;
+        height: 74px;
+        background: url("/Images/CoolPool-NAVI-banner-300.png") no-repeat;
+    }
+    #banner3 {
+        width: 300px;
+        height: 74px;
+        background: url("/Images/CoolPool-NAVI-banner-(ENG)-300.png") no-repeat;
+    }
+    #banner4 {
+        width: 300px;
+        height: 74px;
+        background: url("/Images/GamesNAVI-banner-300.png") no-repeat;
+    }
+    #banner5 {
+        width: 300px;
+        height: 74px;
+        background: url("/Images/CoolSChool-NAVI-banner-300.png") no-repeat;
+    }
+    #banner6 {
+        width: 300px;
+        height: 74px;
+        background: url("/Images/CoolDoodle-NAVI-banner-300.png") no-repeat;
+    }
+    img.pic {
+        max-width: 95%;
+        float: none;
+        display: block;
+        margin: auto;
+    }
+    img.logo {
+        max-width: 95%;
+        width: 100px;
+        height: auto;
+    }
+    .utub,
+    .utub_center,
+    .ut_med,
+    .ut_small {
+        width: auto;
+        height: auto;
+        max-width: 95%;
+        float: none;
+    }
+    nav.navigation {
+        width: 98%;
+        height: auto;
+        margin: auto;
+        margin-bottom: 12px;
+        text-align: center;
+    }
+    nav.navigation ul {
+        margin: 0;
+        padding: 0;
+        list-style: none;
+        font-family: "Source Sans Pro", sans-serif;
+        font-size: 14px;
+        font-weight: 500;
+        text-shadow: 1px 1px #666;
+    }
+    nav.navigation a:link {
+        color: #000;
+    }
+    nav.navigation a:visited {
+        color: #000;
+    }
+    nav.navigation ul li {
+        display: block;
+    }
+    nav.navigation ul li a {
+        box-sizing: border-box;
+        display: block;
+        text-decoration: none;
+        padding: 5px;
+        background: #df8020;
+        color: #000;
+        white-space: nowrap;
+        width: 98%;
+        height: 28px;
+        text-align: center;
+        margin: auto;
+        margin-bottom: 1px;
+        margin-top: 1px;
+    }
+    nav.navigation ul li a:hover {
+        background: linear-gradient(90deg, #ffdba6, #ffad5c);
+        border: 1px solid #444;
+        padding: 4px;
+    }
+    .spacer {
+        height: 0px;
+        clear: both;
+    }
+    .side,
+    .sidefl {
+        width: 98%;
+        border: 2px #bbb ridge;
+        border-radius: 4px;
+        padding: 2px;
+    }
+    .picap {
+        margin: 0px;
+        border: 1px solid #000;
+        padding: 2px;
+        max-width: 100%;
+        font-size: 12px;
+        text-align: left;
+    }
+    .picap > img {
+        max-width: 100%;
+    }
+    .thn,
+    .thn2,
+    .thnr {
+        float: none !important;
+    }
+    .thn2,
+    .thn2 > img,
+    .thnr > img,
+    .thn,
+    .thn > img,
+    .thnr {
+        box-sizing: border-box;
+        max-width: 98%;
+        padding: 0;
+        margin: auto;
+    }
+    .ad {
+        width: 98%;
+        height: auto;
+    }
+    .cooltable thead td {
+        font-size: 11px;
+        padding: 2px;
+    }
+    .cooltable {
+        font-size: 10px;
+    }
+    nav.navigation ul li ul li a {
+        color: #333;
+        text-shadow: none;
+    }
+    ol {
+        font-size: 12px;
+    }
+    #socialFB {
+        margin-top: 10px;
+    }
+}
+/********** Those shitty iPhones **********/
+@media (max-width: 370px) {
+    .hide_under370 {
+        display: none;
+    }
+    #socialFB {
+        margin-top: 10px;
+    }
+}

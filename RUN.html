@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <title>R.U.N</title>
+    <link href="./coolstyle.css" rel="stylesheet" type="text/css">
+    <link rel="stylesheet" href="./RUN.css">
+</head>
+
+<body>
+    <!-- body -->
+    <div id="preload" class="hidden"></div>
+    <div class="win" id="setup">
+        <div id="load">
+        </div>
+        <div id="SC"></div>
+        <h1 id="title"></h1>
+        <p>...game text ...</p>
+
+        <div id="debug">
+            <div class="setup_container smallsection" id="selector">
+                <fieldset>
+                    <legend>
+                        Version:
+                    </legend>
+                    ENGINE: <span id="engine_version"></span><br>
+                    GRID: <span id="grid_version"></span><br>
+                    MAZE: <span id="maze_version"></span><br>
+                    Prototype LIB: <span id="lib_version"></span><br>
+
+                </fieldset>
+            </div>
+        </div>
+
+        <p class="cb" id="buttons">
+            <input type='button' id='pause' value='Pause Game [F4]' disabled="disabled">
+            <input type='button' id='toggleHelp' value='Show/Hide Instructions'>
+            <input type='button' id='toggleAbout' value='About'>
+        </p>
+        <div id="help" class="section">
+            <fieldset>
+                <legend>
+                    Instructions:
+                </legend>
+                <p>...legend</p>
+            </fieldset>
+        </div>
+        <div id="about" class="section">
+            <fieldset>
+                <legend>
+                    About:
+                </legend>
+                <image src="" alt="" class="fl pic" title="">
+                    <p>...about...</p>
+            </fieldset>
+        </div>
+        <p class="version cb" id="version"></p>
+    </div>
+
+    <div id="game" class="winTrans"></div>
+    <div id="bottom" class="cb" style="margin-top: 720px"></div>
+    <div id="temp" class="hidden"></div>
+    <div id="temp2" class="hidden"></div>
+    <!-- JS -->
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"
+        integrity="sha256-/xUj+3OJU5yExlq6GSYGSHk7tPXikynS7ogEvDej/m4=" crossorigin="anonymous"></script>
+    <script src='./Prototype_3_04.js'></script>
+    <script src='./ENGINE_.js'></script>
+    <script src="./GRID_.js" type="text/javascript"></script>
+    <script src='./IndexArrayManagers_1_03.js'></script>
+    <script src="./MAZE_.js" type="text/javascript"></script>
+    <script src="./BWT_.js" type="text/javascript"></script>
+    <script src='./score_1_04.js'></script>
+    <script src='./speech_1_01.js'></script>
+    <script src="./assets_RUN.js" type="text/javascript"></script>
+    <script src="./MAP_Run.js" type="text/javascript"></script>
+    <script src="./RUN.js"></script>
+
+</body>
+
+</html>
