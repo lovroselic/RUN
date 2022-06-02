@@ -28,7 +28,7 @@ var INI = {
 
 };
 var PRG = {
-    VERSION: "0.01.03",
+    VERSION: "0.01.04",
     NAME: "R.U.N.",
     YEAR: "2022",
     CSS: "color: #239AFF;",
@@ -104,21 +104,21 @@ var PRG = {
     }
 };
 var HERO = {
-    startInit(){
+    startInit() {
         this.assetMap = {
             walking: "Hero_walking",
             falling: "Hero_falling"
         };
         HERO.dead = false;
     },
-    init(){
+    init() {
         this.mode = "falling";
         this.spriteClass = `Hero_${this.mode}`;
         this.asset = ASSET[this.spriteClass];
         this.actor = new Gravity_ACTOR(this.spriteClass, this.x, this.y, 30);
 
 
-        console.log("HERO",HERO);
+        console.log("HERO", HERO);
     }
 };
 var GAME = {
@@ -165,10 +165,14 @@ var GAME = {
     },
     initLevel(level) {
         console.log("...level", level, 'initialization');
-        MAP[level].map = FREE_MAP.import(JSON.parse(MAP[level].data));
-        console.log(MAP[level].map);
-        MAP[level].pw = MAP[level].width * ENGINE.INI.GRIDPIX;
-        MAP[level].ph = MAP[level].height * ENGINE.INI.GRIDPIX;
+        if (!MAP[level].unpacked) {
+            MAP[level].map = FREE_MAP.import(JSON.parse(MAP[level].data));
+            MAP[level].start = Grid.toClass(JSON.parse(MAP[level].start));
+            MAP[level].unpacked = true;
+        }
+        console.log("MAP:", MAP[level]);
+        MAP[level].pw = MAP[level].map.width * ENGINE.INI.GRIDPIX;
+        MAP[level].ph = MAP[level].map.height * ENGINE.INI.GRIDPIX;
         ENGINE.VIEWPORT.setMax({ x: MAP[level].pw, y: MAP[level].ph });
         //let randomDungeon = RAT_ARENA.create(MAP[level].width, MAP[level].height);
         //MAP[level].DUNGEON = randomDungeon;

@@ -27,7 +27,7 @@ var INI = {
   SPACE_Y: 2048
 };
 var PRG = {
-  VERSION: "0.03.03",
+  VERSION: "0.04.00",
   NAME: "MazEditor",
   YEAR: "2022",
   CSS: "color: #239AFF;",
@@ -53,6 +53,7 @@ var PRG = {
     $("#gridsize").change(GAME.updateWH);
     $("#selector input[name=renderer]").click(GAME.render);
     $("#corr").click(GAME.render);
+    $("#coord").click(GAME.render);
     $("#grid").click(GAME.render);
 
     $("#buttons").on("click", "#new", GAME.init);
@@ -172,6 +173,7 @@ var GAME = {
     }
 
     if ($("input[name='grid']")[0].checked) GRID.grid();
+    if ($("input[name='coord']")[0].checked) GRID.paintCoord("coord", MAP.map);
   },
   init() {
     let OK = true;
@@ -225,7 +227,7 @@ var GAME = {
     GAME.updateWH();
 
     $(ENGINE.gameWindowId).width(ENGINE.gameWIDTH + 4);
-    ENGINE.addBOX("ROOM", ENGINE.gameWIDTH, ENGINE.gameHEIGHT, ["pacgrid", "wall", "grid", "click"], null);
+    ENGINE.addBOX("ROOM", ENGINE.gameWIDTH, ENGINE.gameHEIGHT, ["pacgrid", "wall", "grid", "coord","click"], null);
 
     $("#buttons").append("<input type='button' id='new' value='New'>");
     $("#buttons").append("<input type='button' id='export' value='Export'>");
