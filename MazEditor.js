@@ -27,7 +27,7 @@ var INI = {
   SPACE_Y: 2048
 };
 var PRG = {
-  VERSION: "0.03.02",
+  VERSION: "0.03.03",
   NAME: "MazEditor",
   YEAR: "2022",
   CSS: "color: #239AFF;",
@@ -238,14 +238,12 @@ var GAME = {
   },
   import() {
     let Import = JSON.parse($("#exp").val());
-    Import.map = GridArray.importMap(Import.map);
-    $("#horizontalGrid").val(Import.width);
-    $("#verticalGrid").val(Import.height);
+    MAP.map = FREE_MAP.import(Import);
+    console.log(MAP.map);
     MAP.width = Import.width;
     MAP.height = Import.height;
-    Import.map = GridArray.fromString(Import.width, Import.height, Import.map);
-    MAP.map = FREE_MAP.create(MAP.width, MAP.height, Import.map);
-    console.log(MAP.map);
+    $("#horizontalGrid").val(Import.width);
+    $("#verticalGrid").val(Import.height);
     GAME.render();
   },
 };

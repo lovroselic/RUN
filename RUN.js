@@ -15,7 +15,7 @@ known bugs:
 ////////////////////////////////////////////////////
 
 var DEBUG = {
-    FPS: false,
+    FPS: true,
     BUTTONS: false,
     SETTING: false,
     VERBOSE: false,
@@ -28,7 +28,7 @@ var INI = {
 
 };
 var PRG = {
-    VERSION: "0.01.02",
+    VERSION: "0.01.03",
     NAME: "R.U.N.",
     YEAR: "2022",
     CSS: "color: #239AFF;",
@@ -103,7 +103,24 @@ var PRG = {
         TITLE.startTitle();
     }
 };
+var HERO = {
+    startInit(){
+        this.assetMap = {
+            walking: "Hero_walking",
+            falling: "Hero_falling"
+        };
+        HERO.dead = false;
+    },
+    init(){
+        this.mode = "falling";
+        this.spriteClass = `Hero_${this.mode}`;
+        this.asset = ASSET[this.spriteClass];
+        this.actor = new Gravity_ACTOR(this.spriteClass, this.x, this.y, 30);
 
+
+        console.log("HERO",HERO);
+    }
+};
 var GAME = {
     start() {
         console.log("GAME started");
@@ -131,7 +148,7 @@ var GAME = {
         GAME.level = 1;
         GAME.score = 0;
         GAME.lives = 3;
-        //HERO.startInit();
+        HERO.startInit();
         //AI.initialize(HERO);
         GAME.fps = new FPS_measurement();
         //ENGINE.GAME.ANIMATION.waitThen(GAME.levelStart, 2);
@@ -148,10 +165,7 @@ var GAME = {
     },
     initLevel(level) {
         console.log("...level", level, 'initialization');
-        let data = JSON.parse(MAP[level].data);
-        data.map = GridArray.importMap(data.map);
-        data.map = GridArray.fromString(data.width, data.height, data.map);
-        MAP[level].map = FREE_MAP.create(data.width, data.height, data.map);
+        MAP[level].map = FREE_MAP.import(JSON.parse(MAP[level].data));
         console.log(MAP[level].map);
         MAP[level].pw = MAP[level].width * ENGINE.INI.GRIDPIX;
         MAP[level].ph = MAP[level].height * ENGINE.INI.GRIDPIX;
@@ -170,7 +184,7 @@ var GAME = {
         //ENEMY_TG.init(MAP[level].DUNGEON);
         //VANISHING.init(MAP[level].DUNGEON);
         //SPAWN.monsters(level);
-        //HERO.init();
+        HERO.init();
         //HERO.energy = Math.max(Math.round(GRID_SOLO_FLOOR_OBJECT.size / INI.GOLD * MAP[GAME.level].energy), HERO.energy);
         GAME.levelExecute();
     },
@@ -316,23 +330,18 @@ var GAME = {
             console.log("F9");
         }
         if (map[ENGINE.KEY.map.ctrl]) {
-
             ENGINE.GAME.keymap[ENGINE.KEY.map.ctrl] = false;
         }
         if (map[ENGINE.KEY.map.left]) {
-
             return;
         }
         if (map[ENGINE.KEY.map.right]) {
-
             return;
         }
         if (map[ENGINE.KEY.map.up]) {
-
             return;
         }
         if (map[ENGINE.KEY.map.down]) {
-
             return;
         }
         return;

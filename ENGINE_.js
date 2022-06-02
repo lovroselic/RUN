@@ -811,7 +811,8 @@ var ENGINE = {
     return SPRITE[newName];
   },
   packToSprite(obj) {
-    var tag = ["left", "right", "front", "back"];
+    var tags = ["left", "right", "front", "back"];
+    var tag = tags.slice(0, obj.dimension);
     var CTX = ENGINE.drawSheet(obj.img);
     let x, y;
     let newName;
@@ -1247,11 +1248,15 @@ var ENGINE = {
         console.log(`%c ...loading ${arrPath.length} packs`, ENGINE.CSS);
         var toLoad = [];
         arrPath.forEach(function (el) {
-          ASSET[el.name] = new LiveSPRITE("4D", [], [], [], []);
+          if (!el.dimension) {
+            el.dimension = 4;
+          }
+          ASSET[el.name] = new LiveSPRITE(`${el.dimension}D`);
           toLoad.push({
             srcName: el.srcName,
             name: el.name,
-            count: el.count
+            count: el.count,
+            dimension: el.dimension
           });
         });
         ENGINE.LOAD.HMPacks = toLoad.length;
@@ -1268,9 +1273,13 @@ var ENGINE = {
       function loadSheets(arrPath = LoadSheets, addTag = ExtendSheetTag) {
         console.log(`%c ...loading ${arrPath.length} sheets`, ENGINE.CSS);
         var toLoad = [];
-        var tag = ["left", "right", "front", "back", ...addTag];
+        var all_tags = ["left", "right", "front", "back", ...addTag];
         arrPath.forEach(function (el) {
-          ASSET[el.name] = new LiveSPRITE("4D", [], [], [], []);
+          if (!el.dimension) {
+            el.dimension = 4;
+          }
+          ASSET[el.name] = new LiveSPRITE(`${el.dimension}D`);
+          let tag = all_tags.slice(0, el.dimension);
           for (let q = 0, TL = tag.length; q < TL; q++) {
             toLoad.push({
               srcName: el.srcName + "_" + tag[q] + "." + el.type,
@@ -1297,7 +1306,7 @@ var ENGINE = {
         console.log(`%c ...loading ${arrPath.length} sheet sequences`, ENGINE.CSS);
         var toLoad = [];
         arrPath.forEach(function (el) {
-          ASSET[el.name] = new LiveSPRITE("1D", []);
+          ASSET[el.name] = new LiveSPRITE("1D");
           toLoad.push({
             srcName: el.srcName,
             name: el.name,
@@ -1418,7 +1427,7 @@ var ENGINE = {
       }
 
       function loadImage(srcData, counter, dir = ENGINE.SOURCE) {
-        var srcName, name, count, tag, parent, rotate, asset, trim;
+        var srcName, name, count, tag, parent, rotate, asset, trim, dimension;
         switch (typeof srcData) {
           case "string":
             srcName = srcData;
@@ -1433,6 +1442,7 @@ var ENGINE = {
             rotate = srcData.rotate || null;
             asset = srcData.asset || null;
             trim = srcData.trim;
+            dimension = srcData.dimension;
             if (trim === undefined) trim = true;
             break;
           default:
@@ -1450,7 +1460,8 @@ var ENGINE = {
             parent: parent,
             rotate: rotate,
             asset: asset,
-            trim: trim
+            trim: trim,
+            dimension: dimension
           };
           img.onload = function () {
             ENGINE.LOAD[counter]++;
@@ -2060,17 +2071,21 @@ var PATTERN = {
   }
 };
 class LiveSPRITE {
-  constructor(type, left, right, front, back) {
+  constructor(type) {
     this.type = type || null;
     switch (type) {
       case "1D":
-        this.linear = left;
+        this.linear = [];
+        break;
+      case "2D":
+        this.left = [];
+        this.right = [];
         break;
       case "4D":
-        this.left = left || null;
-        this.right = right || null;
-        this.front = front || null;
-        this.back = back || null;
+        this.left = [];
+        this.right = [];
+        this.front = [];
+        this.back = [];
         break;
       default:
         throw "LiveSPRITE type ERROR";
@@ -2113,6 +2128,7 @@ class ACTOR {
     } else {
       switch (this.asset.type) {
         case "4D":
+        case "2D":
           this.name = `${this.class}_${this.orientation}_${this[this.orientation + "_index"]}`;
           break;
         case "1D":
@@ -2189,6 +2205,11 @@ class ACTOR {
   }
   getDraw() {
     return new Grid(this.drawX, this.drawY);
+  }
+}
+class Gravity_ACTOR extends ACTOR {
+  constructor(sprite_class, x, y, fps) {
+    super(sprite_class, x, y, 'left', ASSET[sprite_class], fps);
   }
 }
 class Rotating_ACTOR extends ACTOR {

@@ -12,7 +12,10 @@ var LoadSequences = [];
 var LoadSheetSequences = [];
 var LoadSheets = [];
 var ExtendSheetTag = [];
-var LoadPacks = [];
+var LoadPacks = [
+    { srcName: "Hero_walking.png", count: 6, name: "Hero_walking", dimension: 2 },
+    { srcName: "Hero_falling.png", count: 6, name: "Hero_falling", dimension: 2 },
+];
 var LoadRotated = [];
 var LoadExtWasm = [];
 var LoadAudio = [];

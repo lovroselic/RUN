@@ -1690,6 +1690,11 @@ var FREE_MAP = {
     create(sizeX, sizeY, GA = null){
         var map = new FreeMap(sizeX, sizeY, GA);
         return map;
+    },
+    import(data){
+        data.map = GridArray.importMap(data.map);
+        data.map = GridArray.fromString(data.width, data.height, data.map);
+        return FREE_MAP.create(data.width, data.height, data.map);
     }
 };
 var DUNGEON = {
