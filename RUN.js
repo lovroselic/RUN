@@ -28,7 +28,7 @@ var INI = {
 
 };
 var PRG = {
-    VERSION: "0.01.04",
+    VERSION: "0.01.05",
     NAME: "R.U.N.",
     YEAR: "2022",
     CSS: "color: #239AFF;",
@@ -79,7 +79,7 @@ var PRG = {
         $(ENGINE.gameWindowId).width(ENGINE.gameWIDTH + ENGINE.sideWIDTH + 4);
         ENGINE.addBOX("TITLE", ENGINE.titleWIDTH, ENGINE.titleHEIGHT, ["title"], null);
         ENGINE.addBOX("ROOM", ENGINE.gameWIDTH, ENGINE.gameHEIGHT,
-            ["background", "text", "FPS", "button", "click"],
+            ["background", "actors", "text", "FPS", "button", "click"],
             "side");
         ENGINE.addBOX("SIDE", ENGINE.sideWIDTH, ENGINE.gameHEIGHT,
             ["sideback",],
@@ -107,18 +107,28 @@ var HERO = {
     startInit() {
         this.assetMap = {
             walking: "Hero_walking",
-            falling: "Hero_falling"
+            flying: "Hero_flying",
+            idle: "Hero_idle"
         };
-        HERO.dead = false;
+        this.dead = false;
+        this.idle = true;
     },
     init() {
-        this.mode = "falling";
+        this.mode = "idle";
         this.spriteClass = `Hero_${this.mode}`;
         this.asset = ASSET[this.spriteClass];
         this.actor = new Gravity_ACTOR(this.spriteClass, this.x, this.y, 30);
-
+        GRID.gridToSpriteBottomCenter(MAP[GAME.level].start, HERO.actor);
 
         console.log("HERO", HERO);
+    },
+    move(){},
+    draw(lapsedTime){
+        /*if (HERO.idle){
+            HERO.actor.updateAnimation(lapsedTime);
+        }*/
+        ENGINE.drawBottomCenter('actors',  HERO.actor.vx, HERO.actor.vy, HERO.actor.sprite());
+        ENGINE.layersToClear.add("actors");
     }
 };
 var GAME = {
@@ -145,7 +155,7 @@ var GAME = {
         //GAME.prepareForRestart();
         //GAME.completed = false;
         //GAME.won = false;
-        GAME.level = 1;
+        GAME.level = 2;
         GAME.score = 0;
         GAME.lives = 3;
         HERO.startInit();
@@ -194,9 +204,9 @@ var GAME = {
     },
     levelExecute() {
         //GAME.CI.reset();
-        //ENGINE.VIEWPORT.reset();
-        //ENGINE.VIEWPORT.check(HERO.actor);
-        //ENGINE.VIEWPORT.alignTo(HERO.actor);
+        ENGINE.VIEWPORT.reset();
+        ENGINE.VIEWPORT.check(HERO.actor);
+        ENGINE.VIEWPORT.alignTo(HERO.actor);
         GAME.drawFirstFrame(GAME.level);
         //GAME.ENEMY.started = false;
         //ENGINE.GAME.ANIMATION.next(GAME.countIn);
@@ -218,13 +228,12 @@ var GAME = {
     run(lapsedTime) {
         if (ENGINE.GAME.stopAnimation) return;
         GAME.respond();
-
         GAME.frameDraw(lapsedTime);
     },
     updateVieport() {
         if (!ENGINE.VIEWPORT.changed) return;
         ENGINE.VIEWPORT.change("floor", "background");
-        ENGINE.VIEWPORT.change("gold", "background");
+        ENGINE.VIEWPORT.change("wall", "background");
         ENGINE.VIEWPORT.changed = false;
     },
     deadRun(lapsedTime) {
@@ -237,7 +246,8 @@ var GAME = {
     },
     frameDraw(lapsedTime) {
         ENGINE.clearLayerStack();
-
+        GAME.updateVieport();
+        HERO.draw(lapsedTime);
 
         if (DEBUG.FPS) {
             GAME.FPS(lapsedTime);
@@ -250,6 +260,9 @@ var GAME = {
         ENGINE.TEXTUREGRID.dynamicAssets = { door: "VerticalWall", trapdoor: "HorizontalWall" };
         ENGINE.TEXTUREGRID.set3D('D3');
         ENGINE.TEXTUREGRID.drawTiles(MAP[level].map);
+        ENGINE.VIEWPORT.changed = true;
+        GAME.updateVieport();
+        HERO.draw(0);
     },
     blockGrid(level) {
         GRID.grid();
@@ -268,7 +281,7 @@ var GAME = {
     setTitle() {
         const text = GAME.generateTitleText();
         const RD = new RenderData("Adore", 16, "#0E0", "bottomText");
-        const SQ = new Square(0, 0, LAYER.bottomText.canvas.width, LAYER.bottomText.canvas.height);
+        const SQ = new RectArea(0, 0, LAYER.bottomText.canvas.width, LAYER.bottomText.canvas.height);
         GAME.movingText = new MovingText(text, 4, RD, SQ);
     },
     generateTitleText() {

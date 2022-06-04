@@ -27,7 +27,7 @@ var INI = {
   SPACE_Y: 2048
 };
 var PRG = {
-  VERSION: "0.04.00",
+  VERSION: "0.04.01",
   NAME: "MazEditor",
   YEAR: "2022",
   CSS: "color: #239AFF;",
@@ -227,7 +227,7 @@ var GAME = {
     GAME.updateWH();
 
     $(ENGINE.gameWindowId).width(ENGINE.gameWIDTH + 4);
-    ENGINE.addBOX("ROOM", ENGINE.gameWIDTH, ENGINE.gameHEIGHT, ["pacgrid", "wall", "grid", "coord","click"], null);
+    ENGINE.addBOX("ROOM", ENGINE.gameWIDTH, ENGINE.gameHEIGHT, ["pacgrid", "wall", "grid", "coord", "click"], null);
 
     $("#buttons").append("<input type='button' id='new' value='New'>");
     $("#buttons").append("<input type='button' id='export' value='Export'>");
@@ -236,7 +236,7 @@ var GAME = {
   export() {
     let rle = MAP.map.GA.exportMap();
     let Export = { width: MAP.width, height: MAP.height, map: rle };
-    $("#exp").html(JSON.stringify(Export));
+    $("#exp").val(JSON.stringify(Export));
   },
   import() {
     let Import = JSON.parse($("#exp").val());

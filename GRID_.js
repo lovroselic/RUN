@@ -45,9 +45,16 @@ var GRID = {
   gridToSprite(grid, actor) {
     GRID.coordToSprite(GRID.gridToCoord(grid), actor);
   },
+  gridToSpriteBottomCenter(grid, actor) {
+    GRID.coordToSpriteBottomCenter(GRID.gridToCoord(grid), actor);
+  },
   coordToSprite(coord, actor) {
     actor.x = coord.x + Math.floor(ENGINE.INI.GRIDPIX / 2);
     actor.y = coord.y + Math.floor(ENGINE.INI.GRIDPIX / 2);
+  },
+  coordToSpriteBottomCenter(coord, actor) {
+    actor.x = coord.x + Math.floor(ENGINE.INI.GRIDPIX / 2);
+    actor.y = coord.y + ENGINE.INI.GRIDPIX;
   },
   gridToCoord(grid) {
     var x = grid.x * ENGINE.INI.GRIDPIX;

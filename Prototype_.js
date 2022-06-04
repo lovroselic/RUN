@@ -6,7 +6,7 @@
 console.clear();
 
 var LIB = {
-  VERSION: "3.04",
+  VERSION: "3.05",
   CSS: "color: #EFE",
   log: function () {
     console.log(`%cPrototype LIB ${LIB.VERSION} loaded`, LIB.CSS);
@@ -702,7 +702,7 @@ class Pointer {
     this.vector = Vector.toClass(vector);
   }
 }
-class Square {
+class RectArea {
   constructor(x, y, w, h) {
     this.x = x;
     this.y = y;

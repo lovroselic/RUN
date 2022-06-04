@@ -13,8 +13,9 @@ var LoadSheetSequences = [];
 var LoadSheets = [];
 var ExtendSheetTag = [];
 var LoadPacks = [
-    { srcName: "Hero_walking.png", count: 6, name: "Hero_walking", dimension: 2 },
-    { srcName: "Hero_falling.png", count: 6, name: "Hero_falling", dimension: 2 },
+    { srcName: "hero_walking2.png", count: 6, name: "Hero_walking", dimension: 2 },
+    { srcName: "hero fly2.png", count: 6, name: "Hero_flying", dimension: 2 },
+    { srcName: "hero idle.png", count: 1, name: "Hero_idle", dimension: 2 },
 ];
 var LoadRotated = [];
 var LoadExtWasm = [];
