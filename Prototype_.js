@@ -414,11 +414,11 @@ class FP_Grid {
     let D = this.EuclidianDistance(grid);
     return new FP_Vector(dx / D, dy / D);
   }
-  add(vector) {
-    return new FP_Grid(this.x + vector.x, this.y + vector.y);
+  add(vector, factor = 1.0) {
+    return new FP_Grid(this.x + vector.x * factor, this.y + vector.y * factor);
   }
-  sub(grid) {
-    return new FP_Grid(this.x - grid.x, this.y - grid.y);
+  sub(vector, factor = 1.0) {
+    return new FP_Grid(this.x - vector.x * factor, this.y - vector.y * factor);
   }
 }
 class FP_Vector {
@@ -459,6 +459,9 @@ class FP_Vector {
       this.x - vector.x * factor,
       this.y - vector.y * factor
     );
+  }
+  mul(vector, num = 1) {
+    return new FP_Vector(this.x + num * vector.x, this.y + num * vector.y);
   }
   ortoAlign() {
     let dim = ["x", "y"];

@@ -61,6 +61,7 @@ var GRID = {
     var y = grid.y * ENGINE.INI.GRIDPIX;
     return new Point(x, y);
   },
+  //gridToBottomCenter(grid){},
   coordToGrid(x, y) {
     var tx = Math.floor(x / ENGINE.INI.GRIDPIX);
     var ty = Math.floor(y / ENGINE.INI.GRIDPIX);

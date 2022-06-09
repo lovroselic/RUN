@@ -25,10 +25,10 @@ var DEBUG = {
 
 };
 var INI = {
-
+    HERO_LATERAL_SPEED: 120
 };
 var PRG = {
-    VERSION: "0.01.05",
+    VERSION: "0.01.06",
     NAME: "R.U.N.",
     YEAR: "2022",
     CSS: "color: #239AFF;",
@@ -108,26 +108,78 @@ var HERO = {
         this.assetMap = {
             walking: "Hero_walking",
             flying: "Hero_flying",
-            idle: "Hero_idle"
+            idle: "Hero_idle",
+            falling: "Hero_idle"
         };
         this.dead = false;
         this.idle = true;
     },
-    init() {
-        this.mode = "idle";
+    setMode(mode) {
+        this.mode = mode;
+        this.actor.class = `Hero_${this.mode}`;
         this.spriteClass = `Hero_${this.mode}`;
-        this.asset = ASSET[this.spriteClass];
-        this.actor = new Gravity_ACTOR(this.spriteClass, this.x, this.y, 30);
-        GRID.gridToSpriteBottomCenter(MAP[GAME.level].start, HERO.actor);
-
-        console.log("HERO", HERO);
+        this.actor.asset = ASSET[this.spriteClass];
     },
-    move(){},
-    draw(lapsedTime){
+    init() {
+        this.mode = 'idle';
+        this.moveState = new _2D_MoveState(new FP_Grid(MAP[GAME.level].start.x + 0.5, MAP[GAME.level].start.y + 1), LEFT, this);
+        this.actor = new Gravity_ACTOR(`Hero_${this.mode}`, this.x, this.y, 12);
+        this.moveState.posToCoord();
+    },
+    animate(dir, lapsedTime) {
+        this.moveState.dir = dir;
+        this.actor.orientation = this.actor.getOrientation(this.moveState.dir);
+        this.actor.updateAnimation(lapsedTime, this.actor.orientation);
+        this.actor.refresh();
+    },
+    setViewport() {
+        ENGINE.VIEWPORT.check(this.actor);
+        ENGINE.VIEWPORT.alignTo(this.actor);
+    },
+    setMove(D, dir) {
+        let Gd = D / ENGINE.INI.GRIDPIX;
+        let pos = HERO.moveState.pos.add(dir, Gd);
+
+
+        let Wd = this.actor.sprite().width / 2 / ENGINE.INI.GRIDPIX;
+        console.log("Wd", Wd);
+        let nextGridPos = pos.add(new FP_Vector(0, -0.01)).add(dir, Wd);
+        console.log("..pos", pos, nextGridPos, "was", HERO.moveState.pos);
+
+        let grid = Grid.toClass(nextGridPos);
+        console.log("..grid", grid);
+        let GA = MAP[GAME.level].map.GA;
+        if (!GA.isWall(grid)) {
+            HERO.moveState.pos = pos;
+        }
+        /*if (GA.isWall(grid)) {
+            
+            let x = Math.round(nextGridPos.x);
+            let off = dir.x * - 1;
+             x += off * Wd;
+             HERO.moveState.pos.x = x;
+             console.log("..cant go there", HERO.moveState.pos);
+        } else {
+            HERO.moveState.pos = pos;
+            console.log("..went there", HERO.moveState.pos);
+        }*/
+        this.moveState.posToCoord();
+        this.setViewport();
+    },
+    lateralMove(dir, lapsedTime) {
+        console.log('lateralMove', dir, lapsedTime);
+        let D = INI.HERO_LATERAL_SPEED * lapsedTime / 1000;
+        console.log("D", D);
+        this.setMove(D, dir);
+        this.setMode('walking');
+        this.animate(dir, lapsedTime);
+    },
+    gravityTest() { },
+    draw(lapsedTime) {
         /*if (HERO.idle){
             HERO.actor.updateAnimation(lapsedTime);
         }*/
-        ENGINE.drawBottomCenter('actors',  HERO.actor.vx, HERO.actor.vy, HERO.actor.sprite());
+        ENGINE.drawBottomCenter('actors', this.actor.vx, this.actor.vy, this.actor.sprite());
         ENGINE.layersToClear.add("actors");
     }
 };
@@ -205,8 +257,7 @@ var GAME = {
     levelExecute() {
         //GAME.CI.reset();
         ENGINE.VIEWPORT.reset();
-        ENGINE.VIEWPORT.check(HERO.actor);
-        ENGINE.VIEWPORT.alignTo(HERO.actor);
+        HERO.setViewport();
         GAME.drawFirstFrame(GAME.level);
         //GAME.ENEMY.started = false;
         //ENGINE.GAME.ANIMATION.next(GAME.countIn);
@@ -224,10 +275,9 @@ var GAME = {
         GAME.levelCompleted = false;
         ENGINE.GAME.ANIMATION.waitThen(GAME.levelStart, 2);
     },
-
     run(lapsedTime) {
         if (ENGINE.GAME.stopAnimation) return;
-        GAME.respond();
+        GAME.respond(lapsedTime);
         GAME.frameDraw(lapsedTime);
     },
     updateVieport() {
@@ -334,7 +384,7 @@ var GAME = {
         ENGINE.GAME.ANIMATION.next(GAME.run);
         GAME.paused = false;
     },
-    respond() {
+    respond(lapsedTime) {
         if (false) return;
         var map = ENGINE.GAME.keymap;
 
@@ -350,9 +400,11 @@ var GAME = {
             ENGINE.GAME.keymap[ENGINE.KEY.map.ctrl] = false;
         }
         if (map[ENGINE.KEY.map.left]) {
+            HERO.lateralMove(LEFT, lapsedTime);
             return;
         }
         if (map[ENGINE.KEY.map.right]) {
+            HERO.lateralMove(RIGHT, lapsedTime);
             return;
         }
         if (map[ENGINE.KEY.map.up]) {

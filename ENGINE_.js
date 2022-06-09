@@ -2211,6 +2211,10 @@ class Gravity_ACTOR extends ACTOR {
   constructor(sprite_class, x, y, fps) {
     super(sprite_class, x, y, 'left', ASSET[sprite_class], fps);
   }
+  setCoord(point){
+    this.x = point.x;
+    this.y = point.y;
+  }
 }
 class Rotating_ACTOR extends ACTOR {
   constructor(sprite_class, x, y, fps) {
@@ -2427,6 +2431,17 @@ class MoveState {
     this.homeGrid = Grid.toClass(grid);
     this.endGrid = Grid.toClass(grid);
     this.moving = false;
+  }
+}
+class _2D_MoveState {
+  constructor(pos, dir, parent){
+    this.pos = pos;
+    this.dir = dir;
+    this.parent = parent;
+  }
+  posToCoord(){
+    //let coord = GRID.gridToCoord(this.parent.moveState.pos);
+    this.parent.actor.setCoord(GRID.gridToCoord(this.parent.moveState.pos));
   }
 }
 class _3D_MoveState {
