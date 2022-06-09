@@ -25,10 +25,13 @@ var DEBUG = {
 
 };
 var INI = {
-    HERO_LATERAL_SPEED: 120
+    HERO_LATERAL_SPEED: 120,
+    MAX_VERTICAL_SPEED: 120,
+    A: 10,
+    G: 2
 };
 var PRG = {
-    VERSION: "0.01.06",
+    VERSION: "0.01.07",
     NAME: "R.U.N.",
     YEAR: "2022",
     CSS: "color: #239AFF;",
@@ -113,6 +116,7 @@ var HERO = {
         };
         this.dead = false;
         this.idle = true;
+        this.verticalSpeed = 0;
     },
     setMode(mode) {
         this.mode = mode;
@@ -126,9 +130,11 @@ var HERO = {
         this.actor = new Gravity_ACTOR(`Hero_${this.mode}`, this.x, this.y, 12);
         this.moveState.posToCoord();
     },
-    animate(dir, lapsedTime) {
-        this.moveState.dir = dir;
-        this.actor.orientation = this.actor.getOrientation(this.moveState.dir);
+    animate(lapsedTime, dir) {
+        if (dir) {
+            this.moveState.dir = dir;
+            this.actor.orientation = this.actor.getOrientation(this.moveState.dir);
+        }
         this.actor.updateAnimation(lapsedTime, this.actor.orientation);
         this.actor.refresh();
     },
@@ -136,49 +142,44 @@ var HERO = {
         ENGINE.VIEWPORT.check(this.actor);
         ENGINE.VIEWPORT.alignTo(this.actor);
     },
-    setMove(D, dir) {
+    setLatMove(D, dir) {
         let Gd = D / ENGINE.INI.GRIDPIX;
         let pos = HERO.moveState.pos.add(dir, Gd);
-
-
         let Wd = this.actor.sprite().width / 2 / ENGINE.INI.GRIDPIX;
-        console.log("Wd", Wd);
         let nextGridPos = pos.add(new FP_Vector(0, -0.01)).add(dir, Wd);
-        console.log("..pos", pos, nextGridPos, "was", HERO.moveState.pos);
-
         let grid = Grid.toClass(nextGridPos);
-        console.log("..grid", grid);
         let GA = MAP[GAME.level].map.GA;
         if (!GA.isWall(grid)) {
             HERO.moveState.pos = pos;
         }
-        /*if (GA.isWall(grid)) {
-            
-            let x = Math.round(nextGridPos.x);
-            let off = dir.x * - 1;
-             x += off * Wd;
-             HERO.moveState.pos.x = x;
-             console.log("..cant go there", HERO.moveState.pos);
-        } else {
-            HERO.moveState.pos = pos;
-            console.log("..went there", HERO.moveState.pos);
-        }*/
         this.moveState.posToCoord();
         this.setViewport();
+    },
+    verticalMove(lapsedTime) {
+        console.log('verticalMove', lapsedTime);
+        this.setMode('flying');
+        this.animate(lapsedTime);
     },
     lateralMove(dir, lapsedTime) {
         console.log('lateralMove', dir, lapsedTime);
         let D = INI.HERO_LATERAL_SPEED * lapsedTime / 1000;
         console.log("D", D);
-        this.setMove(D, dir);
+        this.setLatMove(D, dir);
         this.setMode('walking');
-        this.animate(dir, lapsedTime);
+        this.animate(lapsedTime, dir);
     },
     gravityTest() { },
-    draw(lapsedTime) {
-        /*if (HERO.idle){
-            HERO.actor.updateAnimation(lapsedTime);
-        }*/
+    manageFlight(lapsedTime) {
+        if (this.mode === 'idle') {
+            this.actor.resetIndexes();
+            this.actor.refresh();
+        }
+    },
+    concludeAction() {
+        this.setMode('idle');
+
+    },
+    draw() {
         ENGINE.drawBottomCenter('actors', this.actor.vx, this.actor.vy, this.actor.sprite());
         ENGINE.layersToClear.add("actors");
     }
@@ -278,7 +279,9 @@ var GAME = {
     run(lapsedTime) {
         if (ENGINE.GAME.stopAnimation) return;
         GAME.respond(lapsedTime);
+        HERO.manageFlight(lapsedTime);
         GAME.frameDraw(lapsedTime);
+        HERO.concludeAction();
     },
     updateVieport() {
         if (!ENGINE.VIEWPORT.changed) return;
@@ -297,7 +300,7 @@ var GAME = {
     frameDraw(lapsedTime) {
         ENGINE.clearLayerStack();
         GAME.updateVieport();
-        HERO.draw(lapsedTime);
+        HERO.draw();
 
         if (DEBUG.FPS) {
             GAME.FPS(lapsedTime);
@@ -408,6 +411,7 @@ var GAME = {
             return;
         }
         if (map[ENGINE.KEY.map.up]) {
+            HERO.verticalMove(lapsedTime);
             return;
         }
         if (map[ENGINE.KEY.map.down]) {
