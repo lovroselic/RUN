@@ -31,7 +31,7 @@ var INI = {
     G: 5
 };
 var PRG = {
-    VERSION: "0.02.00",
+    VERSION: "0.02.01",
     NAME: "R.U.N.",
     YEAR: "2022",
     CSS: "color: #239AFF;",
@@ -153,24 +153,24 @@ var HERO = {
         let nextGridPos2 = nextGridPos.add(UP, this.actor.sprite().height / ENGINE.INI.GRIDPIX).add(new FP_Vector(0, 0.01));
         let grid2 = Grid.toClass(nextGridPos2);
         let GA = MAP[GAME.level].map.GA;
-        //console.log(nextGridPos, nextGridPos2);
-        //console.log('HERO',Grid.toClass(HERO.moveState.pos.add(new FP_Vector(0, -0.01))),"->", grid1, GA.notWall(grid1), grid2, GA.notWall(grid2));
         if (GA.notWall(grid1) && GA.notWall(grid2)) {
             HERO.moveState.pos = pos;
+        } else {
+            console.log("lateral adjust", HERO.moveState.pos, nextGridPos,);
+            let x = Math.round(nextGridPos.x) + -1 * dir.x * Wd * 1.25;
+            HERO.moveState.pos.x = x;
+            console.log("after", HERO.moveState.pos);
         }
         this.moveState.posToCoord();
         this.setViewport();
     },
     verticalMove(lapsedTime) {
-        console.log('verticalMove', lapsedTime);
         this.setMode('flying');
         this.animate(lapsedTime);
         this.thrust += INI.A;
     },
     lateralMove(dir, lapsedTime) {
-        console.log('lateralMove', dir, lapsedTime);
         let D = INI.HERO_LATERAL_SPEED * lapsedTime / 1000;
-        console.log("D", D);
         this.setLatMove(D, dir);
         this.setMode('walking');
         if (this.floats) {
@@ -187,7 +187,7 @@ var HERO = {
     gravityTest() {
         let Wd = this.actor.sprite().width / 2 / ENGINE.INI.GRIDPIX;
         let forwardPos = HERO.moveState.pos.add(HERO.moveState.dir, Wd);
-        let backPos = HERO.moveState.pos.add(HERO.moveState.dir.mirror(), Wd * 0.15);
+        let backPos = HERO.moveState.pos.add(HERO.moveState.dir.mirror(), Wd * 0.10);
         let GA = MAP[GAME.level].map.GA;
         if (GA.isWall(Grid.toClass(forwardPos))) return false;
         if (GA.isWall(Grid.toClass(backPos))) return false;
@@ -197,7 +197,7 @@ var HERO = {
         let Hd = this.actor.sprite().height / ENGINE.INI.GRIDPIX;
         let Wd = this.actor.sprite().width / 2 / ENGINE.INI.GRIDPIX;
         let forwardPos = HERO.moveState.pos.add(HERO.moveState.dir, Wd).add(UP, Hd);
-        let backPos = HERO.moveState.pos.add(HERO.moveState.dir.mirror(), Wd * 0.15).add(UP, Hd);
+        let backPos = HERO.moveState.pos.add(HERO.moveState.dir.mirror(), Wd * 0.10).add(UP, Hd);
         let GA = MAP[GAME.level].map.GA;
         if (GA.isWall(Grid.toClass(forwardPos))) return true;
         if (GA.isWall(Grid.toClass(backPos))) return true;
@@ -218,7 +218,7 @@ var HERO = {
             this.verticalSpeed = 0;
             this.floats = false;
             //assure that on the grid, not in the grid
-            HERO.moveState.pos.y = Math.floor(HERO.moveState.pos.y);
+            HERO.moveState.pos.y = Math.floor(HERO.moveState.pos.y); // not 100% OK
             //console.log("LANDED", HERO.moveState.pos);
         }
 
@@ -236,14 +236,16 @@ var HERO = {
             this.verticalSpeed = Math.max(this.verticalSpeed, -INI.MAX_VERTICAL_SPEED);
 
             let move = -this.verticalSpeed / ENGINE.INI.GRIDPIX;
-            console.log("this.verticalSpeed", this.verticalSpeed, dV, move);
+            //console.log("this.verticalSpeed", this.verticalSpeed, dV, move);
             let pos = HERO.moveState.pos.add(UP, move);
             if (this.verticalSpeed > 0 || (this.verticalSpeed < 0 && !ceiling)) {
                 HERO.moveState.pos = pos;
+            } else {
+                console.log("adjust vertical", HERO.moveState.pos, pos, HERO.moveState.pos.y - pos.y);
+                let y = Math.floor(pos.y) + Hd;
+                HERO.moveState.pos.y = y;
+                console.log("after", HERO.moveState.pos);
             }
-            //console.log("before", HERO.moveState.pos);
-            //HERO.moveState.pos.y = Math.max(HERO.moveState.pos.y, Math.floor(HERO.moveState.pos.y) + Hd);
-            //console.log("after", HERO.moveState.pos.y, Math.floor(HERO.moveState.pos.y) + Hd);
             this.moveState.posToCoord();
             this.setViewport();
         }
@@ -251,7 +253,6 @@ var HERO = {
     concludeAction() {
         this.setMode('idle');
         this.thrust = 0;
-        //t
     },
     draw() {
         ENGINE.drawBottomCenter('actors', this.actor.vx, this.actor.vy, this.actor.sprite());
@@ -282,7 +283,7 @@ var GAME = {
         //GAME.prepareForRestart();
         //GAME.completed = false;
         //GAME.won = false;
-        GAME.level = 2;
+        GAME.level = 1;
         GAME.score = 0;
         GAME.lives = 3;
         HERO.startInit();
@@ -391,7 +392,10 @@ var GAME = {
         GAME.updateVieport();
         HERO.draw(0);
 
-        if (DEBUG.GRID) GRID.grid();
+        if (DEBUG.GRID) {
+            GRID.grid();
+            GRID.paintCoord("coord", MAP[level].map);
+        }
     },
     blockGrid(level) {
         GRID.grid();
