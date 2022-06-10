@@ -22,16 +22,16 @@ var DEBUG = {
     PAINT_TRAIL: false,
     invincible: false,
     INF_LIVES: false,
-
+    GRID: true,
 };
 var INI = {
     HERO_LATERAL_SPEED: 120,
-    MAX_VERTICAL_SPEED: 120,
+    MAX_VERTICAL_SPEED: 7,
     A: 10,
-    G: 2
+    G: 5
 };
 var PRG = {
-    VERSION: "0.01.07",
+    VERSION: "0.01.08",
     NAME: "R.U.N.",
     YEAR: "2022",
     CSS: "color: #239AFF;",
@@ -117,12 +117,13 @@ var HERO = {
         this.dead = false;
         this.idle = true;
         this.verticalSpeed = 0;
+        this.thrust = 0;
+        this.floats = false;
     },
     setMode(mode) {
         this.mode = mode;
         this.actor.class = `Hero_${this.mode}`;
-        this.spriteClass = `Hero_${this.mode}`;
-        this.actor.asset = ASSET[this.spriteClass];
+        this.actor.asset = ASSET[this.actor.class];
     },
     init() {
         this.mode = 'idle';
@@ -147,9 +148,13 @@ var HERO = {
         let pos = HERO.moveState.pos.add(dir, Gd);
         let Wd = this.actor.sprite().width / 2 / ENGINE.INI.GRIDPIX;
         let nextGridPos = pos.add(new FP_Vector(0, -0.01)).add(dir, Wd);
-        let grid = Grid.toClass(nextGridPos);
+        let grid1 = Grid.toClass(nextGridPos);
+        let nextGridPos2 = nextGridPos.add(UP, this.actor.sprite().height / ENGINE.INI.GRIDPIX).add(new FP_Vector(0, 0.01));
+        let grid2 = Grid.toClass(nextGridPos2);
         let GA = MAP[GAME.level].map.GA;
-        if (!GA.isWall(grid)) {
+        //console.log(nextGridPos, nextGridPos2);
+        //console.log('HERO',Grid.toClass(HERO.moveState.pos.add(new FP_Vector(0, -0.01))),"->", grid1, GA.notWall(grid1), grid2, GA.notWall(grid2));
+        if (GA.notWall(grid1) && GA.notWall(grid2)) {
             HERO.moveState.pos = pos;
         }
         this.moveState.posToCoord();
@@ -159,6 +164,7 @@ var HERO = {
         console.log('verticalMove', lapsedTime);
         this.setMode('flying');
         this.animate(lapsedTime);
+        this.thrust += INI.A;
     },
     lateralMove(dir, lapsedTime) {
         console.log('lateralMove', dir, lapsedTime);
@@ -166,18 +172,85 @@ var HERO = {
         console.log("D", D);
         this.setLatMove(D, dir);
         this.setMode('walking');
+        if (this.floats) {
+            if (this.verticalSpeed < 0) {
+                this.setMode('flying');
+            } else {
+                this.setMode('idle');
+                this.actor.resetIndexes();
+                this.actor.refresh();
+            }
+        }
         this.animate(lapsedTime, dir);
     },
-    gravityTest() { },
+    gravityTest() {
+        let Wd = this.actor.sprite().width / 2 / ENGINE.INI.GRIDPIX;
+        let forwardPos = HERO.moveState.pos.add(HERO.moveState.dir, Wd);
+        let backPos = HERO.moveState.pos.add(HERO.moveState.dir.mirror(), Wd * 0.15);
+        let GA = MAP[GAME.level].map.GA;
+        if (GA.isWall(Grid.toClass(forwardPos))) return false;
+        if (GA.isWall(Grid.toClass(backPos))) return false;
+        return true;
+    },
+    ceilingTest() {
+        let Hd = this.actor.sprite().height / ENGINE.INI.GRIDPIX;
+        let Wd = this.actor.sprite().width / 2 / ENGINE.INI.GRIDPIX;
+        let forwardPos = HERO.moveState.pos.add(HERO.moveState.dir, Wd).add(UP, Hd);
+        let backPos = HERO.moveState.pos.add(HERO.moveState.dir.mirror(), Wd * 0.15).add(UP, Hd);
+        let GA = MAP[GAME.level].map.GA;
+        if (GA.isWall(Grid.toClass(forwardPos))) return true;
+        if (GA.isWall(Grid.toClass(backPos))) return true;
+        return false;
+    },
     manageFlight(lapsedTime) {
+        let Hd = this.actor.sprite().height / ENGINE.INI.GRIDPIX;
         if (this.mode === 'idle') {
             this.actor.resetIndexes();
             this.actor.refresh();
         }
+
+        //gravity test
+        this.floats = this.gravityTest();
+        if (this.floats) {
+            this.thrust -= INI.G;
+        } else {
+            this.verticalSpeed = 0;
+            this.floats = false;
+            //assure that on the grid, not in the grid
+            HERO.moveState.pos.y = Math.floor(HERO.moveState.pos.y);
+            //console.log("LANDED", HERO.moveState.pos);
+        }
+
+        if (this.thrust !== 0) {
+            let dV = this.thrust * lapsedTime / 1000;
+            let ceiling = this.ceilingTest();
+            if (!ceiling || this.thrust < 0) {
+                this.verticalSpeed -= dV;
+            }
+            if (ceiling && this.thrust > 0) {
+                this.verticalSpeed = 0;
+            }
+
+            this.verticalSpeed = Math.min(this.verticalSpeed, INI.MAX_VERTICAL_SPEED);
+            this.verticalSpeed = Math.max(this.verticalSpeed, -INI.MAX_VERTICAL_SPEED);
+
+            let move = -this.verticalSpeed / ENGINE.INI.GRIDPIX;
+            console.log("this.verticalSpeed", this.verticalSpeed, dV, move);
+            let pos = HERO.moveState.pos.add(UP, move);
+            if (this.verticalSpeed > 0 || (this.verticalSpeed < 0 && !ceiling)) {
+                HERO.moveState.pos = pos;
+            }
+            //console.log("before", HERO.moveState.pos);
+            //HERO.moveState.pos.y = Math.max(HERO.moveState.pos.y, Math.floor(HERO.moveState.pos.y) + Hd);
+            //console.log("after", HERO.moveState.pos.y, Math.floor(HERO.moveState.pos.y) + Hd);
+            this.moveState.posToCoord();
+            this.setViewport();
+        }
     },
     concludeAction() {
         this.setMode('idle');
-
+        this.thrust = 0;
+        //t
     },
     draw() {
         ENGINE.drawBottomCenter('actors', this.actor.vx, this.actor.vy, this.actor.sprite());
@@ -316,6 +389,8 @@ var GAME = {
         ENGINE.VIEWPORT.changed = true;
         GAME.updateVieport();
         HERO.draw(0);
+
+        if (DEBUG.GRID) GRID.grid();
     },
     blockGrid(level) {
         GRID.grid();
@@ -404,15 +479,15 @@ var GAME = {
         }
         if (map[ENGINE.KEY.map.left]) {
             HERO.lateralMove(LEFT, lapsedTime);
-            return;
+            //return;
         }
         if (map[ENGINE.KEY.map.right]) {
             HERO.lateralMove(RIGHT, lapsedTime);
-            return;
+            //return;
         }
         if (map[ENGINE.KEY.map.up]) {
             HERO.verticalMove(lapsedTime);
-            return;
+            //return;
         }
         if (map[ENGINE.KEY.map.down]) {
             return;
