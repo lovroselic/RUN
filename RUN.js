@@ -31,7 +31,7 @@ var INI = {
     G: 5
 };
 var PRG = {
-    VERSION: "0.01.08",
+    VERSION: "0.02.00",
     NAME: "R.U.N.",
     YEAR: "2022",
     CSS: "color: #239AFF;",
@@ -47,7 +47,8 @@ var PRG = {
         ENGINE.autostart = true;
         ENGINE.start = PRG.start;
         ENGINE.readyCall = GAME.setup;
-        ENGINE.setSpriteSheetSize(48);
+        ENGINE.setGridSize(64);
+        ENGINE.setSpriteSheetSize(64);
         ENGINE.init();
     },
     setup() {

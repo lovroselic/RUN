@@ -21,13 +21,13 @@ var MAP = {
 var INI = {
   MAXINT: 96,
   MININT: 10,
-  MAX_GRID: 48,
+  MAX_GRID: 64,
   MIN_GRID: 8,
   SPACE_X: 2048,
   SPACE_Y: 2048
 };
 var PRG = {
-  VERSION: "0.04.01",
+  VERSION: "0.05.00",
   NAME: "MazEditor",
   YEAR: "2022",
   CSS: "color: #239AFF;",
@@ -44,6 +44,8 @@ var PRG = {
     ENGINE.autostart = true;
     ENGINE.start = PRG.start;
     ENGINE.readyCall = GAME.setup;
+    ENGINE.setGridSize(64);
+    ENGINE.setSpriteSheetSize(64);
     ENGINE.init();
   },
   setup() {
