@@ -681,6 +681,9 @@ class GridArray {
   isTrapDoor(grid) {
     return this.check(grid, MAPDICT.TRAP_DOOR) === MAPDICT.TRAP_DOOR;
   }
+  notTrapDoor(grid) {
+    return !this.isTrapDoor(grid);
+  }
   toEmpty(grid) {
     this.setValue(grid, MAPDICT.EMPTY);
   }
