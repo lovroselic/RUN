@@ -29,10 +29,12 @@ var INI = {
     MAX_VERTICAL_SPEED: 7,
     A: 10,
     G: 6,
+    EXPLOSION_TIMEOUT: 1000,
+    EXPLOSION_RADIUS: 0.75,
     //G: 5
 };
 var PRG = {
-    VERSION: "0.03.00",
+    VERSION: "0.04.00",
     NAME: "R.U.N.",
     YEAR: "2022",
     CSS: "color: #239AFF;",
@@ -84,14 +86,13 @@ var PRG = {
         $(ENGINE.gameWindowId).width(ENGINE.gameWIDTH + ENGINE.sideWIDTH + 4);
         ENGINE.addBOX("TITLE", ENGINE.titleWIDTH, ENGINE.titleHEIGHT, ["title"], null);
         ENGINE.addBOX("ROOM", ENGINE.gameWIDTH, ENGINE.gameHEIGHT,
-            ["background", "actors", "text", "FPS", "button", "click"],
+            ["background", "actors", "explosion", "text", "FPS", "button", "click"],
             "side");
         ENGINE.addBOX("SIDE", ENGINE.sideWIDTH, ENGINE.gameHEIGHT,
             ["sideback",],
             "fside");
         ENGINE.addBOX("DOWN", ENGINE.bottomWIDTH, ENGINE.bottomHEIGHT, ["bottom", "bottomText"], null);
         ENGINE.addBOX("LEVEL", ENGINE.gameWIDTH, ENGINE.gameHEIGHT, ["floor", "wall", "grid", "coord"], null);
-
     },
     start() {
         console.log(PRG.NAME + " started.");
@@ -108,6 +109,65 @@ var PRG = {
         TITLE.startTitle();
     }
 };
+class Dynamite {
+    constructor(position) {
+        this.time = INI.EXPLOSION_TIMEOUT;
+        this.grid = Grid.toClass(position.add(UP));
+        this.moveState = new _2D_MoveState(position, NOWAY, this);
+        this.actor = new Gravity_ACTOR('Dynamite', 0, 0, 25, 'linear');
+        this.moveState.posToCoord();
+        this.alignToViewport();
+    }
+    draw() {
+        ENGINE.drawBottomCenter('actors', this.actor.vx, this.actor.vy, this.actor.sprite());
+        ENGINE.layersToClear.add("actors");
+    }
+    update(lapsedTime) {
+        this.alignToViewport();
+        this.actor.updateAnimation(lapsedTime, this.actor.orientation);
+        this.actor.refresh();
+        this.time -= lapsedTime;
+        if (this.time < 0) this.explode();
+    }
+    alignToViewport() {
+        ENGINE.VIEWPORT.alignTo(this.actor);
+    }
+    explode() {
+        let position = this.moveState.pos.add(UP, 0.4);
+        DESTRUCTION_ANIMATION.add(new Explosion(this.grid, position));
+        VANISHING.remove(this.id);
+        let grids = [this.grid, this.grid.add(DOWN)];
+        let GA = MAP[GAME.level].map.GA;
+        for (let grid of grids) {
+            GA.clear(grid, MAPDICT.DOOR);
+            GA.clear(grid, MAPDICT.TRAP_DOOR);
+        }
+        GAME.repaintLevel(GAME.level);
+        let distance = HERO.moveState.pos.EuclidianDistance(position);
+        console.log("test HERo", distance);
+        if (distance < INI.EXPLOSION_RADIUS) {
+            HERO.die();
+        }
+    }
+}
+class Explosion {
+    constructor(grid, position) {
+        this.grid = grid;
+        this.layer = 'explosion';
+        this.moveState = new _2D_MoveState(position, NOWAY, this);
+        this.actor = new ACTOR("Explosion", 0, 0, "linear", ASSET.Explosion);
+        this.moveState.posToCoord();
+        this.alignToViewport();
+    }
+    alignToViewport() {
+        ENGINE.VIEWPORT.alignTo(this.actor);
+    }
+    draw() {
+        this.alignToViewport();
+        ENGINE.spriteDraw(this.layer, this.actor.vx, this.actor.vy, this.actor.sprite());
+        ENGINE.layersToClear.add(this.layer);
+    }
+}
 var HERO = {
     startInit() {
         this.assetMap = {
@@ -277,6 +337,16 @@ var HERO = {
     draw() {
         ENGINE.drawBottomCenter('actors', this.actor.vx, this.actor.vy, this.actor.sprite());
         ENGINE.layersToClear.add("actors");
+    },
+    dynamite() {
+        if (this.floats) return;
+        console.log("placing dynamite", HERO.moveState.pos);
+        let dynamite = new Dynamite(HERO.moveState.pos);
+        console.log(dynamite);
+        VANISHING.add(dynamite);
+    },
+    die() {
+        console.warn("HERO died - not yet implemented");
     }
 };
 var GAME = {
@@ -335,7 +405,7 @@ var GAME = {
         //let randomDungeon = RAT_ARENA.create(MAP[level].width, MAP[level].height);
         //MAP[level].DUNGEON = randomDungeon;
         //GRID_SOLO_FLOOR_OBJECT.init(MAP[level].DUNGEON);
-        //DESTRUCTION_ANIMATION.init(MAP[level].DUNGEON);
+        DESTRUCTION_ANIMATION.init(MAP[level].map);
         //SPAWN.gold(level);
         //MAP[level].pw = MAP[level].width * ENGINE.INI.GRIDPIX;
         //MAP[level].ph = MAP[level].height * ENGINE.INI.GRIDPIX;
@@ -344,7 +414,7 @@ var GAME = {
     continueLevel(level) {
         console.log("game continues on level", level);
         //ENEMY_TG.init(MAP[level].DUNGEON);
-        //VANISHING.init(MAP[level].DUNGEON);
+        VANISHING.init(MAP[level].map);
         //SPAWN.monsters(level);
         HERO.init();
         //HERO.energy = Math.max(Math.round(GRID_SOLO_FLOOR_OBJECT.size / INI.GOLD * MAP[GAME.level].energy), HERO.energy);
@@ -375,11 +445,14 @@ var GAME = {
         if (ENGINE.GAME.stopAnimation) return;
         GAME.respond(lapsedTime);
         HERO.manageFlight(lapsedTime);
+        VANISHING.manage(lapsedTime);
+        DESTRUCTION_ANIMATION.manage(lapsedTime);
         GAME.frameDraw(lapsedTime);
         HERO.concludeAction();
     },
     updateVieport() {
         if (!ENGINE.VIEWPORT.changed) return;
+        console.log("VIEWPORT updated");
         ENGINE.VIEWPORT.change("floor", "background");
         ENGINE.VIEWPORT.change("wall", "background");
         ENGINE.VIEWPORT.changed = false;
@@ -395,11 +468,19 @@ var GAME = {
     frameDraw(lapsedTime) {
         ENGINE.clearLayerStack();
         GAME.updateVieport();
+        VANISHING.draw();
         HERO.draw();
+        DESTRUCTION_ANIMATION.draw();
 
         if (DEBUG.FPS) {
             GAME.FPS(lapsedTime);
         }
+    },
+    repaintLevel(level) {
+        ENGINE.clearLayer("wall");
+        ENGINE.clearLayer("floor");
+        ENGINE.TEXTUREGRID.drawTiles(MAP[level].map);
+        ENGINE.VIEWPORT.changed = true;
     },
     drawFirstFrame(level) {
         TITLE.firstFrame();
@@ -407,8 +488,11 @@ var GAME = {
         ENGINE.TEXTUREGRID.configure("floor", "wall", 'BackgroundTile', 'WallTile');
         ENGINE.TEXTUREGRID.dynamicAssets = { door: "VerticalWall", trapdoor: "HorizontalWall" };
         ENGINE.TEXTUREGRID.set3D('D3');
+        GAME.repaintLevel(level);
+        /*ENGINE.clearLayer("wall");
+        ENGINE.clearLayer("floor");
         ENGINE.TEXTUREGRID.drawTiles(MAP[level].map);
-        ENGINE.VIEWPORT.changed = true;
+        ENGINE.VIEWPORT.changed = true;*/
         GAME.updateVieport();
         HERO.draw(0);
 
@@ -515,6 +599,8 @@ var GAME = {
             //return;
         }
         if (map[ENGINE.KEY.map.down]) {
+            HERO.dynamite();
+            ENGINE.GAME.keymap[ENGINE.KEY.map.down] = false;
             return;
         }
         return;

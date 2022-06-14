@@ -2206,14 +2206,14 @@ class ACTOR {
   getDraw() {
     return new Grid(this.drawX, this.drawY);
   }
-}
-class Gravity_ACTOR extends ACTOR {
-  constructor(sprite_class, x, y, fps) {
-    super(sprite_class, x, y, 'left', ASSET[sprite_class], fps);
-  }
   setCoord(point){
     this.x = point.x;
     this.y = point.y;
+  }
+}
+class Gravity_ACTOR extends ACTOR {
+  constructor(sprite_class, x, y, fps, orientation = 'left') {
+    super(sprite_class, x, y, orientation, ASSET[sprite_class], fps);
   }
 }
 class Rotating_ACTOR extends ACTOR {
@@ -2436,8 +2436,8 @@ class MoveState {
 class _2D_MoveState {
   constructor(pos, dir, parent){
     this.pos = pos;
-    this.dir = dir;
-    this.parent = parent;
+    this.dir = dir || null;
+    this.parent = parent || null;
   }
   posToCoord(){
     //let coord = GRID.gridToCoord(this.parent.moveState.pos);
