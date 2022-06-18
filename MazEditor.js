@@ -27,7 +27,7 @@ var INI = {
   SPACE_Y: 2048
 };
 var PRG = {
-  VERSION: "0.05.00",
+  VERSION: "0.05.01",
   NAME: "MazEditor",
   YEAR: "2022",
   CSS: "color: #239AFF;",
@@ -114,6 +114,9 @@ var GAME = {
       case "trapdoor":
         GA.addTrapDoor(grid);
         break;
+      case "blockwall":
+        GA.addBlockWall(grid);
+        break;
     }
 
     GAME.render();
@@ -146,7 +149,7 @@ var GAME = {
     ENGINE.resizeBOX("ROOM");
     $(ENGINE.gameWindowId).width(ENGINE.gameWIDTH + 4);
     ENGINE.TEXTUREGRID.configure("pacgrid", "wall", 'BackgroundTile', 'WallTile');
-    ENGINE.TEXTUREGRID.dynamicAssets = { door: "VerticalWall", trapdoor: "HorizontalWall" };
+    ENGINE.TEXTUREGRID.dynamicAssets = { door: "VerticalWall", trapdoor: "HorizontalWall", blockwall: "BlockWall" };
     ENGINE.TEXTUREGRID.set3D('D3');
     ENGINE.TEXTUREGRID.drawTiles(MAP.map, corr);
   },

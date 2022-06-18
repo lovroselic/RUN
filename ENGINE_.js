@@ -989,10 +989,7 @@ var ENGINE = {
       if (ENGINE.GAME.frame.delta >= ENGINE.INI.ANIMATION_INTERVAL) {
         if (ENGINE.GAME.stopAnimation) {
           if (nextFunct) nextFunct.call();
-          console.log(
-            `%cAnimation stopped BEFORE execution ${func.name}`,
-            "color: #f00"
-          );
+          console.log(`%cAnimation stopped BEFORE execution ${func.name}`, "color: #f00");
           ENGINE.GAME.running = false;
           return;
         }
@@ -1003,10 +1000,7 @@ var ENGINE = {
         requestAnimationFrame(ENGINE.GAME.run.bind(null, func, nextFunct));
       } else {
         if (nextFunct) nextFunct.call();
-        console.log(
-          `%cAnimation stopped AFTER execution ${func.name}`,
-          "color: #f00"
-        );
+        console.log(`%cAnimation stopped AFTER execution ${func.name}`, "color: #f00");
         ENGINE.GAME.running = false;
         return;
       }
@@ -1607,7 +1601,7 @@ var ENGINE = {
     _3D_asset: null,
     _3D: true,
     _dynamic: true,
-    dynamicAssets: { door: null, trapdoor: null },
+    dynamicAssets: { door: null, trapdoor: null,  blockwall:null},
     configure(floorLayer, wallLayer, floorTexture, wallTexture) {
       ENGINE.TEXTUREGRID.setLayers(floorLayer, wallLayer);
       ENGINE.TEXTUREGRID.setTextures(floorTexture, wallTexture);
@@ -1693,6 +1687,9 @@ var ENGINE = {
               }
               if (maze.GA.isTrapDoor(grid)) {
                 ENGINE.drawToGrid(ENGINE.TEXTUREGRID.wallLayerString, grid, ASSET[ENGINE.TEXTUREGRID.dynamicAssets.trapdoor].linear.chooseRandom());
+              }
+              if (maze.GA.isBlockWall(grid)) {
+                ENGINE.drawToGrid(ENGINE.TEXTUREGRID.wallLayerString, grid, ASSET[ENGINE.TEXTUREGRID.dynamicAssets.blockwall].linear.chooseRandom());
               }
             }
           }
@@ -2206,7 +2203,7 @@ class ACTOR {
   getDraw() {
     return new Grid(this.drawX, this.drawY);
   }
-  setCoord(point){
+  setCoord(point) {
     this.x = point.x;
     this.y = point.y;
   }
@@ -2434,12 +2431,12 @@ class MoveState {
   }
 }
 class _2D_MoveState {
-  constructor(pos, dir, parent){
+  constructor(pos, dir, parent) {
     this.pos = pos;
     this.dir = dir || null;
     this.parent = parent || null;
   }
-  posToCoord(){
+  posToCoord() {
     //let coord = GRID.gridToCoord(this.parent.moveState.pos);
     this.parent.actor.setCoord(GRID.gridToCoord(this.parent.moveState.pos));
   }

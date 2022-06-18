@@ -10,6 +10,7 @@
 TODO:
 
 known bugs: 
+    frame rate & time discrepancy
 
  */
 ////////////////////////////////////////////////////
@@ -27,14 +28,15 @@ var DEBUG = {
 var INI = {
     HERO_LATERAL_SPEED: 120,
     MAX_VERTICAL_SPEED: 7,
-    A: 10,
-    G: 6,
+    //A: 10,
+    //G: 6,
+    A: 20,
+    G: 12,
     EXPLOSION_TIMEOUT: 1000,
     EXPLOSION_RADIUS: 0.75,
-    //G: 5
 };
 var PRG = {
-    VERSION: "0.04.00",
+    VERSION: "0.04.01",
     NAME: "R.U.N.",
     YEAR: "2022",
     CSS: "color: #239AFF;",
@@ -138,13 +140,20 @@ class Dynamite {
         VANISHING.remove(this.id);
         let grids = [this.grid, this.grid.add(DOWN)];
         let GA = MAP[GAME.level].map.GA;
+        for (let dir of [LEFT, RIGHT]) {
+            let side = position.add(dir, 2 * INI.EXPLOSION_RADIUS / 3);
+            let sideGrid = Grid.toClass(side);
+            if (GA.isBlockWall(sideGrid)) {
+                grids.push(sideGrid);
+            }
+        }
         for (let grid of grids) {
             GA.clear(grid, MAPDICT.DOOR);
             GA.clear(grid, MAPDICT.TRAP_DOOR);
+            GA.clear(grid, MAPDICT.BLOCKWALL);
         }
         GAME.repaintLevel(GAME.level);
         let distance = HERO.moveState.pos.EuclidianDistance(position);
-        console.log("test HERo", distance);
         if (distance < INI.EXPLOSION_RADIUS) {
             HERO.die();
         }
@@ -214,15 +223,11 @@ var HERO = {
         let nextGridPos2 = nextGridPos.add(UP, this.actor.sprite().height / ENGINE.INI.GRIDPIX).add(new FP_Vector(0, 0.01));
         let grid2 = Grid.toClass(nextGridPos2);
         let GA = MAP[GAME.level].map.GA;
-        if (GA.notWall(grid1) && GA.notWall(grid2) && !this.sideDoor(GA, grid1, nextGridPos, dir)) {
+        if (GA.notWall(grid1) && GA.notWall(grid2) &&
+            !this.sideDoor(GA, grid1, nextGridPos, dir) &&
+            GA.notBlockWall(grid1) && GA.notBlockWall(grid2)) {
             HERO.moveState.pos = pos;
         }
-        /*else {
-            console.log("lateral adjust", HERO.moveState.pos, nextGridPos,);
-            let x = Math.round(nextGridPos.x) + -1 * dir.x * Wd * 1.25;
-            HERO.moveState.pos.x = x;
-            console.log("after", HERO.moveState.pos);
-        }*/
         this.moveState.posToCoord();
         this.setViewport();
     },
@@ -269,8 +274,8 @@ var HERO = {
         let GA = MAP[GAME.level].map.GA;
         let fGrid = Grid.toClass(forwardPos);
         let bGrid = Grid.toClass(backPos);
-        if (GA.isWall(fGrid) || this.trapDoor(GA, fGrid, forwardPos)) return false;
-        if (GA.isWall(bGrid) || this.trapDoor(GA, bGrid, forwardPos)) return false;
+        if (GA.isWall(fGrid) || GA.isBlockWall(fGrid) || this.trapDoor(GA, fGrid, forwardPos)) return false;
+        if (GA.isWall(bGrid) || GA.isBlockWall(bGrid) || this.trapDoor(GA, bGrid, forwardPos)) return false;
         return true;
     },
     ceilingTest() {
@@ -281,8 +286,8 @@ var HERO = {
         let GA = MAP[GAME.level].map.GA;
         let fGrid = Grid.toClass(forwardPos);
         let bGrid = Grid.toClass(backPos);
-        if (GA.isWall(fGrid) || this.trapDoor(GA, fGrid, forwardPos)) return true;
-        if (GA.isWall(bGrid) || this.trapDoor(GA, bGrid, forwardPos)) return true;
+        if (GA.isWall(fGrid) || GA.isBlockWall(fGrid) || this.trapDoor(GA, fGrid, forwardPos)) return true;
+        if (GA.isWall(bGrid) || GA.isBlockWall(bGrid) || this.trapDoor(GA, bGrid, forwardPos)) return true;
         return false;
     },
     manageFlight(lapsedTime) {
@@ -340,10 +345,7 @@ var HERO = {
     },
     dynamite() {
         if (this.floats) return;
-        console.log("placing dynamite", HERO.moveState.pos);
-        let dynamite = new Dynamite(HERO.moveState.pos);
-        console.log(dynamite);
-        VANISHING.add(dynamite);
+        VANISHING.add(new Dynamite(HERO.moveState.pos));
     },
     die() {
         console.warn("HERO died - not yet implemented");
@@ -452,7 +454,6 @@ var GAME = {
     },
     updateVieport() {
         if (!ENGINE.VIEWPORT.changed) return;
-        console.log("VIEWPORT updated");
         ENGINE.VIEWPORT.change("floor", "background");
         ENGINE.VIEWPORT.change("wall", "background");
         ENGINE.VIEWPORT.changed = false;
@@ -486,7 +487,8 @@ var GAME = {
         TITLE.firstFrame();
         ENGINE.resizeBOX("LEVEL", MAP[level].pw, MAP[level].ph);
         ENGINE.TEXTUREGRID.configure("floor", "wall", 'BackgroundTile', 'WallTile');
-        ENGINE.TEXTUREGRID.dynamicAssets = { door: "VerticalWall", trapdoor: "HorizontalWall" };
+        //ENGINE.TEXTUREGRID.dynamicAssets = { door: "VerticalWall", trapdoor: "HorizontalWall" };
+        ENGINE.TEXTUREGRID.dynamicAssets = { door: "VerticalWall", trapdoor: "HorizontalWall", blockwall: "BlockWall" };
         ENGINE.TEXTUREGRID.set3D('D3');
         GAME.repaintLevel(level);
         /*ENGINE.clearLayer("wall");

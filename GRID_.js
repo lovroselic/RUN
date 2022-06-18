@@ -515,6 +515,7 @@ var MAPDICT = {
   FOG: 2 ** 7, //128 - fog should remain largest!
   //alernative1
   TRAP_DOOR: 2 ** 3, //8
+  BLOCKWALL: 2 ** 4, //16
 };
 class GridArray {
   constructor(sizeX, sizeY, byte = 1, fill = 0) {
@@ -683,6 +684,15 @@ class GridArray {
   }
   notTrapDoor(grid) {
     return !this.isTrapDoor(grid);
+  }
+  addBlockWall(grid){
+    this.set(grid, MAPDICT.BLOCKWALL);
+  }
+  isBlockWall(grid) {
+    return this.check(grid, MAPDICT.BLOCKWALL) === MAPDICT.BLOCKWALL;
+  }
+  notBlockWall(grid) {
+    return !this.isBlockWall(grid);
   }
   toEmpty(grid) {
     this.setValue(grid, MAPDICT.EMPTY);
