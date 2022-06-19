@@ -26,7 +26,8 @@ var DEBUG = {
     GRID: true,
 };
 var INI = {
-    HERO_LATERAL_SPEED: 120,
+    //HERO_LATERAL_SPEED: 120,
+    HERO_LATERAL_SPEED: 150,
     MAX_VERTICAL_SPEED: 7,
     //A: 10,
     //G: 6,
@@ -36,7 +37,7 @@ var INI = {
     EXPLOSION_RADIUS: 0.75,
 };
 var PRG = {
-    VERSION: "0.04.02",
+    VERSION: "0.04.03",
     NAME: "R.U.N.",
     YEAR: "2022",
     CSS: "color: #239AFF;",
@@ -148,8 +149,10 @@ class Dynamite {
             }
         }
         for (let grid of grids) {
-            if (GA.isDoor(grid) || GA.isBlockWall(grid) || GA.isTrapDoor(grid)){
+            if (GA.isDoor(grid) || GA.isBlockWall(grid)) {
                 DESTRUCTION_ANIMATION.add(new Explosion(grid, Grid.toCenter(grid), 'Smoke'));
+            } else if (GA.isTrapDoor(grid)) {
+                DESTRUCTION_ANIMATION.add(new Explosion(grid, FP_Grid.toClass(grid).add(RIGHT, 0.5), 'Smoke'));
             }
             GA.clear(grid, MAPDICT.DOOR);
             GA.clear(grid, MAPDICT.TRAP_DOOR);
@@ -167,7 +170,6 @@ class Explosion {
         this.grid = grid;
         this.layer = 'explosion';
         this.moveState = new _2D_MoveState(position, NOWAY, this);
-        //this.actor = new ACTOR("Explosion", 0, 0, "linear", ASSET.Explosion);
         this.actor = new ACTOR(spriteclass, 0, 0, "linear", ASSET[spriteclass]);
         this.moveState.posToCoord();
         this.alignToViewport();
