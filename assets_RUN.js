@@ -15,6 +15,8 @@ var LoadPacks = [
     { srcName: "hero walking 64.png", count: 6, name: "Hero_walking", dimension: 2 },
     { srcName: "hero fly 64.png", count: 6, name: "Hero_flying", dimension: 2 },
     { srcName: "hero idle 64.png", count: 1, name: "Hero_idle", dimension: 2 },
+    { srcName: "Bat64.png", count: 3, name: "Bat" },
+    { srcName: "RedBat.png", count: 3, name: "RedBat" },
 ];
 var LoadRotated = [];
 var LoadExtWasm = [];

@@ -5,7 +5,7 @@
 "use strict";
 
 var IAM = {
-    version: "1.03",
+    version: "1.04",
     POOL: null,
     draw() {
         for (let obj of this.POOL) {
@@ -159,12 +159,14 @@ var ENEMY_TG = {
             IA.next(obj.moveState.homeGrid, obj.id);
         }
     },
-    manage(lapsedTime, reference) {
+    manage(lapsedTime, reference = null) {
         let map = this.map;
         map[this.IA] = new IndexArray(map.width, map.height, 4, 4);
         this.reIndex();
         this.poolToIA(map[this.IA]);
-        GRID.calcDistancesBFS_A(reference.moveState.pos, map);
+        if (reference) {
+            GRID.calcDistancesBFS_A(reference.moveState.pos, map);
+        }
         for (const enemy of this.POOL) {
             if (enemy === null) continue;
             enemy.manage(lapsedTime, map[this.IA]);

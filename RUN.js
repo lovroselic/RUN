@@ -37,7 +37,7 @@ var INI = {
     EXPLOSION_RADIUS: 0.75,
 };
 var PRG = {
-    VERSION: "0.04.03",
+    VERSION: "0.04.04",
     NAME: "R.U.N.",
     YEAR: "2022",
     CSS: "color: #239AFF;",
@@ -357,6 +357,29 @@ var HERO = {
         console.warn("HERO died - not yet implemented");
     }
 };
+class Bat{
+    constructor(from, dir, distance){
+        this.from = from;
+        this.to = this.from.add(dir, distance);
+        this.moveState = new MoveState(this.from, dir, MAP[GAME.level].map.GA);
+        this.fps = 15;
+        this.name = ["RedBat", "Bat"].chooseRandom();
+        this.actor = new ACTOR(this.name, 0, 0, "front", ASSET[this.name], this.fps);
+        GRID.gridToSprite(this.from, this.actor);
+        this.alignToViewport();
+    }
+    alignToViewport() {
+        ENGINE.VIEWPORT.alignTo(this.actor);
+    }
+    makeMove(){}
+    manage(lapsedTime, IA){
+        //IA redundant
+    }
+    draw() {
+        this.alignToViewport();
+        ENGINE.spriteDraw("actors", this.actor.vx, this.actor.vy, this.actor.sprite());
+    }
+}
 var GAME = {
     start() {
         console.log("GAME started");
@@ -410,18 +433,12 @@ var GAME = {
         MAP[level].pw = MAP[level].map.width * ENGINE.INI.GRIDPIX;
         MAP[level].ph = MAP[level].map.height * ENGINE.INI.GRIDPIX;
         ENGINE.VIEWPORT.setMax({ x: MAP[level].pw, y: MAP[level].ph });
-        //let randomDungeon = RAT_ARENA.create(MAP[level].width, MAP[level].height);
-        //MAP[level].DUNGEON = randomDungeon;
-        //GRID_SOLO_FLOOR_OBJECT.init(MAP[level].DUNGEON);
         DESTRUCTION_ANIMATION.init(MAP[level].map);
-        //SPAWN.gold(level);
-        //MAP[level].pw = MAP[level].width * ENGINE.INI.GRIDPIX;
-        //MAP[level].ph = MAP[level].height * ENGINE.INI.GRIDPIX;
-        //ENGINE.VIEWPORT.setMax({ x: MAP[level].pw, y: MAP[level].ph });
+        ENEMY_TG.init(MAP[level].map);
+        SPAWN.spawn(level);
     },
     continueLevel(level) {
         console.log("game continues on level", level);
-        //ENEMY_TG.init(MAP[level].DUNGEON);
         VANISHING.init(MAP[level].map);
         //SPAWN.monsters(level);
         HERO.init();
@@ -454,6 +471,7 @@ var GAME = {
         GAME.respond(lapsedTime);
         HERO.manageFlight(lapsedTime);
         VANISHING.manage(lapsedTime);
+        ENEMY_TG.manage(lapsedTime);
         DESTRUCTION_ANIMATION.manage(lapsedTime);
         GAME.frameDraw(lapsedTime);
         HERO.concludeAction();
@@ -476,6 +494,7 @@ var GAME = {
         ENGINE.clearLayerStack();
         GAME.updateVieport();
         VANISHING.draw();
+        ENEMY_TG.draw();
         HERO.draw();
         DESTRUCTION_ANIMATION.draw();
 
