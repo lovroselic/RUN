@@ -61,7 +61,6 @@ var GRID = {
     var y = grid.y * ENGINE.INI.GRIDPIX;
     return new Point(x, y);
   },
-  //gridToBottomCenter(grid){},
   coordToGrid(x, y) {
     var tx = Math.floor(x / ENGINE.INI.GRIDPIX);
     var ty = Math.floor(y / ENGINE.INI.GRIDPIX);
@@ -180,6 +179,9 @@ var GRID = {
     onFinish = null,
     animate = true,
   ) {
+    if (!gridArray) {
+      gridArray = entity.moveState.gridArray;
+    }
     entity.actor.x += entity.moveState.dir.x * entity.speed;
     entity.actor.y += entity.moveState.dir.y * entity.speed;
     entity.actor.orientation = entity.actor.getOrientation(entity.moveState.dir);
@@ -685,7 +687,7 @@ class GridArray {
   notTrapDoor(grid) {
     return !this.isTrapDoor(grid);
   }
-  addBlockWall(grid){
+  addBlockWall(grid) {
     this.set(grid, MAPDICT.BLOCKWALL);
   }
   isBlockWall(grid) {
@@ -1203,7 +1205,7 @@ class GridArray {
   static fromString(sizeX, sizeY, string, byte = 1) {
     const offset = 65;
     let GA = new GridArray(sizeX, sizeY, byte);
-    for (let i = 0; i < string.length; i++){
+    for (let i = 0; i < string.length; i++) {
       GA.map[i] = string[i].charCodeAt(0) - offset;
     }
     return GA;

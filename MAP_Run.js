@@ -11,7 +11,8 @@ var MAP = {
         {"width":"12","height":"12","map":"BB2AEAA2EAA2BABAA4BAA4BB2AA3BAEBB2AA3BB2AEBB2AA6BB17AA2BABB4QB$BB4ABABB4ABB12ABB19ABB4AA3BB9IABB2AA4BA"}
         `,
         start: `{"x":4, "y":9}`,
-        bat: [[`{"x":2, "y":7}`, UP, 2], [`{"x":5, "y":3}`, DOWN, 1],]
+        bat: [[`{"x":2, "y":7}`, UP, 2], [`{"x":5, "y":3}`, DOWN, 1], [`{"x":6, "y":9}`, RIGHT, 3], [`{"x":10, "y":7}`, DOWN, 2], [`{"x":4, "y":7}`, RIGHT, 4],
+        [`{"x":6, "y":4}`, UP, 1], [`{"x":10, "y":5}`, UP, 3], [`{"x":2, "y":1}`, DOWN, 2]]
     },
     2: {
         data: `{"width":"16","height":"16",
@@ -21,17 +22,14 @@ var MAP = {
 };
 
 var SPAWN = {
-    spawn(level){
+    spawn(level) {
         this.spawnBats(level);
     },
-    spawnBats(level){
+    spawnBats(level) {
         console.log("spwaning bats");
-        for (let bat of MAP[level].bat){
-            let start = Grid.toClass(JSON.parse(bat[0])); 
-            //console.log("bat start", start, "dir", bat[1], "dist", bat[2]);
-            let bat_ = new Bat(start, bat[1], bat[2]);
-            console.log("bat", bat_);
-            ENEMY_TG.add(bat_);
+        for (let bat of MAP[level].bat) {
+            let start = Grid.toClass(JSON.parse(bat[0]));
+            ENEMY_TG.add(new Bat(start, bat[1], bat[2]));
         }
     }
 };

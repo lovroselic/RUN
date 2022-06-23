@@ -37,7 +37,7 @@ var INI = {
     EXPLOSION_RADIUS: 0.75,
 };
 var PRG = {
-    VERSION: "0.04.04",
+    VERSION: "0.05.00",
     NAME: "R.U.N.",
     YEAR: "2022",
     CSS: "color: #239AFF;",
@@ -357,8 +357,9 @@ var HERO = {
         console.warn("HERO died - not yet implemented");
     }
 };
-class Bat{
-    constructor(from, dir, distance){
+class Bat {
+    constructor(from, dir, distance) {
+        this.speed = 2;
         this.from = from;
         this.to = this.from.add(dir, distance);
         this.moveState = new MoveState(this.from, dir, MAP[GAME.level].map.GA);
@@ -371,9 +372,20 @@ class Bat{
     alignToViewport() {
         ENGINE.VIEWPORT.alignTo(this.actor);
     }
-    makeMove(){}
-    manage(lapsedTime, IA){
-        //IA redundant
+    makeMove() {
+        if (GRID.same(this.moveState.endGrid, this.to)) {
+            this.to = this.from;
+            this.from = this.moveState.endGrid;
+        }
+        this.moveState.dir = this.from.direction(this.to);
+        this.moveState.next(this.moveState.dir);
+    }
+    manage(lapsedTime) {
+        if (this.moveState.moving) {
+            GRID.translateMove(this, lapsedTime);
+        } else {
+            this.makeMove();
+        }
     }
     draw() {
         this.alignToViewport();
