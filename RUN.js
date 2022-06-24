@@ -40,7 +40,7 @@ var INI = {
     LASER_DELTA: 8
 };
 var PRG = {
-    VERSION: "0.05.01",
+    VERSION: "0.05.02",
     NAME: "R.U.N.",
     YEAR: "2022",
     CSS: "color: #239AFF;",
@@ -367,13 +367,26 @@ var HERO = {
         this.L.start = new Point(this.actor.vx, this.actor.vy).translate(UP, 41).translate(this.moveState.dir, 12);
         this.L.end = this.L.start.translate(this.moveState.dir, this.L.distance);
     },
-    drawLaser() {
+    /*drawLaser() {
         let CTX = LAYER.actors;
         CTX.strokeStyle = "red";
         CTX.beginPath();
         CTX.moveTo(this.L.start.x, this.L.start.y);
         CTX.lineTo(this.L.end.x, this.L.end.y);
         CTX.stroke();
+    },*/
+    drawLaser() {
+        let CTX = LAYER.actors;
+        let colors = [255, 0, 0];
+        CTX.fillStyle = `rgb(${colors})`;
+        let x = this.L.start.x;
+        while (x != this.L.end.x){
+            CTX.pixelAt(x, this.L.start.y);
+            x += this.moveState.dir.x;
+        }
+        /*for (let x = this.L.start.x; x <= this.L.end.x; x++) {
+            CTX.pixelAt(x, this.L.start.y);
+        }*/
     },
     dynamite() {
         if (this.floats) return;
@@ -589,7 +602,7 @@ var GAME = {
     generateTitleText() {
         let text = `${PRG.NAME} ${PRG.VERSION
             }, a game by Lovro Selic, ${"\u00A9"} C00LSch00L ${PRG.YEAR
-            }.  Music: #####' written and performed by LaughingSkull, ${"\u00A9"
+            }.Music: #####' written and performed by LaughingSkull, ${"\u00A9"
             } ### Lovro Selic. `;
         text += "     ENGINE, SPEECH, GRID, MAZE, Burrows-Wheeler RLE Compression and GAME code by Lovro Selic using JavaScript. ";
         text = text.split("").join(String.fromCharCode(8202));

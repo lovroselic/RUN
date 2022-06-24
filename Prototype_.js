@@ -91,12 +91,10 @@ Math.degrees = function (radians) {
   return (radians * 180) / Math.PI;
 };
 
-CanvasRenderingContext2D.prototype.pixelAt = function (x, y, size) {
-  size = size || 1; // default
+CanvasRenderingContext2D.prototype.pixelAt = function (x, y, size = 1) {
   this.fillRect(x, y, size, size);
 };
-CanvasRenderingContext2D.prototype.pixelAtPoint = function (point, size) {
-  size = size || 1; // default
+CanvasRenderingContext2D.prototype.pixelAtPoint = function (point, size = 1) {
   this.fillRect(point.x, point.y, size, size);
 };
 CanvasRenderingContext2D.prototype.roundRect = function (
