@@ -35,9 +35,12 @@ var INI = {
     G: 12,
     EXPLOSION_TIMEOUT: 1000,
     EXPLOSION_RADIUS: 0.75,
+    LASER_RANGE: 80,
+    LASER_RANGE_MIN: 32,
+    LASER_DELTA: 8
 };
 var PRG = {
-    VERSION: "0.05.00",
+    VERSION: "0.05.01",
     NAME: "R.U.N.",
     YEAR: "2022",
     CSS: "color: #239AFF;",
@@ -196,6 +199,12 @@ var HERO = {
         this.verticalSpeed = 0;
         this.thrust = 0;
         this.floats = false;
+        this.laser = false;
+        this.L = {
+            start: 0,
+            end: 0,
+            distance: INI.LASER_RANGE_MIN
+        };
     },
     setMode(mode) {
         this.mode = mode;
@@ -344,10 +353,27 @@ var HERO = {
     concludeAction() {
         this.setMode('idle');
         this.thrust = 0;
+        if (!this.laser) this.L.distance = INI.LASER_RANGE_MIN;
+        this.laser = false;
     },
     draw() {
         ENGINE.drawBottomCenter('actors', this.actor.vx, this.actor.vy, this.actor.sprite());
         ENGINE.layersToClear.add("actors");
+        if (this.laser) this.drawLaser();
+    },
+    calcLaser() {
+        this.L.distance += INI.LASER_DELTA;
+        this.L.distance = Math.min(this.L.distance, INI.LASER_RANGE);
+        this.L.start = new Point(this.actor.vx, this.actor.vy).translate(UP, 41).translate(this.moveState.dir, 12);
+        this.L.end = this.L.start.translate(this.moveState.dir, this.L.distance);
+    },
+    drawLaser() {
+        let CTX = LAYER.actors;
+        CTX.strokeStyle = "red";
+        CTX.beginPath();
+        CTX.moveTo(this.L.start.x, this.L.start.y);
+        CTX.lineTo(this.L.end.x, this.L.end.y);
+        CTX.stroke();
     },
     dynamite() {
         if (this.floats) return;
@@ -623,7 +649,9 @@ var GAME = {
             console.log("F9");
         }
         if (map[ENGINE.KEY.map.ctrl]) {
-            ENGINE.GAME.keymap[ENGINE.KEY.map.ctrl] = false;
+            HERO.laser = true;
+            HERO.calcLaser();
+
         }
         if (map[ENGINE.KEY.map.left]) {
             HERO.lateralMove(LEFT, lapsedTime);
