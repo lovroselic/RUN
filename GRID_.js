@@ -66,6 +66,9 @@ var GRID = {
     var ty = Math.floor(y / ENGINE.INI.GRIDPIX);
     return new Grid(tx, ty);
   },
+  pointToGrid(point) {
+    return this.coordToGrid(point.x, point.y);
+  },
   grid(CTX = LAYER.grid) {
     var x = 0;
     var y = 0;
@@ -171,14 +174,7 @@ var GRID = {
       return;
     }
   },
-  translateMove(
-    entity,
-    lapsedTime,
-    gridArray,
-    changeView = false,
-    onFinish = null,
-    animate = true,
-  ) {
+  translateMove(entity, lapsedTime, gridArray, changeView = false, onFinish = null, animate = true) {
     if (!gridArray) {
       gridArray = entity.moveState.gridArray;
     }

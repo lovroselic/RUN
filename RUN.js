@@ -40,7 +40,7 @@ var INI = {
     LASER_DELTA: 8
 };
 var PRG = {
-    VERSION: "0.05.02",
+    VERSION: "0.05.03",
     NAME: "R.U.N.",
     YEAR: "2022",
     CSS: "color: #239AFF;",
@@ -366,27 +366,45 @@ var HERO = {
         this.L.distance = Math.min(this.L.distance, INI.LASER_RANGE);
         this.L.start = new Point(this.actor.vx, this.actor.vy).translate(UP, 41).translate(this.moveState.dir, 12);
         this.L.end = this.L.start.translate(this.moveState.dir, this.L.distance);
+        this.L.end.x = Math.max(this.L.end.x, 0);
+        this.L.end.x = Math.min(this.L.end.x, MAP[GAME.level].map.width * ENGINE.INI.GRIDPIX - 1);
+        let GA = MAP[GAME.level].map.GA;
+        let grid = GRID.pointToGrid(this.L.end);
+        while (GA.isWall(grid) || GA.isBlockWall(grid)) {
+            grid = grid.add(this.moveState.dir.mirror());
+            let newEnd = GRID.gridToCoord(grid);
+            if (this.moveState.dir.x === 1) {
+                newEnd = newEnd.translate(RIGHT, ENGINE.INI.GRIDPIX - 1);
+            }
+            this.L.end.x = newEnd.x;
+            grid = GRID.pointToGrid(this.L.end);
+        }
+        for (let g of [grid, grid.add(this.moveState.dir.mirror())]) {
+            if (GA.isDoor(g)) {
+                let newEnd = GRID.gridToCoord(g);
+                newEnd.x += (ENGINE.INI.GRIDPIX - 1 - 13) / 2;
+                if (this.moveState.dir.x === -1) newEnd.x += 13;
+                if (this.moveState.dir.x === 1 && newEnd.x > this.L.start.x) {
+                    this.L.end.x = Math.min(newEnd.x, this.L.end.x);
+                }
+                else if (this.moveState.dir.x === -1 && newEnd.x < this.L.start.x) {
+                    this.L.end.x = Math.max(newEnd.x, this.L.end.x);
+                }
+                break;
+            }
+        }
     },
-    /*drawLaser() {
-        let CTX = LAYER.actors;
-        CTX.strokeStyle = "red";
-        CTX.beginPath();
-        CTX.moveTo(this.L.start.x, this.L.start.y);
-        CTX.lineTo(this.L.end.x, this.L.end.y);
-        CTX.stroke();
-    },*/
     drawLaser() {
         let CTX = LAYER.actors;
         let colors = [255, 0, 0];
         CTX.fillStyle = `rgb(${colors})`;
         let x = this.L.start.x;
-        while (x != this.L.end.x){
+        while (x != this.L.end.x) {
             CTX.pixelAt(x, this.L.start.y);
             x += this.moveState.dir.x;
+            CTX.fillStyle = `rgb(${colors})`;
+            colors = [RND(20, 255), RND(0, 20), RND(0, 20)];
         }
-        /*for (let x = this.L.start.x; x <= this.L.end.x; x++) {
-            CTX.pixelAt(x, this.L.start.y);
-        }*/
     },
     dynamite() {
         if (this.floats) return;
