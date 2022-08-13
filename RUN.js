@@ -37,10 +37,12 @@ var INI = {
     EXPLOSION_RADIUS: 0.75,
     LASER_RANGE: 80,
     LASER_RANGE_MIN: 32,
-    LASER_DELTA: 8
+    LASER_DELTA: 4,
+    LASER_OFFSET_Y: 32,
+    LASER_OFFSET_X: 12,
 };
 var PRG = {
-    VERSION: "0.06.00",
+    VERSION: "0.06.01",
     NAME: "R.U.N.",
     YEAR: "2022",
     CSS: "color: #239AFF;",
@@ -203,7 +205,8 @@ var HERO = {
         this.L = {
             start: 0,
             end: 0,
-            distance: INI.LASER_RANGE_MIN
+            distance: 0,
+            dirX: LEFT.x
         };
     },
     setMode(mode) {
@@ -353,7 +356,9 @@ var HERO = {
     concludeAction() {
         this.setMode('idle');
         this.thrust = 0;
-        if (!this.laser) this.L.distance = INI.LASER_RANGE_MIN;
+        if (!this.laser) {
+            this.L.distance = 0;
+        }
         this.laser = false;
     },
     draw() {
@@ -361,10 +366,17 @@ var HERO = {
         ENGINE.layersToClear.add("actors");
         if (this.laser) this.drawLaser();
     },
+    resetLaser() {
+        if (this.L.dirX !== this.moveState.dir.x) {
+            this.L.distance = 0;
+        }
+        this.L.dirX = this.moveState.dir.x;
+    },
     calcLaser() {
+
         this.L.distance += INI.LASER_DELTA;
         this.L.distance = Math.min(this.L.distance, INI.LASER_RANGE);
-        this.L.start = new Point(this.actor.vx, this.actor.vy).translate(UP, 41).translate(this.moveState.dir, 12);
+        this.L.start = new Point(this.actor.vx, this.actor.vy).translate(UP, INI.LASER_OFFSET_Y).translate(this.moveState.dir, INI.LASER_OFFSET_X);
         this.L.end = this.L.start.translate(this.moveState.dir, this.L.distance);
         this.L.end.x = Math.max(this.L.end.x, 0);
         this.L.end.x = Math.min(this.L.end.x, MAP[GAME.level].map.width * ENGINE.INI.GRIDPIX - 1);
@@ -402,6 +414,7 @@ var HERO = {
         while (x != this.L.end.x) {
             CTX.pixelAt(x, this.L.start.y);
             x += this.moveState.dir.x;
+            if (x < 0 || x > 8192) throw "LASER: x overflow"; //debug
             CTX.fillStyle = `rgb(${colors})`;
             colors = [RND(20, 255), RND(0, 20), RND(0, 20)];
         }
@@ -424,6 +437,7 @@ class Bat {
         this.name = ["RedBat", "Bat"].chooseRandom();
         this.actor = new ACTOR(this.name, 0, 0, "front", ASSET[this.name], this.fps);
         GRID.gridToSprite(this.from, this.actor);
+        //this.actor.y -= INI.BAT_OFFSET_Y;
         this.alignToViewport();
     }
     alignToViewport() {
@@ -466,7 +480,7 @@ var GAME = {
         $("#pause").off();
         GAME.paused = false;
 
-        let GameRD = new RenderData("Arcade", 60, "#DDD", "text", "#FFF", 2, 2, 2);
+        let GameRD = new RenderData("Annie", 60, "#DDD", "text", "#FFF", 2, 2, 2);
         ENGINE.TEXT.setRD(GameRD);
         ENGINE.watchVisibility(GAME.lostFocus);
         ENGINE.GAME.start(16);
@@ -613,7 +627,7 @@ var GAME = {
     },
     setTitle() {
         const text = GAME.generateTitleText();
-        const RD = new RenderData("Consolas", 16, "#0E0", "bottomText");
+        const RD = new RenderData("Annie", 16, "#0E0", "bottomText");
         const SQ = new RectArea(0, 0, LAYER.bottomText.canvas.width, LAYER.bottomText.canvas.height);
         GAME.movingText = new MovingText(text, 4, RD, SQ);
     },
@@ -679,18 +693,19 @@ var GAME = {
         if (map[ENGINE.KEY.map.F9]) {
             console.log("F9");
         }
-        if (map[ENGINE.KEY.map.ctrl]) {
-            HERO.laser = true;
-            HERO.calcLaser();
-
-        }
         if (map[ENGINE.KEY.map.left]) {
+            HERO.resetLaser();
             HERO.lateralMove(LEFT, lapsedTime);
             //return;
         }
         if (map[ENGINE.KEY.map.right]) {
+            HERO.resetLaser();
             HERO.lateralMove(RIGHT, lapsedTime);
             //return;
+        }
+        if (map[ENGINE.KEY.map.ctrl]) {
+            HERO.laser = true;
+            HERO.calcLaser();
         }
         if (map[ENGINE.KEY.map.up]) {
             HERO.verticalMove(lapsedTime);
@@ -796,7 +811,7 @@ var TITLE = {
     titlePlot() {
         let CTX = LAYER.title;
         var fs = 42;
-        CTX.font = fs + "px Arcade";
+        CTX.font = fs + "px Annie";
         CTX.textAlign = "center";
         let txt = CTX.measureText(PRG.NAME);
         let x = ENGINE.titleWIDTH / 2;
