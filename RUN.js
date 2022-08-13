@@ -18,7 +18,7 @@ known bugs:
 var DEBUG = {
     FPS: true,
     BUTTONS: false,
-    SETTING: false,
+    SETTING: true,
     VERBOSE: false,
     PAINT_TRAIL: false,
     invincible: false,
@@ -40,7 +40,7 @@ var INI = {
     LASER_DELTA: 8
 };
 var PRG = {
-    VERSION: "0.05.03",
+    VERSION: "0.06.00",
     NAME: "R.U.N.",
     YEAR: "2022",
     CSS: "color: #239AFF;",
@@ -613,7 +613,7 @@ var GAME = {
     },
     setTitle() {
         const text = GAME.generateTitleText();
-        const RD = new RenderData("Adore", 16, "#0E0", "bottomText");
+        const RD = new RenderData("Consolas", 16, "#0E0", "bottomText");
         const SQ = new RectArea(0, 0, LAYER.bottomText.canvas.width, LAYER.bottomText.canvas.height);
         GAME.movingText = new MovingText(text, 4, RD, SQ);
     },

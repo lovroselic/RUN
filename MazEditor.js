@@ -27,7 +27,7 @@ var INI = {
   SPACE_Y: 2048
 };
 var PRG = {
-  VERSION: "0.05.01",
+  VERSION: "0.05.02",
   NAME: "MazEditor",
   YEAR: "2022",
   CSS: "color: #239AFF;",
@@ -66,6 +66,8 @@ var PRG = {
     $("#grid_version").html(GRID.VERSION);
     $("#maze_version").html(DUNGEON.VERSION);
     $("#lib_version").html(LIB.VERSION);
+
+    $(".section").show();
   },
   start() {
     console.log(PRG.NAME + " started.");

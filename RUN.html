@@ -3,59 +3,67 @@
 
 <head>
     <meta charset="UTF-8">
-    <title>R.U.N</title>
+
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.2.0/dist/css/bootstrap.min.css" rel="stylesheet"
+        integrity="sha384-gH2yIJqKdNHPEq0n4Mqa/HGKIhSkIHeL5AyhkYV8i59U5AR6csBvApHHNl/vI1Bx" crossorigin="anonymous">
     <link href="./coolstyle.css" rel="stylesheet" type="text/css">
-    <link rel="stylesheet" href="./RUN.css">
+    <title>R.U.N</title>
 </head>
 
 <body>
-    <!-- body -->
+    <div id="gameResolutionAlert" class="hide_extraLarge hide_large">
+        <h3>Resolution too low alert!</h3>
+        <p>You are trying to run this game on a device which has insufficient resolution to display the game properly.
+            Just so you know ...</p>
+    </div>
     <div id="preload" class="hidden"></div>
-    <div class="win" id="setup">
-        <div id="load">
-        </div>
-        <div id="SC"></div>
-        <h1 id="title"></h1>
-        <p>...game text ...</p>
+    <div class="container my-5 p-5 cool_page">
+        <div id="setup">
+            <div id="load"></div>
+            <div id="SC"></div>
+            <h1 id="title"></h1>
+            <p>...game text ...</p>
 
-        <div id="debug">
-            <div class="setup_container smallsection" id="selector">
+
+            <div class="row my-5">
+                <div id="debug" class="section">
+                    <fieldset>
+                        <legend>
+                            Version:
+                        </legend>
+                        ENGINE: <span id="engine_version"></span><br>
+                        GRID: <span id="grid_version"></span><br>
+                        MAZE: <span id="maze_version"></span><br>
+                        Prototype LIB: <span id="lib_version"></span><br>
+                    </fieldset>
+                </div>
+            </div>
+
+            <div>
+                <p id="buttons">
+                    <input type='button' id='pause' value='Pause Game [F4]' disabled="disabled">
+                    <input type='button' id='toggleHelp' value='Show/Hide Instructions'>
+                    <input type='button' id='toggleAbout' value='About'>
+                </p>
+            </div>
+            <div id="help" class="section">
                 <fieldset>
                     <legend>
-                        Version:
+                        Instructions:
                     </legend>
-                    ENGINE: <span id="engine_version"></span><br>
-                    GRID: <span id="grid_version"></span><br>
-                    MAZE: <span id="maze_version"></span><br>
-                    Prototype LIB: <span id="lib_version"></span><br>
-
+                    <p>...legend</p>
                 </fieldset>
             </div>
-        </div>
-
-        <p class="cb" id="buttons">
-            <input type='button' id='pause' value='Pause Game [F4]' disabled="disabled">
-            <input type='button' id='toggleHelp' value='Show/Hide Instructions'>
-            <input type='button' id='toggleAbout' value='About'>
-        </p>
-        <div id="help" class="section">
-            <fieldset>
-                <legend>
-                    Instructions:
-                </legend>
-                <p>...legend</p>
-            </fieldset>
-        </div>
-        <div id="about" class="section">
-            <fieldset>
-                <legend>
-                    About:
-                </legend>
-                <!--<image src="" alt="" class="fl pic" title="">-->
+            <div id="about" class="section">
+                <fieldset>
+                    <legend>
+                        About:
+                    </legend>
                     <p>...about...</p>
-            </fieldset>
+                </fieldset>
+            </div>
+            <p class="version" id="version"></p>
         </div>
-        <p class="version cb" id="version"></p>
     </div>
 
     <div id="game" class="winTrans"></div>
@@ -63,8 +71,12 @@
     <div id="temp" class="hidden"></div>
     <div id="temp2" class="hidden"></div>
     <!-- JS -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.2.0/dist/js/bootstrap.bundle.min.js"
+        integrity="sha384-A3rJD856KowSb7dwlZdYEkO39Gagi7vIsF0jrRAoQmDKKtQBHUuLZ9AsSv4jD4Xa" crossorigin="anonymous">
+        </script>
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"
         integrity="sha256-/xUj+3OJU5yExlq6GSYGSHk7tPXikynS7ogEvDej/m4=" crossorigin="anonymous"></script>
+    <!-- JS -->
     <script src='./Prototype_.js'></script>
     <script src='./ENGINE_.js'></script>
     <script src="./GRID_.js" type="text/javascript"></script>
