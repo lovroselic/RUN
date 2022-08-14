@@ -27,7 +27,7 @@ var SPAWN = {
         this.spawnBats(level);
     },
     spawnBats(level) {
-        console.log("spwaning bats");
+        console.log("spawning bats");
         for (let bat of MAP[level].bat) {
             let start = Grid.toClass(JSON.parse(bat[0]));
             ENEMY_TG.add(new Bat(start, bat[1], bat[2]));

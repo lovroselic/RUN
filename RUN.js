@@ -40,9 +40,10 @@ var INI = {
     LASER_DELTA: 4,
     LASER_OFFSET_Y: 32,
     LASER_OFFSET_X: 12,
+    VERTICAL_WALL_WIDTH: 13
 };
 var PRG = {
-    VERSION: "0.06.01",
+    VERSION: "0.06.02",
     NAME: "R.U.N.",
     YEAR: "2022",
     CSS: "color: #239AFF;",
@@ -167,6 +168,12 @@ class Dynamite {
         let distance = HERO.moveState.pos.EuclidianDistance(position);
         if (distance < INI.EXPLOSION_RADIUS) {
             HERO.die();
+        }
+        //bats
+        let IA = MAP[GAME.level].map.enemy_tg_IA;
+        let enemy_close = IA.unrollArray(grids);
+        for (let enemy of enemy_close) {
+            ENEMY_TG.POOL[enemy - 1].die();
         }
     }
 }
@@ -373,7 +380,6 @@ var HERO = {
         this.L.dirX = this.moveState.dir.x;
     },
     calcLaser() {
-
         this.L.distance += INI.LASER_DELTA;
         this.L.distance = Math.min(this.L.distance, INI.LASER_RANGE);
         this.L.start = new Point(this.actor.vx, this.actor.vy).translate(UP, INI.LASER_OFFSET_Y).translate(this.moveState.dir, INI.LASER_OFFSET_X);
@@ -394,8 +400,8 @@ var HERO = {
         for (let g of [grid, grid.add(this.moveState.dir.mirror())]) {
             if (GA.isDoor(g)) {
                 let newEnd = GRID.gridToCoord(g);
-                newEnd.x += (ENGINE.INI.GRIDPIX - 1 - 13) / 2;
-                if (this.moveState.dir.x === -1) newEnd.x += 13;
+                newEnd.x += (ENGINE.INI.GRIDPIX - 1 - INI.VERTICAL_WALL_WIDTH) / 2;
+                if (this.moveState.dir.x === -1) newEnd.x += INI.VERTICAL_WALL_WIDTH;
                 if (this.moveState.dir.x === 1 && newEnd.x > this.L.start.x) {
                     this.L.end.x = Math.min(newEnd.x, this.L.end.x);
                 }
@@ -437,7 +443,6 @@ class Bat {
         this.name = ["RedBat", "Bat"].chooseRandom();
         this.actor = new ACTOR(this.name, 0, 0, "front", ASSET[this.name], this.fps);
         GRID.gridToSprite(this.from, this.actor);
-        //this.actor.y -= INI.BAT_OFFSET_Y;
         this.alignToViewport();
     }
     alignToViewport() {
@@ -461,6 +466,10 @@ class Bat {
     draw() {
         this.alignToViewport();
         ENGINE.spriteDraw("actors", this.actor.vx, this.actor.vy, this.actor.sprite());
+    }
+    die() {
+        DESTRUCTION_ANIMATION.add(new Explosion(this.moveState.homeGrid, GRID.coordToFP_Grid(this.actor.x, this.actor.y), 'SmokeExp'));
+        ENEMY_TG.remove(this.id);
     }
 }
 var GAME = {

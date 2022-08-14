@@ -66,6 +66,11 @@ var GRID = {
     var ty = Math.floor(y / ENGINE.INI.GRIDPIX);
     return new Grid(tx, ty);
   },
+  coordToFP_Grid(x, y) {
+    var tx = x / ENGINE.INI.GRIDPIX;
+    var ty =y / ENGINE.INI.GRIDPIX;
+    return new FP_Grid(tx, ty);
+  },
   pointToGrid(point) {
     return this.coordToGrid(point.x, point.y);
   },
@@ -429,7 +434,7 @@ class BinHeap {
     }
   }
 }
-class Node {
+class SearchNode {
   constructor(HG, goal, stack, path, history, iterations) {
     this.grid = HG;
     this.stack = stack || [];
@@ -444,7 +449,7 @@ class Node {
     let stack = this.stack.concat(node.stack);
     let history = this.history.concat(node.history.slice(1));
     let path = this.path + node.path;
-    return new Node(node.grid, goal, stack, path, history);
+    return new SearchNode(node.grid, goal, stack, path, history);
   }
 }
 class BlindNode {
@@ -929,7 +934,7 @@ class GridArray {
   ) {
     var Q = new NodeQ("distance");
     let NodeMap = this.setNodeMap("tempNodeMap", path);
-    Q.list.push(new Node(start, finish));
+    Q.list.push(new SearchNode(start, finish));
     if (Q.list[0].dist === 0) {
       Q.list[0].status = "Overlap";
       return Q.list[0];
@@ -960,7 +965,7 @@ class GridArray {
         history.push(HG);
         let I_stack = [].concat(selected.stack);
         I_stack.push(dirs[q]);
-        let fork = new Node(HG, finish, I_stack, selected.path + 1, history, iteration);
+        let fork = new SearchNode(HG, finish, I_stack, selected.path + 1, history, iteration);
         if (fork.dist === 0) {
           fork.status = "Found";
           return fork;

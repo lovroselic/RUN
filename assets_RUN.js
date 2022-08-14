@@ -2,9 +2,9 @@
 /*jshint -W097 */
 /*jshint -W117 */
 /*jshint -W061 */
-//Assets for MazEditor
+//Assets for RUN
 "use strict";
-console.log("%cAssets for MazeEditor ready.", "color: orange");
+console.log("%cAssets for RUN ready.", "color: orange");
 
 var LoadTextures = ["BrickWall4.jpg", "RockFloor.jpg"];
 var LoadSprites = [];
@@ -25,6 +25,7 @@ var LoadFonts = [];
 var LoadRotatedSheetSequences = [];
 var LoadSheetSequences = [
     { srcName: "Explosion64.png", count: 24, name: "Explosion" },
+    { srcName: "SmokeExp64.png", count: 27, name: "SmokeExp" },
     { srcName: "Dynamite.png", count: 2, name: "Dynamite" },
     { srcName: "BrownWall64.png", count: 12, name: "WallTile", trim: false },
     { srcName: "BlackWall64.png", count: 2, name: "BackgroundTile", trim: false },
