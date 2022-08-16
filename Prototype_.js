@@ -607,6 +607,13 @@ class Vector {
       return "y";
     } else throw ("error getting direction axis from", this);
   }
+  getDirectionProperty() {
+    if (this.x !== 0) {
+      return "width";
+    } else if (this.y !== 0) {
+      return "height";
+    } else throw ("error getting direction property from", this);
+  }
   trimMirror(dirArray) {
     let axis = this.getDirectionAxis();
     let LN = dirArray.length;

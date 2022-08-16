@@ -6,7 +6,7 @@
 
 //////////////////engine.js/////////////////////////
 //                                                //
-//      ENGINE version 3.11        by LS          //
+//      ENGINE version 3.12        by LS          //
 //                                                //
 ////////////////////////////////////////////////////
 
@@ -30,7 +30,7 @@ var DownRight = new Vector(1, 1);
 var DownLeft = new Vector(-1, 1);
 
 var ENGINE = {
-  VERSION: "3.11.DEV",
+  VERSION: "3.12.DEV",
   CSS: "color: #0FA",
   INI: {
     ANIMATION_INTERVAL: 16,
@@ -41,10 +41,10 @@ var ENGINE = {
     sprite_maxH: 100,
     GRIDPIX: 48,
     FADE_FRAMES: 50,
-    COLLISION_SAFE: 48,
     PATH_ROUNDS: 1999,
     MAX_PATH: 999,
-    MOUSE_IDLE: 3000
+    MOUSE_IDLE: 3000,
+    OVERLAP_TOLERANCE: 4
   },
   verbose: true,
   setGridSize(size = 48) {
@@ -54,15 +54,16 @@ var ENGINE = {
     ENGINE.INI.SPRITESHEET_DEFAULT_WIDTH = size;
     ENGINE.INI.SPRITESHEET_DEFAULT_HEIGHT = size;
   },
+  setCollisionTolerance(def = 4) {
+    ENGINE.INI.OVERLAP_TOLERANCE = def;
+  },
   readyCall: null,
   start: null,
   SOURCE: "https://www.c00lsch00l.eu/Games/AA/",
   WASM_SOURCE: "https://www.c00lsch00l.eu/WASM/",
   AUDIO_SOURCE: "https://www.c00lsch00l.eu/Mp3/",
   FONT_SOURCE: "https://www.c00lsch00l.eu/Fonts/",
-  checkIntersection: false, //use linear intersection collision method after pixelperfect collision; set to false to exclude
   checkProximity: true, //check proximity before pixel perfect evaluation of collision to background
-  pixelPerfectCollision: false, //false by default
   LOAD_W: 160,
   LOAD_H: 22,
   autostart: false,
@@ -270,7 +271,7 @@ var ENGINE = {
     );
   },
   drawPool(layer, pool, sprite) {
-    let CTX = LAYER[layer];
+    //let CTX = LAYER[layer];
     let PL = pool.length;
     if (PL === 0) return;
     for (let i = 0; i < PL; i++) {
@@ -286,8 +287,7 @@ var ENGINE = {
     while (top < bottom && rowBlank(data, width, top)) ++top;
     while (bottom - 1 > top && rowBlank(data, width, bottom - 1)) --bottom;
     while (left < right && columnBlank(data, width, left, top, bottom)) ++left;
-    while (right - 1 > left && columnBlank(data, width, right - 1, top, bottom))
-      --right;
+    while (right - 1 > left && columnBlank(data, width, right - 1, top, bottom)) --right;
 
     return { left: left, top: top, right: right, bottom: bottom };
 
@@ -333,24 +333,7 @@ var ENGINE = {
     sprite.onload = ENGINE.creationSpriteCount;
     return sprite;
   },
-  setCollisionsafe(safe) {
-    if (safe !== undefined) {
-      ENGINE.INI.COLLISION_SAFE = safe;
-    } else {
-      for (let sprite in SPRITE) {
-        if (SPRITE[sprite].width > ENGINE.INI.COLLISION_SAFE) {
-          ENGINE.INI.COLLISION_SAFE = SPRITE[sprite].width;
-        }
-        if (SPRITE[sprite].height > ENGINE.INI.COLLISION_SAFE) {
-          ENGINE.INI.COLLISION_SAFE = SPRITE[sprite].height;
-        }
-      }
-      ENGINE.INI.COLLISION_SAFE++;
-    }
-    console.log(`%cENGINE.INI.COLLISION_SAFE set to: ${ENGINE.INI.COLLISION_SAFE}`, ENGINE.CSS);
-  },
   ready() {
-    ENGINE.setCollisionsafe();
     console.log("%cENGINE ready!", ENGINE.CSS);
     $("#load").addClass("hidden");
     ENGINE.readyCall.call();
@@ -398,16 +381,7 @@ var ENGINE = {
           break;
       }
     }
-    return ENGINE.lineIntersects(
-      line1.x1,
-      line1.y1,
-      line1.x2,
-      line1.y2,
-      line2.x1,
-      line2.y1,
-      line2.x2,
-      line2.y2
-    );
+    return ENGINE.lineIntersects(line1.x1, line1.y1, line1.x2, line1.y2, line2.x1, line2.y1, line2.x2, line2.y2);
   },
   lineIntersects(a, b, c, d, p, q, r, s) {
     //https://stackoverflow.com/a/24392281/4154250
@@ -421,61 +395,35 @@ var ENGINE = {
       return 0 < lambda && lambda < 1 && 0 < gamma && gamma < 1;
     }
   },
-  pixPerfectCollision(actor1, actor2) {
-    var w1 = parseInt(actor1.width / 2, 10);
-    var w2 = parseInt(actor2.width / 2, 10);
-    var h1 = parseInt(actor1.height / 2, 10);
-    var h2 = parseInt(actor2.height / 2, 10);
-    var act1 = new Vector(actor1.x, actor1.y);
-    var act2 = new Vector(actor2.x, actor2.y);
-    var SQ1 = new RectArea(act1.x - w1, act1.y - h1, w1 * 2, h1 * 2);
-    var SQ2 = new RectArea(act2.x - w2, act2.y - h2, w2 * 2, h2 * 2);
-    var x = parseInt(Math.max(SQ1.x, SQ2.x), 10) - 1;
-    var y = parseInt(Math.max(SQ1.y, SQ2.y), 10) - 1;
-    var w = parseInt(Math.min(SQ1.x + SQ1.w - x, SQ2.x + SQ2.w - x), 10) + 1;
-    var h = parseInt(Math.min(SQ1.y + SQ1.h - y, SQ2.y + SQ2.h - y), 10) + 1;
-    if (w === 0 || h === 0) return false;
-    var area = new RectArea(x, y, w, h);
-    var area1 = new RectArea(area.x - SQ1.x, area.y - SQ1.y, area.w, area.h);
-    var area2 = new RectArea(area.x - SQ2.x, area.y - SQ2.y, area.w, area.h);
-    var CTX1 = LAYER.temp;
-    var CTX2 = LAYER.temp2;
-    CTX1.canvas.width = ENGINE.INI.sprite_maxW;
-    CTX1.canvas.height = ENGINE.INI.sprite_maxH;
-    CTX2.canvas.width = ENGINE.INI.sprite_maxW;
-    CTX2.canvas.height = ENGINE.INI.sprite_maxH;
-    ENGINE.draw("temp", 0, 0, SPRITE[actor1.name]);
-    ENGINE.draw("temp2", 0, 0, SPRITE[actor2.name]);
-    var data1 = CTX1.getImageData(area1.x, area1.y, area1.w, area1.h);
-    var data2 = CTX2.getImageData(area2.x, area2.y, area2.w, area2.h);
-    var DL = data1.data.length;
-    var index;
-    for (index = 3; index < DL; index += 4) {
-      if (data1.data[index] > 0 && data2.data[index] > 0) {
+  collisionFuzyArea(actor1, actor2) {
+    let area = ENGINE.collisionArea(actor1, actor2);
+    if (area) {
+      if (area.w >= ENGINE.INI.OVERLAP_TOLERANCE && area.h >= ENGINE.INI.OVERLAP_TOLERANCE) {
         return true;
       }
     }
-    if (ENGINE.checkIntersection) {
-      return ENGINE.intersectionCollision(actor1, actor2);
-    } else return false;
+    return false;
   },
-  collision(actor1, actor2) {
-    var X = Math.abs(actor1.x - actor2.x);
-    var Y = Math.abs(actor1.y - actor2.y);
-    if (Y >= ENGINE.INI.COLLISION_SAFE) return false;
-    if (X >= ENGINE.INI.COLLISION_SAFE) return false;
-    var w1 = parseInt(actor1.width / 2, 10);
-    var w2 = parseInt(actor2.width / 2, 10);
-    var h1 = parseInt(actor1.height / 2, 10);
-    var h2 = parseInt(actor2.height / 2, 10);
-
-    if (X >= w1 + w2 || Y >= h1 + h2) return false;
-
-    if (ENGINE.pixelPerfectCollision) {
-      return ENGINE.pixPerfectCollision(actor1, actor2);
-    } else return true;
+  collisionRectangles(actor1, actor2) {
+    actor1.setArea();
+    actor2.setArea();
+    let condX = Math.max(actor1.area.x, actor2.area.x) < Math.min(actor1.area.x + actor1.area.w, actor2.area.x + actor2.area.w);
+    let condY = Math.max(actor1.area.y, actor2.area.y) < Math.min(actor1.area.y + actor1.area.h, actor2.area.y + actor2.area.h);
+    return condX && condY;
+  },
+  collisionArea(actor1, actor2) {
+    actor1.setArea();
+    actor2.setArea();
+    let x = Math.min(actor1.area.x + actor1.area.w, actor2.area.x + actor2.area.w);
+    let W = x - Math.max(actor1.area.x, actor2.area.x);
+    let y = Math.min(actor1.area.y + actor1.area.h, actor2.area.y + actor2.area.h);
+    let H = y - Math.max(actor1.area.y, actor2.area.y);
+    if (W > 0 && H > 0) {
+      return new RectArea(x, y, W, H);
+    } else return null;
   },
   collisionToBackground(actor, layer) {
+    //deprecated - redesign required
     var CTX = layer;
     var maxSq = Math.max(actor.width, actor.height);
     var R = Math.ceil(0.5 * Math.sqrt(2 * Math.pow(maxSq, 2)));
@@ -616,20 +564,7 @@ var ENGINE = {
     CTX.shadowOffsetY = 0;
     CTX.shadowBlur = 0;
     CTX.globalAlpha = 0.8;
-    CTX.roundRect(
-      x,
-      y,
-      width,
-      height,
-      {
-        upperLeft: 15,
-        upperRight: 15,
-        lowerLeft: 15,
-        lowerRight: 15
-      },
-      true,
-      true
-    );
+    CTX.roundRect(x, y, width, height, { upperLeft: 15, upperRight: 15, lowerLeft: 15, lowerRight: 15 }, true, true);
     CTX.restore();
     return new Point(x, y);
   },
@@ -697,12 +632,7 @@ var ENGINE = {
   },
   cutManyGrids(layer, point, N) {
     var CTX = layer;
-    CTX.clearRect(
-      point.x,
-      point.y,
-      N * ENGINE.INI.GRIDPIX,
-      N * ENGINE.INI.GRIDPIX
-    );
+    CTX.clearRect(point.x, point.y, N * ENGINE.INI.GRIDPIX, N * ENGINE.INI.GRIDPIX);
     return;
   },
   spreadAroundCenter(toDo, x, delta) {
@@ -1016,10 +946,7 @@ var ENGINE = {
     },
     ANIMATION: {
       start(wrapper) {
-        console.log(
-          `%cENGINE.GAME.ANIMATION.start --> ${wrapper.name}`,
-          "color: #0F0"
-        );
+        console.log(`%cENGINE.GAME.ANIMATION.start --> ${wrapper.name}`, "color: #0F0");
         ENGINE.GAME.stopAnimation = false;
         ENGINE.GAME.run(wrapper, ENGINE.GAME.ANIMATION.queue);
       },
@@ -1046,10 +973,7 @@ var ENGINE = {
             console.log(`%c..... animation queue: ${next.name}`, ENGINE.CSS);
             ENGINE.GAME.ANIMATION.start(next);
           } else {
-            console.log(
-              "%cAnimation STACK EMPTY! Game stopped running.",
-              ENGINE.CSS
-            );
+            console.log("%cAnimation STACK EMPTY! Game stopped running.", ENGINE.CSS);
           }
         }, ENGINE.INI.ANIMATION_INTERVAL);
       },
@@ -1601,7 +1525,7 @@ var ENGINE = {
     _3D_asset: null,
     _3D: true,
     _dynamic: true,
-    dynamicAssets: { door: null, trapdoor: null,  blockwall:null},
+    dynamicAssets: { door: null, trapdoor: null, blockwall: null },
     configure(floorLayer, wallLayer, floorTexture, wallTexture) {
       ENGINE.TEXTUREGRID.setLayers(floorLayer, wallLayer);
       ENGINE.TEXTUREGRID.setTextures(floorTexture, wallTexture);
@@ -1788,20 +1712,7 @@ var ENGINE = {
         let px = x * ENGINE.INI.GRIDPIX + ENGINE.INI.GRIDPIX / 4;
         let py = y * ENGINE.INI.GRIDPIX + ENGINE.INI.GRIDPIX / 4;
         const round = ENGINE.PACGRID.round;
-        CTX.roundRect(
-          px,
-          py,
-          ENGINE.INI.GRIDPIX / 2,
-          ENGINE.INI.GRIDPIX / 2,
-          {
-            upperLeft: round,
-            upperRight: round,
-            lowerLeft: round,
-            lowerRight: round
-          },
-          false,
-          true
-        );
+        CTX.roundRect(px, py, ENGINE.INI.GRIDPIX / 2, ENGINE.INI.GRIDPIX / 2, { upperLeft: round, upperRight: round, lowerLeft: round, lowerRight: round }, false, true);
       }
       function line(x1, y1, x2, y2) {
         CTX.beginPath();
@@ -1854,17 +1765,12 @@ var ENGINE = {
         for (let y = 0; y < sizeY; y++) {
           let grid = new Grid(x, y);
           let value = maze.GA.getValue(grid);
-          value &=
-            2 ** maze.GA.gridSizeBit - 1 - MAPDICT.FOG - MAPDICT.RESERVED;
+          value &= 2 ** maze.GA.gridSizeBit - 1 - MAPDICT.FOG - MAPDICT.RESERVED;
           if (maze.GA.isMazeWall(grid)) {
             value &= 2 ** maze.GA.gridSizeBit - 1 - MAPDICT.WALL;
             ENGINE.BLOCKGRID.wall(x, y, CTX, value);
           } else {
-            value &=
-              2 ** maze.GA.gridSizeBit -
-              1 -
-              MAPDICT.RESERVED -
-              MAPDICT.START_POSITION;
+            value &= 2 ** maze.GA.gridSizeBit - 1 - MAPDICT.RESERVED - MAPDICT.START_POSITION;
             if (value & MAPDICT.STAIR) {
               value = MAPDICT.STAIR;
             }
@@ -1975,14 +1881,8 @@ var ENGINE = {
       CTX.lineWidth = 1;
       let point = monster.moveState.pos.toPoint();
       let dir = monster.moveState.dir;
-      let x =
-        point.x -
-        (monster.actor.frontWidth / 2) * Math.abs(dir.y) -
-        (monster.actor.sideWidth / 2) * Math.abs(dir.x);
-      let y =
-        point.y -
-        (monster.actor.frontWidth / 2) * Math.abs(dir.x) -
-        (monster.actor.sideWidth / 2) * Math.abs(dir.y);
+      let x = point.x - (monster.actor.frontWidth / 2) * Math.abs(dir.y) - (monster.actor.sideWidth / 2) * Math.abs(dir.x);
+      let y = point.y - (monster.actor.frontWidth / 2) * Math.abs(dir.x) - (monster.actor.sideWidth / 2) * Math.abs(dir.y);
 
       CTX.beginPath();
       CTX.rect(x, y, monster.actor.orientationW, monster.actor.orientationH);
@@ -1991,9 +1891,7 @@ var ENGINE = {
         CTX.rect(x, y, 5, 5);
       }
       CTX.moveTo(point.x, point.y);
-      let r =
-        (monster.actor.orientationH / 2) * Math.abs(dir.y) +
-        (monster.actor.orientationW / 2) * Math.abs(dir.x);
+      //let r = (monster.actor.orientationH / 2) * Math.abs(dir.y) + (monster.actor.orientationW / 2) * Math.abs(dir.x);
       let end = point.translate(dir, monster.r * ENGINE.INI.GRIDPIX);
       CTX.lineTo(end.x, end.y);
       CTX.stroke();
@@ -2106,6 +2004,7 @@ class ACTOR {
     this.animationThrough = false;
     this.drawX = null;
     this.drawY = null;
+    this.area = null;
   }
   simplify(name) {
     this.class = name;
@@ -2207,10 +2106,16 @@ class ACTOR {
     this.x = point.x;
     this.y = point.y;
   }
+  setArea() {
+    this.area = new RectArea(this.x - Math.floor(this.width / 2), this.y - Math.floor(this.height / 2), this.width, this.height);
+  }
 }
 class Gravity_ACTOR extends ACTOR {
   constructor(sprite_class, x, y, fps, orientation = 'left') {
     super(sprite_class, x, y, orientation, ASSET[sprite_class], fps);
+  }
+  setArea() {
+    this.area = new RectArea(this.x - Math.floor(this.width / 2), this.y - this.height, this.width, this.height);
   }
 }
 class Rotating_ACTOR extends ACTOR {
@@ -2437,7 +2342,6 @@ class _2D_MoveState {
     this.parent = parent || null;
   }
   posToCoord() {
-    //let coord = GRID.gridToCoord(this.parent.moveState.pos);
     this.parent.actor.setCoord(GRID.gridToCoord(this.parent.moveState.pos));
   }
 }
@@ -2482,10 +2386,8 @@ var VIEW = {
     VIEW.actor.y += VIEW.speed * ENGINE.INI.GRIDPIX * dir.y;
     if (VIEW.actor.x < 0) VIEW.actor.x = 0;
     if (VIEW.actor.y < 0) VIEW.actor.y = 0;
-    if (VIEW.actor.x > ENGINE.VIEWPORT.max.x)
-      VIEW.actor.x = ENGINE.VIEWPORT.max.x;
-    if (VIEW.actor.y > ENGINE.VIEWPORT.max.y)
-      VIEW.actor.y = ENGINE.VIEWPORT.max.y;
+    if (VIEW.actor.x > ENGINE.VIEWPORT.max.x) VIEW.actor.x = ENGINE.VIEWPORT.max.x;
+    if (VIEW.actor.y > ENGINE.VIEWPORT.max.y) VIEW.actor.y = ENGINE.VIEWPORT.max.y;
     ENGINE.VIEWPORT.check(VIEW.actor);
     ENGINE.VIEWPORT.alignTo(VIEW.actor);
   }
@@ -2545,12 +2447,7 @@ class Form {
     this.w = w;
     this.h = h;
     $(FORM.INI.DIV).append(`<div id = 'FORM' class = 'form'><h1>${this.name}</h1><hr></div>`);
-    $("#FORM").css({
-      top: this.y,
-      left: this.x,
-      width: this.w,
-      height: this.h
-    });
+    $("#FORM").css({ top: this.y, left: this.x, width: this.w, height: this.h });
     $("#FORM").append(wedge);
     ENGINE.showMouse();
   }
@@ -2872,12 +2769,7 @@ class MovingText {
       }
     }
     if (this.last < this.length - 1) {
-      while (
-        this.cursor +
-        (this.nodes[this.last].offset - this.nodes[this.first].offset) +
-        this.nodes[this.last].width <
-        this.right
-      ) {
+      while (this.cursor + (this.nodes[this.last].offset - this.nodes[this.first].offset) + this.nodes[this.last].width < this.right) {
         this.last++;
       }
     }
@@ -2947,11 +2839,7 @@ class Button {
     CTX.font = `${this.colInfo.fontSize}px ${FORM.INI.FONT}`;
     CTX.fillStyle = this.colInfo.ink;
     let x = FORM.INI.lettButtonPad + this.area.x;
-    let y =
-      this.area.y +
-      this.colInfo.fontSize +
-      Math.round((this.area.h - this.colInfo.fontSize) / 2) -
-      1;
+    let y = this.area.y + this.colInfo.fontSize + Math.round((this.area.h - this.colInfo.fontSize) / 2) - 1;
     if (this.colInfo.inkShadow) {
       CTX.shadowColor = this.colInfo.inkShadow;
       CTX.shadowOffsetX = 1;

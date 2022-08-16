@@ -5,7 +5,7 @@
 "use strict";
 
 var IAM = {
-    version: "1.04",
+    version: "1.05",
     POOL: null,
     draw() {
         for (let obj of this.POOL) {
@@ -156,7 +156,9 @@ var ENEMY_TG = {
     reIndex: IAM.reIndex,
     poolToIA(IA) {
         for (const obj of this.POOL) {
-            IA.next(obj.moveState.homeGrid, obj.id);
+            //IA.next(obj.moveState.homeGrid, obj.id);
+            IA.next(obj.moveState.startGrid, obj.id);
+            IA.next(obj.moveState.endGrid, obj.id);
         }
     },
     manage(lapsedTime, reference = null) {

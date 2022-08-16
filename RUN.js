@@ -43,7 +43,7 @@ var INI = {
     VERTICAL_WALL_WIDTH: 13
 };
 var PRG = {
-    VERSION: "0.06.02",
+    VERSION: "0.06.03",
     NAME: "R.U.N.",
     YEAR: "2022",
     CSS: "color: #239AFF;",
@@ -71,6 +71,7 @@ var PRG = {
         $("#engine_version").html(ENGINE.VERSION);
         $("#grid_version").html(GRID.VERSION);
         $("#maze_version").html(DUNGEON.VERSION);
+        $("#iam_version").html(IAM.version);
         $("#lib_version").html(LIB.VERSION);
 
         $("#toggleHelp").click(function () {
@@ -88,9 +89,9 @@ var PRG = {
         ENGINE.titleWIDTH = 960;
         ENGINE.bottomHEIGHT = 40;
         ENGINE.bottomWIDTH = 960;
-        ENGINE.checkProximity = false;
-        ENGINE.checkIntersection = false;
-        ENGINE.setCollisionsafe(49);
+        //ENGINE.checkProximity = false;
+        //ENGINE.checkIntersection = false;
+        //ENGINE.setCollisionsafe(49);
         $("#bottom").css("margin-top", ENGINE.gameHEIGHT + ENGINE.titleHEIGHT + ENGINE.bottomHEIGHT);
         $(ENGINE.gameWindowId).width(ENGINE.gameWIDTH + ENGINE.sideWIDTH + 4);
         ENGINE.addBOX("TITLE", ENGINE.titleWIDTH, ENGINE.titleHEIGHT, ["title"], null);
@@ -115,6 +116,7 @@ var PRG = {
                 event.preventDefault();
             }
         });
+        //ENGINE.setCollisionsafe();
         TITLE.startTitle();
     }
 };
@@ -172,8 +174,12 @@ class Dynamite {
         //bats
         let IA = MAP[GAME.level].map.enemy_tg_IA;
         let enemy_close = IA.unrollArray(grids);
-        for (let enemy of enemy_close) {
-            ENEMY_TG.POOL[enemy - 1].die();
+        for (let e of enemy_close) {
+            let enemy = ENEMY_TG.POOL[e - 1];
+            let distance_to_enemy = GRID.coordToFP_Grid(enemy.actor.x, enemy.actor.y).EuclidianDistance(position);
+            if (distance_to_enemy < INI.EXPLOSION_RADIUS) {
+                enemy.die();
+            }
         }
     }
 }
@@ -350,12 +356,6 @@ var HERO = {
             if (this.verticalSpeed > 0 || (this.verticalSpeed < 0 && !ceiling)) {
                 HERO.moveState.pos = pos;
             }
-            /*else {
-                console.log("adjust vertical", HERO.moveState.pos, pos, HERO.moveState.pos.y - pos.y);
-                let y = Math.floor(pos.y) + Hd;
-                HERO.moveState.pos.y = y;
-                console.log("after", HERO.moveState.pos);
-            }*/
             this.moveState.posToCoord();
             this.setViewport();
         }
@@ -429,6 +429,20 @@ var HERO = {
         if (this.floats) return;
         VANISHING.add(new Dynamite(HERO.moveState.pos));
     },
+    collission() {
+        let grids = [Grid.toClass(this.moveState.pos.add(UP, 0.01))];
+        grids.push(Grid.toClass(this.moveState.pos.add(UP, this.actor.height / ENGINE.INI.GRIDPIX)));
+        let IA = MAP[GAME.level].map.enemy_tg_IA;
+        let enemy_close = IA.unrollArray(grids);
+        for (let e of enemy_close) {
+            let enemy = ENEMY_TG.POOL[e - 1];
+            let hit = ENGINE.collisionFuzyArea(HERO.actor, enemy.actor);
+            if (hit) {
+                enemy.freeze();
+                HERO.die();
+            }
+        }
+    },
     die() {
         console.warn("HERO died - not yet implemented");
     }
@@ -444,6 +458,7 @@ class Bat {
         this.actor = new ACTOR(this.name, 0, 0, "front", ASSET[this.name], this.fps);
         GRID.gridToSprite(this.from, this.actor);
         this.alignToViewport();
+        this.frozen = false;
     }
     alignToViewport() {
         ENGINE.VIEWPORT.alignTo(this.actor);
@@ -457,6 +472,7 @@ class Bat {
         this.moveState.next(this.moveState.dir);
     }
     manage(lapsedTime) {
+        if (this.frozen) return;
         if (this.moveState.moving) {
             GRID.translateMove(this, lapsedTime);
         } else {
@@ -470,6 +486,9 @@ class Bat {
     die() {
         DESTRUCTION_ANIMATION.add(new Explosion(this.moveState.homeGrid, GRID.coordToFP_Grid(this.actor.x, this.actor.y), 'SmokeExp'));
         ENEMY_TG.remove(this.id);
+    }
+    freeze(){
+        this.frozen = true;
     }
 }
 var GAME = {
@@ -564,6 +583,7 @@ var GAME = {
         HERO.manageFlight(lapsedTime);
         VANISHING.manage(lapsedTime);
         ENEMY_TG.manage(lapsedTime);
+        HERO.collission();
         DESTRUCTION_ANIMATION.manage(lapsedTime);
         GAME.frameDraw(lapsedTime);
         HERO.concludeAction();
