@@ -40,7 +40,7 @@ var INI = {
     VERTICAL_WALL_WIDTH: 13
 };
 var PRG = {
-    VERSION: "0.06.04",
+    VERSION: "0.06.05",
     NAME: "R.U.N.",
     YEAR: "2022",
     CSS: "color: #239AFF;",
@@ -453,9 +453,10 @@ var HERO = {
     },
     laserCollision() {
         let lineStart = this.L.start;
-        if (this.L.end.x < this.L.start) lineStart = this.L.end;
+        if (this.L.end.x < this.L.start.x) {
+            lineStart = this.L.end;
+        }
         let line = new RectArea(lineStart.x, lineStart.y, this.L.distance, 1);
-
         let grids = [GRID.pointToGrid(new Point(this.actor.x, this.actor.y).translate(UP, INI.LASER_OFFSET_Y).translate(this.moveState.dir, INI.LASER_OFFSET_X))];
         let D = Math.floor(this.L.distance / ENGINE.INI.GRIDPIX);
         grids.push(grids[0].add(this.moveState.dir, D));
