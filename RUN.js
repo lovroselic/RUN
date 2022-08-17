@@ -26,11 +26,8 @@ var DEBUG = {
     GRID: true,
 };
 var INI = {
-    //HERO_LATERAL_SPEED: 120,
     HERO_LATERAL_SPEED: 150,
     MAX_VERTICAL_SPEED: 7,
-    //A: 10,
-    //G: 6,
     A: 20,
     G: 12,
     EXPLOSION_TIMEOUT: 1000,
@@ -43,7 +40,7 @@ var INI = {
     VERTICAL_WALL_WIDTH: 13
 };
 var PRG = {
-    VERSION: "0.06.03",
+    VERSION: "0.06.04",
     NAME: "R.U.N.",
     YEAR: "2022",
     CSS: "color: #239AFF;",
@@ -89,9 +86,7 @@ var PRG = {
         ENGINE.titleWIDTH = 960;
         ENGINE.bottomHEIGHT = 40;
         ENGINE.bottomWIDTH = 960;
-        //ENGINE.checkProximity = false;
-        //ENGINE.checkIntersection = false;
-        //ENGINE.setCollisionsafe(49);
+
         $("#bottom").css("margin-top", ENGINE.gameHEIGHT + ENGINE.titleHEIGHT + ENGINE.bottomHEIGHT);
         $(ENGINE.gameWindowId).width(ENGINE.gameWIDTH + ENGINE.sideWIDTH + 4);
         ENGINE.addBOX("TITLE", ENGINE.titleWIDTH, ENGINE.titleHEIGHT, ["title"], null);
@@ -116,7 +111,6 @@ var PRG = {
                 event.preventDefault();
             }
         });
-        //ENGINE.setCollisionsafe();
         TITLE.startTitle();
     }
 };
@@ -144,8 +138,11 @@ class Dynamite {
         ENGINE.VIEWPORT.alignTo(this.actor);
     }
     explode() {
+        AUDIO.Fuse.position = 0;
+        AUDIO.Fuse.pause();
         let position = this.moveState.pos.add(UP, 0.4);
         DESTRUCTION_ANIMATION.add(new Explosion(this.grid, position));
+        AUDIO.Explosion.play();
         VANISHING.remove(this.id);
         let grids = [this.grid, this.grid.add(DOWN)];
         let GA = MAP[GAME.level].map.GA;
@@ -263,6 +260,7 @@ var HERO = {
         this.setViewport();
     },
     verticalMove(lapsedTime) {
+        AUDIO.Jetpac.play();
         this.setMode('flying');
         this.animate(lapsedTime);
         this.thrust += INI.A;
@@ -367,6 +365,7 @@ var HERO = {
             this.L.distance = 0;
         }
         this.laser = false;
+        //AUDIO.Laser.pause();
     },
     draw() {
         ENGINE.drawBottomCenter('actors', this.actor.vx, this.actor.vy, this.actor.sprite());
@@ -380,6 +379,8 @@ var HERO = {
         this.L.dirX = this.moveState.dir.x;
     },
     calcLaser() {
+        AUDIO.Laser.playbackRate = 1.3;
+        AUDIO.Laser.play();
         this.L.distance += INI.LASER_DELTA;
         this.L.distance = Math.min(this.L.distance, INI.LASER_RANGE);
         this.L.start = new Point(this.actor.vx, this.actor.vy).translate(UP, INI.LASER_OFFSET_Y).translate(this.moveState.dir, INI.LASER_OFFSET_X);
@@ -427,7 +428,11 @@ var HERO = {
     },
     dynamite() {
         if (this.floats) return;
-        VANISHING.add(new Dynamite(HERO.moveState.pos));
+        if (true) {
+            AUDIO.Fuse.loop = true;
+            AUDIO.Fuse.play();
+            VANISHING.add(new Dynamite(HERO.moveState.pos));
+        }
     },
     collission() {
         let grids = [Grid.toClass(this.moveState.pos.add(UP, 0.01))];
@@ -445,6 +450,25 @@ var HERO = {
     },
     die() {
         console.warn("HERO died - not yet implemented");
+    },
+    laserCollision() {
+        let lineStart = this.L.start;
+        if (this.L.end.x < this.L.start) lineStart = this.L.end;
+        let line = new RectArea(lineStart.x, lineStart.y, this.L.distance, 1);
+
+        let grids = [GRID.pointToGrid(new Point(this.actor.x, this.actor.y).translate(UP, INI.LASER_OFFSET_Y).translate(this.moveState.dir, INI.LASER_OFFSET_X))];
+        let D = Math.floor(this.L.distance / ENGINE.INI.GRIDPIX);
+        grids.push(grids[0].add(this.moveState.dir, D));
+        let IA = MAP[GAME.level].map.enemy_tg_IA;
+        let enemy_close = IA.unrollArray(grids);
+        for (let e of enemy_close) {
+            let enemy = ENEMY_TG.POOL[e - 1];
+            enemy.actor.setArea();
+            let hit = (line.overlap(enemy.actor.area));
+            if (hit) {
+                enemy.die();
+            }
+        }
     }
 };
 class Bat {
@@ -459,6 +483,7 @@ class Bat {
         GRID.gridToSprite(this.from, this.actor);
         this.alignToViewport();
         this.frozen = false;
+        this.score = 10;
     }
     alignToViewport() {
         ENGINE.VIEWPORT.alignTo(this.actor);
@@ -486,8 +511,9 @@ class Bat {
     die() {
         DESTRUCTION_ANIMATION.add(new Explosion(this.moveState.homeGrid, GRID.coordToFP_Grid(this.actor.x, this.actor.y), 'SmokeExp'));
         ENEMY_TG.remove(this.id);
+        GAME.addScore(this.score);
     }
-    freeze(){
+    freeze() {
         this.frozen = true;
     }
 }
@@ -663,8 +689,8 @@ var GAME = {
     generateTitleText() {
         let text = `${PRG.NAME} ${PRG.VERSION
             }, a game by Lovro Selic, ${"\u00A9"} C00LSch00L ${PRG.YEAR
-            }.Music: #####' written and performed by LaughingSkull, ${"\u00A9"
-            } ### Lovro Selic. `;
+            }.Music: 'Which Way Is Away' written and performed by LaughingSkull, ${"\u00A9"
+            } 2011 Lovro Selic. `;
         text += "     ENGINE, SPEECH, GRID, MAZE, Burrows-Wheeler RLE Compression and GAME code by Lovro Selic using JavaScript. ";
         text = text.split("").join(String.fromCharCode(8202));
         return text;
@@ -735,6 +761,7 @@ var GAME = {
         if (map[ENGINE.KEY.map.ctrl]) {
             HERO.laser = true;
             HERO.calcLaser();
+            HERO.laserCollision();
         }
         if (map[ENGINE.KEY.map.up]) {
             HERO.verticalMove(lapsedTime);
@@ -765,6 +792,9 @@ var GAME = {
         SCORE.hiScore();
         TITLE.startTitle();
     },
+    addScore(score) {
+        GAME.score += score;
+    }
 };
 var TITLE = {
     firstFrame() {

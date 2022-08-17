@@ -407,9 +407,7 @@ var ENGINE = {
   collisionRectangles(actor1, actor2) {
     actor1.setArea();
     actor2.setArea();
-    let condX = Math.max(actor1.area.x, actor2.area.x) < Math.min(actor1.area.x + actor1.area.w, actor2.area.x + actor2.area.w);
-    let condY = Math.max(actor1.area.y, actor2.area.y) < Math.min(actor1.area.y + actor1.area.h, actor2.area.y + actor2.area.h);
-    return condX && condY;
+    return actor1.area.overlap(actor2.area);
   },
   collisionArea(actor1, actor2) {
     actor1.setArea();

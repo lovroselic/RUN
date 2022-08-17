@@ -20,7 +20,14 @@ var LoadPacks = [
 ];
 var LoadRotated = [];
 var LoadExtWasm = [];
-var LoadAudio = [];
+var LoadAudio = [
+    { srcName: "Explosion1.mp3", name: "Explosion" },
+    //{ srcName: "laserFast.mp3", name: "Laser" },
+    { srcName: "laser.mp3", name: "Laser" },
+    { srcName: "jetpac.mp3", name: "Jetpac" },
+    { srcName: "Which Way Is Away - LaughingSkull.mp3", name: "Title" },
+    { srcName: "Fuse.mp3", name: "Fuse" },
+];
 var LoadFonts = [];
 var LoadRotatedSheetSequences = [];
 var LoadSheetSequences = [

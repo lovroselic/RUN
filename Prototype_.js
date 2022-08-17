@@ -700,6 +700,10 @@ class Point {
     this.x = this.x - ENGINE.VIEWPORT.vx;
     this.y = this.y - ENGINE.VIEWPORT.vy;
   }
+  toAbsolute() {
+    this.x = this.x + ENGINE.VIEWPORT.vx;
+    this.y = this.y + ENGINE.VIEWPORT.vy;
+  }
   add(vector) {
     return new Point(this.x + vector.x, this.y + vector.y);
   }
@@ -716,6 +720,11 @@ class RectArea {
     this.y = y;
     this.w = w;
     this.h = h;
+  }
+  overlap(area) {
+    let condX = Math.max(this.x, area.x) < Math.min(this.x + this.w, area.x + area.w);
+    let condY = Math.max(this.y, area.y) < Math.min(this.y + this.h, area.y + area.h);
+    return condX && condY;
   }
 }
 class Angle {
