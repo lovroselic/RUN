@@ -33,14 +33,14 @@ var INI = {
     EXPLOSION_TIMEOUT: 1000,
     EXPLOSION_RADIUS: 0.75,
     LASER_RANGE: 80,
-    LASER_RANGE_MIN: 32,
+    //LASER_RANGE_MIN: 32,
     LASER_DELTA: 4,
     LASER_OFFSET_Y: 32,
     LASER_OFFSET_X: 12,
     VERTICAL_WALL_WIDTH: 13
 };
 var PRG = {
-    VERSION: "0.06.05",
+    VERSION: "0.07.00",
     NAME: "R.U.N.",
     YEAR: "2022",
     CSS: "color: #239AFF;",
@@ -565,6 +565,7 @@ var GAME = {
         if (!MAP[level].unpacked) {
             MAP[level].map = FREE_MAP.import(JSON.parse(MAP[level].data));
             MAP[level].start = Grid.toClass(JSON.parse(MAP[level].start));
+            MAP[level].dynamite = Grid.toClass(JSON.parse(MAP[level].dynamite));
             MAP[level].unpacked = true;
         }
         console.log("MAP:", MAP[level]);
@@ -584,13 +585,17 @@ var GAME = {
         GAME.levelExecute();
     },
     levelExecute() {
-        //GAME.CI.reset();
         ENGINE.VIEWPORT.reset();
         HERO.setViewport();
+        GAME.initiateStart();
         GAME.drawFirstFrame(GAME.level);
-        //GAME.ENEMY.started = false;
-        //ENGINE.GAME.ANIMATION.next(GAME.countIn);
         GAME.resume();
+    },
+    initiateStart() {
+        AUDIO.Fuse.loop = true;
+        AUDIO.Fuse.play();
+        let dynamite_pos = new FP_Grid(MAP[GAME.level].dynamite.x + 0.5, MAP[GAME.level].dynamite.y + 1);
+        VANISHING.add(new Dynamite(dynamite_pos));
     },
     levelEnd() {
         //SPEECH.speak("Good job!");
