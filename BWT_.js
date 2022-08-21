@@ -8,7 +8,7 @@
 Burrows-Wheeler, RLE text compression
 */
 
-var BWT = {
+const BWT = {
     VERSION: "0.03",
     CSS: "color: #47A",
     bwt(text) {

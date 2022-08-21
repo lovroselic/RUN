@@ -19,17 +19,17 @@ TODO:
 ////////////////////////////////////////////////////
 
 //vector definitions
-var UP = new Vector(0, -1);
-var DOWN = new Vector(0, 1);
-var LEFT = new Vector(-1, 0);
-var RIGHT = new Vector(1, 0);
-var NOWAY = new Vector(0, 0);
-var UpRight = new Vector(1, -1);
-var UpLeft = new Vector(-1, -1);
-var DownRight = new Vector(1, 1);
-var DownLeft = new Vector(-1, 1);
+const UP = new Vector(0, -1);
+const DOWN = new Vector(0, 1);
+const LEFT = new Vector(-1, 0);
+const RIGHT = new Vector(1, 0);
+const NOWAY = new Vector(0, 0);
+const UpRight = new Vector(1, -1);
+const UpLeft = new Vector(-1, -1);
+const DownRight = new Vector(1, 1);
+const DownLeft = new Vector(-1, 1);
 
-var ENGINE = {
+const ENGINE = {
   VERSION: "3.12.DEV",
   CSS: "color: #0FA",
   INI: {

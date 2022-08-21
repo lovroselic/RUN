@@ -40,7 +40,7 @@ var INI = {
     VERTICAL_WALL_WIDTH: 13
 };
 var PRG = {
-    VERSION: "0.07.00",
+    VERSION: "0.07.01",
     NAME: "R.U.N.",
     YEAR: "2022",
     CSS: "color: #239AFF;",
@@ -94,7 +94,7 @@ var PRG = {
             ["background", "actors", "explosion", "text", "FPS", "button", "click"],
             "side");
         ENGINE.addBOX("SIDE", ENGINE.sideWIDTH, ENGINE.gameHEIGHT,
-            ["sideback",],
+            ["sideback","score"],
             "fside");
         ENGINE.addBOX("DOWN", ENGINE.bottomWIDTH, ENGINE.bottomHEIGHT, ["bottom", "bottomText"], null);
         ENGINE.addBOX("LEVEL", ENGINE.gameWIDTH, ENGINE.gameHEIGHT, ["floor", "wall", "grid", "coord"], null);
@@ -566,6 +566,7 @@ var GAME = {
             MAP[level].map = FREE_MAP.import(JSON.parse(MAP[level].data));
             MAP[level].start = Grid.toClass(JSON.parse(MAP[level].start));
             MAP[level].dynamite = Grid.toClass(JSON.parse(MAP[level].dynamite));
+            MAP[level].flow = Grid.toClass(JSON.parse(MAP[level].flow));
             MAP[level].unpacked = true;
         }
         console.log("MAP:", MAP[level]);
@@ -574,6 +575,7 @@ var GAME = {
         ENGINE.VIEWPORT.setMax({ x: MAP[level].pw, y: MAP[level].ph });
         DESTRUCTION_ANIMATION.init(MAP[level].map);
         ENEMY_TG.init(MAP[level].map);
+        FLOW.init(MAP[level].map, MAP[level].flow);
         SPAWN.spawn(level);
     },
     continueLevel(level) {
@@ -617,6 +619,7 @@ var GAME = {
         ENEMY_TG.manage(lapsedTime);
         HERO.collission();
         DESTRUCTION_ANIMATION.manage(lapsedTime);
+        FLOW.flow(lapsedTime);
         GAME.frameDraw(lapsedTime);
         HERO.concludeAction();
     },
@@ -641,6 +644,7 @@ var GAME = {
         ENEMY_TG.draw();
         HERO.draw();
         DESTRUCTION_ANIMATION.draw();
+        FLOW.draw();
 
         if (DEBUG.FPS) {
             GAME.FPS(lapsedTime);
@@ -695,7 +699,7 @@ var GAME = {
     generateTitleText() {
         let text = `${PRG.NAME} ${PRG.VERSION
             }, a game by Lovro Selic, ${"\u00A9"} C00LSch00L ${PRG.YEAR
-            }.Music: 'Which Way Is Away' written and performed by LaughingSkull, ${"\u00A9"
+            }. Music: 'Which Way Is Away' written and performed by LaughingSkull, ${"\u00A9"
             } 2011 Lovro Selic. `;
         text += "     ENGINE, SPEECH, GRID, MAZE, Burrows-Wheeler RLE Compression and GAME code by Lovro Selic using JavaScript. ";
         text = text.split("").join(String.fromCharCode(8202));
@@ -800,6 +804,7 @@ var GAME = {
     },
     addScore(score) {
         GAME.score += score;
+        TITLE.score();
     }
 };
 var TITLE = {
@@ -809,8 +814,8 @@ var TITLE = {
         TITLE.topBackground();
         TITLE.titlePlot();
         TITLE.bottom();
-        //TITLE.hiScore();
-        //TITLE.score();
+        TITLE.hiScore();
+        TITLE.score();
         //TITLE.energy();
         //TITLE.lives();
         //TITLE.stage();
@@ -841,20 +846,20 @@ var TITLE = {
     },
     topBackground() {
         var CTX = LAYER.title;
-        CTX.fillStyle = "#111";
+        CTX.fillStyle = "#000";
         CTX.roundRect(0, 0, ENGINE.titleWIDTH, ENGINE.titleHEIGHT,
             { upperLeft: 20, upperRight: 20, lowerLeft: 0, lowerRight: 0 },
             true, true);
     },
     bottomBackground() {
         var CTX = LAYER.bottom;
-        CTX.fillStyle = "#111";
+        CTX.fillStyle = "#000";
         CTX.roundRect(0, 0, ENGINE.bottomWIDTH, ENGINE.bottomHEIGHT,
             { upperLeft: 0, upperRight: 0, lowerLeft: 20, lowerRight: 20 },
             true, true);
     },
     sideBackground() {
-        ENGINE.fillLayer("sideback", "#222");
+        ENGINE.fillLayer("sideback", "#000");
     },
     bottom() {
         this.bottomVersion();
@@ -924,10 +929,10 @@ var TITLE = {
     music() {
         AUDIO.Title.play();
     },
-    /*hiScore() {
+    hiScore() {
         var CTX = LAYER.title;
-        var fs = 16;
-        CTX.font = fs + "px Garamond";
+        var fs = 20;
+        CTX.font = fs + "px Annie";
         CTX.fillStyle = GAME.grad;
         CTX.shadowColor = "#cec967";
         CTX.shadowOffsetX = 1;
@@ -945,12 +950,12 @@ var TITLE = {
         }
         var text = "HISCORE: " + SCORE.SCORE.value[0].toString().padStart(6, "0") + " by " + HS;
         CTX.fillText(text, x, y);
-    },*/
-    /*score() {
+    },
+    score() {
         ENGINE.clearLayer("score");
         var CTX = LAYER.score;
-        var fs = 16;
-        CTX.font = fs + "px Emulogic";
+        var fs = 20;
+        CTX.font = fs + "px Annie";
         CTX.fillStyle = GAME.grad;
         CTX.shadowColor = "#cec967";
         CTX.shadowOffsetX = 1;
@@ -958,7 +963,7 @@ var TITLE = {
         CTX.shadowBlur = 2;
         CTX.textAlign = "center";
         var x = ENGINE.sideWIDTH / 2;
-        var y = 48;
+        var y = 36;
         CTX.fillText("SCORE", x, y);
         CTX.fillStyle = "#FFF";
         CTX.shadowColor = "#DDD";
@@ -972,7 +977,7 @@ var TITLE = {
             GAME.extraLife.shift();
             TITLE.lives();
         }
-    },*/
+    },
 
     /*lives() {
         ENGINE.clearLayer("lives");

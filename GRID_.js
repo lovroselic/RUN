@@ -15,8 +15,8 @@ known bugs:
 
 */
 
-var GRID = {
-  VERSION: "3.05",
+const GRID = {
+  VERSION: "3.06",
   CSS: "color: #0AA",
   SETTING: {
     ALLOW_CROSS: false,
@@ -68,7 +68,7 @@ var GRID = {
   },
   coordToFP_Grid(x, y) {
     var tx = x / ENGINE.INI.GRIDPIX;
-    var ty =y / ENGINE.INI.GRIDPIX;
+    var ty = y / ENGINE.INI.GRIDPIX;
     return new FP_Grid(tx, ty);
   },
   pointToGrid(point) {
@@ -793,7 +793,7 @@ class GridArray {
     if (this.isOutOfBounds(next)) return false;
     return this.value(next, value);
   }
-  setNodeMap(where = "nodeMap", path = [0], type = "value", block = []) {
+  setNodeMap(where = "nodeMap", path = [0], type = "value", block = [], cls = PathNode) {
     let map = [];
     for (let x = 0; x < this.width; x++) {
       map[x] = [];
@@ -815,7 +815,7 @@ class GridArray {
         }
 
         if (carve) {
-          map[x][y] = new PathNode(x, y);
+          map[x][y] = new cls(x, y);
         } else {
           map[x][y] = null;
         }
@@ -1210,6 +1210,66 @@ class GridArray {
       GA.map[i] = string[i].charCodeAt(0) - offset;
     }
     return GA;
+  }
+}
+class NodeArray {
+  constructor(GA, CLASS, path = [0], type = 'value') {
+    /**
+     * always constructed from GridArray
+     * carve performed it null before
+     * back to null if carve is false
+     */
+    this.width = GA.width;
+    this.height = GA.height;
+    this.map = Array(this.width * this.height);
+    this.map = this.map.fill(null);
+    for (let [index, element] of this.map.entries()) {
+      let carve;
+      switch (type) {
+        case 'value':
+          carve = path.includes(GA.map[index]);
+          break;
+        default:
+          console.error("NodeArray type error!");
+      }
+      if (carve) {
+        if (!this.map[index]) {
+          this.map[index] = new CLASS();
+        }
+      } else {
+        if (this.map[index]) {
+          this.map[index] = null;
+        }
+      }
+    }
+  }
+  G_set(grid, property, value) {
+    this.I_set(this.gridToIndex(grid), property, value);
+  }
+  I_set(index, property, value) {
+    this.map[index][property] = value;
+  }
+  indexToGrid(index) {
+    let x = index % this.width;
+    let y = Math.floor(index / this.width);
+    return new Grid(x, y);
+  }
+  gridToIndex(grid) {
+    if (this.isOutOfBounds(grid)) {
+      console.error("grid", grid);
+      throw "Grid out of bounds...";
+    }
+    return grid.x + grid.y * this.width;
+  }
+  isOutOfBounds(grid) {
+    if (
+      grid.x >= this.width ||
+      grid.x < 0 ||
+      grid.y >= this.height ||
+      grid.y < 0
+    ) {
+      return true;
+    } else return false;
   }
 }
 class IndexArray {
