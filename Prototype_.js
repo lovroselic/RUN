@@ -20,11 +20,16 @@ as used by LS
 changelog:
 3.00: new fresh version
 3.04: updates for Invasion
+3.05: RNDF, updates for RUN
 */
 
 (function () {
   function RND(start, end) {
     return Math.floor(Math.random() * (++end - start) + start);
+  }
+
+  function RNDF(start, end) {
+    return (Math.random() * (end + 0.01 - start) * 100 + start * 100) / 100;
   }
 
   function coinFlip() {
@@ -73,6 +78,7 @@ changelog:
     }
   }
   window.RND = RND;
+  window.RNDF = RNDF;
   window.coinFlip = coinFlip;
   window.probable = probable;
   window.roundN = roundN;

@@ -548,6 +548,7 @@ class GridArray {
     this.map = GM;
     this.nodeMap = null;
     this.gridSizeBit = byte * 8;
+    //this.changed = false;
     if (fill !== 0) {
       this.map.fill(fill);
     }
@@ -1234,7 +1235,7 @@ class NodeArray {
       }
       if (carve) {
         if (!this.map[index]) {
-          this.map[index] = new CLASS();
+          this.map[index] = new CLASS(GA.map[index]);
         }
       } else {
         if (this.map[index]) {

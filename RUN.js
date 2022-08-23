@@ -40,7 +40,7 @@ var INI = {
     VERTICAL_WALL_WIDTH: 13
 };
 var PRG = {
-    VERSION: "0.07.01",
+    VERSION: "0.07.02",
     NAME: "R.U.N.",
     YEAR: "2022",
     CSS: "color: #239AFF;",
@@ -94,7 +94,7 @@ var PRG = {
             ["background", "actors", "explosion", "text", "FPS", "button", "click"],
             "side");
         ENGINE.addBOX("SIDE", ENGINE.sideWIDTH, ENGINE.gameHEIGHT,
-            ["sideback","score"],
+            ["sideback", "score"],
             "fside");
         ENGINE.addBOX("DOWN", ENGINE.bottomWIDTH, ENGINE.bottomHEIGHT, ["bottom", "bottomText"], null);
         ENGINE.addBOX("LEVEL", ENGINE.gameWIDTH, ENGINE.gameHEIGHT, ["floor", "wall", "grid", "coord"], null);
@@ -156,12 +156,12 @@ class Dynamite {
         for (let grid of grids) {
             if (GA.isDoor(grid) || GA.isBlockWall(grid)) {
                 DESTRUCTION_ANIMATION.add(new Explosion(grid, Grid.toCenter(grid), 'Smoke'));
+                GA.clear(grid, MAPDICT.DOOR);
+                GA.clear(grid, MAPDICT.BLOCKWALL);
             } else if (GA.isTrapDoor(grid)) {
                 DESTRUCTION_ANIMATION.add(new Explosion(grid, FP_Grid.toClass(grid).add(RIGHT, 0.5), 'Smoke'));
+                GA.clear(grid, MAPDICT.TRAP_DOOR);
             }
-            GA.clear(grid, MAPDICT.DOOR);
-            GA.clear(grid, MAPDICT.TRAP_DOOR);
-            GA.clear(grid, MAPDICT.BLOCKWALL);
         }
         GAME.repaintLevel(GAME.level);
         let distance = HERO.moveState.pos.EuclidianDistance(position);
@@ -689,6 +689,9 @@ var GAME = {
         console.log("GAME SETUP started");
         $("#buttons").prepend("<input type='button' id='startGame' value='Start Game'>");
         $("#startGame").prop("disabled", true);
+
+        PATTERN.create("water", 0, 0, [200,255], [0.7, 0.9]);
+        //PATTERN.create("water");
     },
     setTitle() {
         const text = GAME.generateTitleText();
