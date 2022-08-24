@@ -1234,14 +1234,20 @@ class NodeArray {
           console.error("NodeArray type error!");
       }
       if (carve) {
-        if (!this.map[index]) {
-          this.map[index] = new CLASS(GA.map[index]);
-        }
-      } else {
-        if (this.map[index]) {
-          this.map[index] = null;
-        }
+        this.map[index] = new CLASS();
       }
+    }
+  }
+
+  /**
+   * not sure if this will be used
+   * required only if null -> node or node -> null
+   * to becontinued or deleted
+   */
+  update() {
+
+    for (let [index, element] of this.map.entries()) {
+
     }
   }
   G_set(grid, property, value) {

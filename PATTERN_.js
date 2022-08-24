@@ -16,11 +16,16 @@ var PATTERN = {
         SIZE_Y: 64
     },
     pattern: {},
+    setSize(sizeX, sizeY = sizeX) {
+        this.INI.SIZE_X = sizeX;
+        this.INI.SIZE_Y = sizeY;
+    },
     create(name, r = [0, 255], g = [0, 255], b = [0, 255], a = 1) {
         let append = '<div id="div_' + name + '" class="hidden"></div>';
         //let append = '<div id="div_' + name + '" ></div>';
         $("body").append(append);
-        $("#div_" + name).append(`<canvas id="${name}_canvas" width="${PATTERN.INI.SIZE_X}" height="${PATTERN.INI.SIZE_Y}"</canvas>`);
+        let canvas = `<canvas id='${name}_canvas' width='${PATTERN.INI.SIZE_X}' height='${PATTERN.INI.SIZE_Y}'></canvas>`;
+        $("#div_" + name).append(canvas);
 
         PATTERN.pattern[name] = {};
         PATTERN.pattern[name].ctx = $("#" + name + "_canvas")[0].getContext("2d");

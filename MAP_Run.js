@@ -35,3 +35,9 @@ var SPAWN = {
         }
     }
 };
+
+var GA_FLOW_MAP = {
+    MIN_FLOW: 8,
+    0: 64,
+    8: 64 - 11
+};

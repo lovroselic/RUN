@@ -40,7 +40,7 @@ var INI = {
     VERTICAL_WALL_WIDTH: 13
 };
 var PRG = {
-    VERSION: "0.07.02",
+    VERSION: "0.07.03",
     NAME: "R.U.N.",
     YEAR: "2022",
     CSS: "color: #239AFF;",
@@ -91,7 +91,7 @@ var PRG = {
         $(ENGINE.gameWindowId).width(ENGINE.gameWIDTH + ENGINE.sideWIDTH + 4);
         ENGINE.addBOX("TITLE", ENGINE.titleWIDTH, ENGINE.titleHEIGHT, ["title"], null);
         ENGINE.addBOX("ROOM", ENGINE.gameWIDTH, ENGINE.gameHEIGHT,
-            ["background", "actors", "explosion", "text", "FPS", "button", "click"],
+            ["background", "actors", "explosion", "flood", "text", "FPS", "button", "click"],
             "side");
         ENGINE.addBOX("SIDE", ENGINE.sideWIDTH, ENGINE.gameHEIGHT,
             ["sideback", "score"],
@@ -690,7 +690,8 @@ var GAME = {
         $("#buttons").prepend("<input type='button' id='startGame' value='Start Game'>");
         $("#startGame").prop("disabled", true);
 
-        PATTERN.create("water", 0, 0, [200,255], [0.7, 0.9]);
+        //PATTERN.setSize(256);
+        PATTERN.create("water", 0, 0, [200, 255], [0.7, 0.9]);
         //PATTERN.create("water");
     },
     setTitle() {
