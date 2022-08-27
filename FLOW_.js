@@ -31,7 +31,8 @@ var FLOW = {
     CSS: "color: #F3A",
     INI: {
         ORIGIN_SIZE: 0.2,
-        ORIGIN_FLOW: 32,
+        //ORIGIN_FLOW: 512,
+        ORIGIN_FLOW: 1024,
     },
     map: null,
     GA: null,
@@ -42,7 +43,9 @@ var FLOW = {
         this.make_NA();
         this.origin = origin;
         this.origin_index = this.GA.gridToIndex(this.origin);
-        this.terminals = [this.origin_index];
+        this.terminals = new Set([this.origin_index]);
+        this.drains = new Set();
+        this.excess_flow = 0;
         this.NA.G_set(this.origin, 'size', FLOW.INI.ORIGIN_SIZE);
         this.NA.G_set(this.origin, 'flow', FLOW.INI.ORIGIN_FLOW);
         this.NA.G_set(this.origin, 'type', 'UP');
@@ -54,17 +57,18 @@ var FLOW = {
         this.map.NA = this.NA;
     },
     flow(lapsedTime) {
-        console.log("flow", lapsedTime);
+        console.log("flow", lapsedTime, this.terminals);
         for (let n of this.terminals) {
             this.calc_flow(n, lapsedTime);
         }
     },
     calc_flow(node, lapsedTime) {
-        console.log("calc_flow", node, lapsedTime);
+        let NODE = this.NA.map[node];
+        console.log("calc_flow", node, lapsedTime, NODE);
         let ga_value = this.GA.map[node];
         let max_h = GA_FLOW_MAP[ga_value];
         let min_h = GA_FLOW_MAP.MIN_FLOW;
-        console.log('..max-min h', min_h, max_h);
+        //console.log('..max-min h', min_h, max_h);
         let min_w, max_w, off_x;
 
         switch (this.NA.map[node].type) {
@@ -80,17 +84,50 @@ var FLOW = {
         console.log("..max-min w", min_w, max_w);
         this.NA.map[node].boundaries = new Boundaries(min_w, max_w, min_h, max_h, off_x);
 
-        let max_flow = max_w * max_h / (ENGINE.INI.GRIDPIX ** 2);
-        console.log('..max_flow', max_flow);
-
         //update flow!
-        //cont
+        let flow_update = lapsedTime / 1000 * (NODE.flow / ENGINE.INI.GRIDPIX ** 2);
+        NODE.size += flow_update;
+        console.log('...flow_update', flow_update, NODE.size);
+        this.overflow(node, NODE);
+
+
+    },
+    overflow(node, NODE) {
+        let max_flow = NODE.boundaries.max_w * NODE.boundaries.max_h / (ENGINE.INI.GRIDPIX ** 2);
+        console.log('..max_flow', max_flow);
+        if (NODE.size > max_flow) {
+            console.log("....spreading flow");
+            let excess_flow = NODE.size - max_flow;
+            NODE.size = max_flow;
+            console.log(".....excess_flow", excess_flow);
+            this.terminals.delete(node);
+
+            if (this.GA.map[node] === MAPDICT.TRAP_DOOR) {
+                console.log("trap door");
+                return;
+            }
+
+            let grid = this.NA.indexToGrid(node).add(UP);
+            if (this.GA.check(grid, MAPDICT.WALL + MAPDICT.DOOR)) {
+                console.log("wall or door");
+                return;
+            }
+            console.log("owerflow to next node");
+            this.excess_flow += excess_flow;
+            return this.next_line(grid);
+        }
+    },
+    next_line(grid) {
+        console.log("NEXT LINE", grid);
+
+
+        throw "you are here";
     },
     draw() {
         this.next_node(this.origin_index);
     },
     next_node(node) {
-        console.log("next", node);
+        console.log("next draw:", node);
         this.draw_node(node);
         for (let n of this.NA.map[node].next) {
             this.next_node(n);

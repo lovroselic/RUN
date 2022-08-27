@@ -40,7 +40,7 @@ var INI = {
     VERTICAL_WALL_WIDTH: 13
 };
 var PRG = {
-    VERSION: "0.07.03",
+    VERSION: "0.07.04",
     NAME: "R.U.N.",
     YEAR: "2022",
     CSS: "color: #239AFF;",
@@ -158,9 +158,11 @@ class Dynamite {
                 DESTRUCTION_ANIMATION.add(new Explosion(grid, Grid.toCenter(grid), 'Smoke'));
                 GA.clear(grid, MAPDICT.DOOR);
                 GA.clear(grid, MAPDICT.BLOCKWALL);
+                FLOW.terminals.add(GA.gridToIndex(grid));
             } else if (GA.isTrapDoor(grid)) {
                 DESTRUCTION_ANIMATION.add(new Explosion(grid, FP_Grid.toClass(grid).add(RIGHT, 0.5), 'Smoke'));
                 GA.clear(grid, MAPDICT.TRAP_DOOR);
+                FLOW.terminals.add(GA.gridToIndex(grid));
             }
         }
         GAME.repaintLevel(GAME.level);
