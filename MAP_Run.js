@@ -37,7 +37,8 @@ var SPAWN = {
 };
 
 var GA_FLOW_MAP = {
-    MIN_FLOW: 8,
+    MIN_FLOW: 4,
     0: 64,
+    4: 64,
     8: 64 - 11
 };

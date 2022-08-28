@@ -1217,8 +1217,6 @@ class NodeArray {
   constructor(GA, CLASS, path = [0], type = 'value') {
     /**
      * always constructed from GridArray
-     * carve performed it null before
-     * back to null if carve is false
      */
     this.width = GA.width;
     this.height = GA.height;
@@ -1234,7 +1232,7 @@ class NodeArray {
           console.error("NodeArray type error!");
       }
       if (carve) {
-        this.map[index] = new CLASS();
+        this.map[index] = new CLASS(index);
       }
     }
   }

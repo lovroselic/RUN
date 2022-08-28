@@ -40,7 +40,7 @@ var INI = {
     VERTICAL_WALL_WIDTH: 13
 };
 var PRG = {
-    VERSION: "0.07.04",
+    VERSION: "0.07.05",
     NAME: "R.U.N.",
     YEAR: "2022",
     CSS: "color: #239AFF;",
@@ -159,6 +159,7 @@ class Dynamite {
                 GA.clear(grid, MAPDICT.DOOR);
                 GA.clear(grid, MAPDICT.BLOCKWALL);
                 FLOW.terminals.add(GA.gridToIndex(grid));
+                FLOW.NA.map[GA.gridToIndex(grid)].type = 'UP';
             } else if (GA.isTrapDoor(grid)) {
                 DESTRUCTION_ANIMATION.add(new Explosion(grid, FP_Grid.toClass(grid).add(RIGHT, 0.5), 'Smoke'));
                 GA.clear(grid, MAPDICT.TRAP_DOOR);
@@ -637,7 +638,6 @@ var GAME = {
     },
     deadFrameDraw(lapsedTime) {
         ENGINE.clearLayerStack();
-
     },
     frameDraw(lapsedTime) {
         ENGINE.clearLayerStack();
@@ -693,7 +693,8 @@ var GAME = {
         $("#startGame").prop("disabled", true);
 
         //PATTERN.setSize(256);
-        PATTERN.create("water", 0, 0, [200, 255], [0.7, 0.9]);
+        PATTERN.create("water", 0, 0, [205, 255], [0.65, 0.85]);
+        //PATTERN.create("water", 0, 0, [200, 255], [0.01, 0.1]);
         //PATTERN.create("water");
     },
     setTitle() {
