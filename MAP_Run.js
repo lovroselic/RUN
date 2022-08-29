@@ -17,9 +17,22 @@ var MAP = {
         [`{"x":6, "y":4}`, UP, 1], [`{"x":10, "y":5}`, UP, 3], [`{"x":2, "y":1}`, DOWN, 2]]
     },
     2: {
-        data: `{"width":"16","height":"16",
-        "map":"BB2ABAA3BABAA4BAA6EAA14BAA4EBAA12BAA3BAA4BB2ABAA2BB3AA2BB3ABABB3AA2BAA5BAA2BB7ABB13AA2BB14AIBB9AA2BB4ABB4ABB3ABB12ABB2AA2BB14ABB6AA4BB15ABB3AA2BB17ABABB6AB$ABB2AA2B"}`,
-        start: `{"x":9, "y":10}`,
+        data: `
+        {"width":"12","height":"12","map":"BB2AA8BB2ABB25ABB3ABABB10AIBB28ABB18AA3BABB20ABB10$ABB3"}
+        `,
+        start: `{"x":7, "y":6}`,
+        dynamite: `{"x":5, "y":6}`,
+        flow: `{"x":5, "y":7}`,
+        bat: [],
+    },
+    3: {
+        data: `
+        {"width":"12","height":"12","map":"BB2AA5BABAA3BB2ABAA4BB6AA2BB3AA2BABB2AA2BABB7ABB5ABB4ABB4ABB2ABB2AA2BB2ABB3ABABB5AA3BB5ABB2IBB3ABB2ABB10ABB9ABB7ABB5$ABB3"}
+        `,
+        start: `{"x":7, "y":6}`,
+        dynamite: `{"x":5, "y":6}`,
+        flow: `{"x":5, "y":7}`,
+        bat: [],
     },
 };
 
@@ -37,7 +50,7 @@ var SPAWN = {
 };
 
 var GA_FLOW_MAP = {
-    MIN_FLOW: 4,
+    MIN_FLOW: 2,
     0: 64,
     4: 64,
     8: 64 - 11

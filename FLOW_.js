@@ -29,18 +29,20 @@ class Boundaries {
     }
 }
 var FLOW = {
-    VERSION: "0.01",
+    VERSION: "0.02",
     CSS: "color: #F3A",
     INI: {
         ORIGIN_SIZE: 0.2,
         //ORIGIN_FLOW: 512,
         //ORIGIN_FLOW: 1024,
-        ORIGIN_FLOW: 2048,
+        //ORIGIN_FLOW: 2048,
+        ORIGIN_FLOW: 4096,
     },
     layer: 'flood',
     map: null,
     GA: null,
     NA: null,
+    flood_level: Infinity,
     init(map, origin) {
         this.map = map;
         this.GA = map.GA;
@@ -53,6 +55,7 @@ var FLOW = {
         this.NA.G_set(this.origin, 'size', FLOW.INI.ORIGIN_SIZE);
         this.NA.G_set(this.origin, 'flow', FLOW.INI.ORIGIN_FLOW);
         this.NA.G_set(this.origin, 'type', 'UP');
+        this.set_flood_level(this.origin.y);
 
         console.log(`%cFLOW initialized`, FLOW.CSS, FLOW.NA);
     },
@@ -60,8 +63,19 @@ var FLOW = {
         this.NA = new NodeArray(this.GA, FlowNode, [MAPDICT.EMPTY, MAPDICT.TRAP_DOOR, MAPDICT.DOOR]);
         this.map.NA = this.NA;
     },
+    set_flood_level(level) {
+        if (level < this.flood_level) {
+            this.flood_level = level;
+        }
+    },
     flow(lapsedTime, flow = FLOW.INI.ORIGIN_FLOW) {
+        //debug
+        console.log("..........................");
         console.log("flow", lapsedTime, this.terminals);
+        for (let t of this.terminals) {
+            console.log(t, "->", this.NA.indexToGrid(t));
+        }
+        //debug end
         for (let n of this.terminals) {
             this.NA.I_set(n, 'flow', flow / this.terminals.size);
             this.calc_flow(n, lapsedTime);
@@ -69,11 +83,9 @@ var FLOW = {
     },
     calc_flow(node, lapsedTime) {
         let NODE = this.NA.map[node];
-        console.log("calc_flow", node, lapsedTime, NODE);
         let ga_value = this.GA.map[node];
         let max_h = GA_FLOW_MAP[ga_value];
         let min_h = GA_FLOW_MAP.MIN_FLOW;
-        //console.log('..max-min h', min_h, max_h);
         let max_w, off_x;
         let min_w = 0;
 
@@ -91,49 +103,47 @@ var FLOW = {
                 off_x = 0;
                 break;
             default:
-                throw "node type error";
-            //console.error("node type error", this.NA.map[node]);
-            //break;
+                console.error("node type error", this.NA.map[node]);
+                break;
         }
-        console.log("..max-min w", min_w, max_w);
-        //this.NA.map[node].boundaries = new Boundaries(min_w, max_w, min_h, max_h, off_x);
         NODE.boundaries = new Boundaries(min_w, max_w, min_h, max_h, off_x);
         let max_flow = NODE.boundaries.max_w * NODE.boundaries.max_h / (ENGINE.INI.GRIDPIX ** 2);
         NODE.max_flow = max_flow;
 
-        //update flow!
         let flow_update = (lapsedTime / 1000 * (NODE.flow / ENGINE.INI.GRIDPIX ** 2)) * NODE.max_flow;
         NODE.size += flow_update;
-        console.log('...flow_update', flow_update, NODE.size);
         this.overflow(node, NODE, lapsedTime);
         //back from overflow -> next_line;
-
-
     },
     overflow(node, NODE, lapsedTime) {
-        //let max_flow = NODE.max_flow;
-        console.log('..overflow');
         if (NODE.size > NODE.max_flow) {
-            console.log("....spreading flow");
             let excess_flow = NODE.size - NODE.max_flow;
             NODE.size = NODE.max_flow;
-            console.log(".....excess_flow", excess_flow);
             this.terminals.delete(node);
 
-            if (this.GA.map[node] === MAPDICT.TRAP_DOOR) {
-                console.log("trap door");
+            if (this.GA.map[node] === MAPDICT.TRAP_DOOR) return;
+            let grid = this.NA.indexToGrid(node).add(UP);
+            if (this.GA.check(grid, MAPDICT.WALL + MAPDICT.BLOCKWALL)) return;
+            if (this.NA.map[this.NA.gridToIndex(grid)].size > 0) return;
+
+            //terminate if not last that reached flood level
+            //and  there are terminals lower than flood level
+
+            if (this.terminals.size > 0 && this.any_terminal_lower() && grid.y < this.flood_level) {
                 return;
             }
 
-            let grid = this.NA.indexToGrid(node).add(UP);
-            if (this.GA.check(grid, MAPDICT.WALL + MAPDICT.BLOCKWALL)) {
-                console.log("wall or BLOCKWALL");
-                return;
-            }
-            console.log("owerflow to next node");
             this.excess_flow += excess_flow;
             return this.next_line(grid, NODE, lapsedTime);
         }
+    },
+    any_terminal_lower(level = this.flood_level) {
+        for (let T of this.terminals) {
+            if (this.NA.indexToGrid(T).y > level) {
+                return true;
+            }
+        }
+        return false;
     },
     next_line(grid, NODE, lapsedTime) {
         console.log("NEXT LINE", grid);
@@ -143,11 +153,11 @@ var FLOW = {
 
         let left = this.find_branch(node, LEFT, "LEFT");
         let right = this.find_branch(node, RIGHT, "RIGHT");
-        console.log("...LR", left, right, Array.isArray(left), Array.isArray(right));
+        //console.log("...LR", left, right, Array.isArray(left), Array.isArray(right));
         let candidates;
 
         if (Array.isArray(left) && Array.isArray(right)) {
-            console.log("$$$$$$$$$$$$$$$$$$$$$$\n.. cont on found line");
+            this.set_flood_level(this.NA.indexToGrid(node).y);
             NODE.next.add(node);
             NEW.prev.add(NODE.index);
             candidates = [node];
@@ -161,10 +171,8 @@ var FLOW = {
                     N = element;
                 }
             }
-            //console.log('candidates', candidates);
         } else {
             //deeper sources found
-            console.log('#################\n..deeper sources found');
             let new_grids = [];
             if (!Array.isArray(left)) {
                 new_grids.push(left);
@@ -173,21 +181,21 @@ var FLOW = {
                 new_grids.push(right);
             }
             for (let G of new_grids) {
-                this.next_line(G, NODE);
+                this.next_line(G, NODE, lapsedTime);
             }
             return;
         }
-        this.terminals = new Set(candidates);
-        this.flow(lapsedTime, this.excess_flow);
+        for (let c of candidates) {
+            this.terminals.add(c);
+        }
+        this.flow(lapsedTime = 17, Math.max(0.001, this.excess_flow));
         this.excess_flow = 0;
-        //will fail at draw
-        //throw "you are here";
     },
     dig_down(grid) {
-        let next_down = grid.add(down);
-        while (!this.GA.check(grid, MAPDICT.WALL + MAPDICT.BLOCKWALL + MAPDICT.TRAP_DOOR)) {
+        let next_down = grid.add(DOWN);
+        while (!this.GA.check(next_down, MAPDICT.WALL + MAPDICT.BLOCKWALL + MAPDICT.TRAP_DOOR)) {
             grid = next_down;
-            next_down = grid.add(down);
+            next_down = grid.add(DOWN);
         }
         return grid;
     },
@@ -208,7 +216,10 @@ var FLOW = {
 
             if (!this.GA.check(down_grid, MAPDICT.WALL + MAPDICT.BLOCKWALL + MAPDICT.TRAP_DOOR)) {
                 console.log("PATH DOWN", down_grid);
-                return this.dig_down(down_grid);
+                //check if flooded
+                if (this.NA.map[this.NA.gridToIndex(down_grid)].size === 0) {
+                    return this.dig_down(down_grid);
+                }
             }
 
             line.push(index);
@@ -222,7 +233,7 @@ var FLOW = {
         this.next_node(this.origin_index);
     },
     next_node(node) {
-        console.log("next draw:", node);
+        //console.log("next draw:", node);
         this.draw_node(node);
         for (let n of this.NA.map[node].next) {
             this.next_node(n);
@@ -230,16 +241,13 @@ var FLOW = {
     },
     draw_node(node) {
         const CTX = LAYER.flood;
-        //console.log("drawing", node);
         let NODE = this.NA.map[node];
         let area = NODE.size * ENGINE.INI.GRIDPIX ** 2;
         let width = NODE.boundaries.max_w - NODE.boundaries.min_w;
         let height = Math.max(NODE.boundaries.min_h, Math.round(area / width));
-        //console.log("..area, h", area, height);
         let grid = this.NA.indexToGrid(node);
         let point = GRID.gridToCoord(grid);
         point.toViewport();
-        //console.log("..point", point);
         let drawStart = point.add(new Vector(NODE.boundaries.offX, ENGINE.INI.GRIDPIX - height));
         const pattern = CTX.createPattern(PATTERN.pattern.water.img, "repeat");
         CTX.fillStyle = pattern;
