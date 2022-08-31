@@ -77,9 +77,10 @@ var FLOW = {
         }
         //debug end
         for (let n of this.terminals) {
-            this.NA.I_set(n, 'flow', flow / this.terminals.size);
+            this.NA.I_set(n, 'flow', (flow + this.excess_flow) / this.terminals.size);
             this.calc_flow(n, lapsedTime);
         }
+        this.excess_flow = 0;
     },
     calc_flow(node, lapsedTime) {
         let NODE = this.NA.map[node];
@@ -188,8 +189,9 @@ var FLOW = {
         for (let c of candidates) {
             this.terminals.add(c);
         }
-        this.flow(lapsedTime = 17, Math.max(0.001, this.excess_flow));
-        this.excess_flow = 0;
+        this.excess_flow = Math.max(0.001, this.excess_flow);
+        this.flow(lapsedTime = 17, 0);
+        //this.excess_flow = 0;
     },
     dig_down(grid) {
         let next_down = grid.add(DOWN);
