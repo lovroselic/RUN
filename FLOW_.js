@@ -75,6 +75,9 @@ var FLOW = {
         for (let t of this.terminals) {
             console.log(t, "->", this.NA.indexToGrid(t));
         }
+        /*if (this.NA.map[94]){
+            if (this.NA.map[94].size > 0) throw "NOW!!!!!!!!!!";
+        }*/
         //debug end
         for (let n of this.terminals) {
             this.NA.I_set(n, 'flow', (flow + this.excess_flow) / this.terminals.size);
@@ -146,7 +149,7 @@ var FLOW = {
         }
         return false;
     },
-    next_line(grid, NODE, lapsedTime) {
+    next_line(grid, NODE, lapsedTime = 17) {
         console.log("NEXT LINE", grid);
         let node = this.GA.gridToIndex(grid);
         let NEW = this.NA.map[node];
@@ -190,7 +193,7 @@ var FLOW = {
             this.terminals.add(c);
         }
         this.excess_flow = Math.max(0.001, this.excess_flow);
-        this.flow(lapsedTime = 17, 0);
+        this.flow(lapsedTime, 0);
         //this.excess_flow = 0;
     },
     dig_down(grid) {
@@ -221,6 +224,11 @@ var FLOW = {
                 //check if flooded
                 if (this.NA.map[this.NA.gridToIndex(down_grid)].size === 0) {
                     return this.dig_down(down_grid);
+                } else {
+                    console.log(down_grid, "flooded?",
+                        this.NA.map[this.NA.gridToIndex(down_grid)].size,
+                        this.NA.map[this.NA.gridToIndex(down_grid)].index,
+                        this.NA.map[this.NA.gridToIndex(down_grid)].size === 0);
                 }
             }
 
@@ -254,6 +262,24 @@ var FLOW = {
         const pattern = CTX.createPattern(PATTERN.pattern.water.img, "repeat");
         CTX.fillStyle = pattern;
         CTX.fillRect(drawStart.x, drawStart.y, width, height);
+    },
+    reFlow(index) {
+        console.log("\n#############################################");
+        console.warn("ReFlow", index);
+        let grid = this.GA.indexToGrid(index);
+        console.log("grid.y, this.flood_level", grid.y, this.flood_level);
+
+        if (this.flood_level < grid.y) {
+            //reflow
+        } else {
+            //link to any terminal
+            let terminal = this.terminals.entries().next().value[0];
+            console.log("terminal", terminal);
+            let NODE = this.NA.map[terminal];
+            return this.next_line(this.dig_down(grid), NODE);
+        }
+
+        throw "REFLOW";
     }
 };
 

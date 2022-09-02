@@ -34,6 +34,15 @@ var MAP = {
         flow: `{"x":5, "y":7}`,
         bat: [],
     },
+    4: {
+        data: `
+        {"width":"12","height":"12","map":"BB2AA5BABAA3BB2ABAA4BB6AA2BB2AA2BABB2AA2BABB7ABB5ABB3ABB4ABB2ABB2AA2BB2ABB2QBABB5AA3BB4ABB5ABB2ABB10ABB9ABB7ABB5$IABB7"}
+        `,
+        start: `{"x":7, "y":6}`,
+        dynamite: `{"x":5, "y":6}`,
+        flow: `{"x":5, "y":7}`,
+        bat: [],
+    },
 };
 
 var SPAWN = {

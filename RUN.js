@@ -40,7 +40,7 @@ var INI = {
     VERTICAL_WALL_WIDTH: 13
 };
 var PRG = {
-    VERSION: "0.07.07",
+    VERSION: "0.07.08",
     NAME: "R.U.N.",
     YEAR: "2022",
     CSS: "color: #239AFF;",
@@ -156,10 +156,15 @@ class Dynamite {
         for (let grid of grids) {
             if (GA.isDoor(grid) || GA.isBlockWall(grid)) {
                 DESTRUCTION_ANIMATION.add(new Explosion(grid, Grid.toCenter(grid), 'Smoke'));
+                
+                let idx = GA.gridToIndex(grid);
                 GA.clear(grid, MAPDICT.DOOR);
                 GA.clear(grid, MAPDICT.BLOCKWALL);
-                FLOW.terminals.add(GA.gridToIndex(grid));
-                FLOW.NA.map[GA.gridToIndex(grid)].type = 'UP';
+                if (!FLOW.NA.map[idx]) {
+                    FLOW.NA.map[idx] = new FlowNode(idx);
+                }
+                FLOW.NA.map[idx].type = 'UP';
+                FLOW.reFlow(idx);
             } else if (GA.isTrapDoor(grid)) {
                 DESTRUCTION_ANIMATION.add(new Explosion(grid, FP_Grid.toClass(grid).add(RIGHT, 0.5), 'Smoke'));
                 GA.clear(grid, MAPDICT.TRAP_DOOR);
@@ -546,7 +551,7 @@ var GAME = {
         //GAME.completed = false;
         //GAME.won = false;
         //GAME.level = 1;
-        GAME.level = 3;
+        GAME.level = 4;
         GAME.score = 0;
         GAME.lives = 3;
         HERO.startInit();
