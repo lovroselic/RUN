@@ -1222,7 +1222,7 @@ class NodeArray {
     this.height = GA.height;
     this.map = Array(this.width * this.height);
     this.map = this.map.fill(null);
-    for (let [index, element] of this.map.entries()) {
+    for (let [index, _] of this.map.entries()) {
       let carve;
       switch (type) {
         case 'value':

@@ -20,7 +20,7 @@ as used by LS
 changelog:
 3.00: new fresh version
 3.04: updates for Invasion
-3.05: RNDF, updates for RUN
+3.05: RNDF, updates for RUN, Set prototypes
 */
 
 (function () {
@@ -317,6 +317,15 @@ String.prototype.fill = function (stringy, howMany) {
     else break;
   }
   return s;
+};
+Set.prototype.moveFrom = function (s) {
+  s.forEach(e => {
+    this.add(e);
+    s.delete(e);
+  });
+};
+Set.prototype.first = function () {
+  return this.entries().next().value[0];
 };
 
 class Grid {

@@ -40,7 +40,7 @@ var INI = {
     VERTICAL_WALL_WIDTH: 13
 };
 var PRG = {
-    VERSION: "0.07.08",
+    VERSION: "0.07.09",
     NAME: "R.U.N.",
     YEAR: "2022",
     CSS: "color: #239AFF;",
@@ -156,6 +156,7 @@ class Dynamite {
         for (let grid of grids) {
             if (GA.isDoor(grid) || GA.isBlockWall(grid)) {
                 DESTRUCTION_ANIMATION.add(new Explosion(grid, Grid.toCenter(grid), 'Smoke'));
+                let which = GA.getValue(grid);
                 
                 let idx = GA.gridToIndex(grid);
                 GA.clear(grid, MAPDICT.DOOR);
@@ -164,7 +165,7 @@ class Dynamite {
                     FLOW.NA.map[idx] = new FlowNode(idx);
                 }
                 FLOW.NA.map[idx].type = 'UP';
-                FLOW.reFlow(idx);
+                FLOW.reFlow(idx, which);
             } else if (GA.isTrapDoor(grid)) {
                 DESTRUCTION_ANIMATION.add(new Explosion(grid, FP_Grid.toClass(grid).add(RIGHT, 0.5), 'Smoke'));
                 GA.clear(grid, MAPDICT.TRAP_DOOR);
@@ -551,7 +552,7 @@ var GAME = {
         //GAME.completed = false;
         //GAME.won = false;
         //GAME.level = 1;
-        GAME.level = 4;
+        GAME.level = 5;
         GAME.score = 0;
         GAME.lives = 3;
         HERO.startInit();
@@ -696,10 +697,7 @@ var GAME = {
         $("#buttons").prepend("<input type='button' id='startGame' value='Start Game'>");
         $("#startGame").prop("disabled", true);
 
-        //PATTERN.setSize(256);
         PATTERN.create("water", 0, 0, [205, 255], [0.65, 0.85]);
-        //PATTERN.create("water", 0, 0, [200, 255], [0.01, 0.1]);
-        //PATTERN.create("water");
     },
     setTitle() {
         const text = GAME.generateTitleText();
