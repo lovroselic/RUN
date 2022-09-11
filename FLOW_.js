@@ -160,25 +160,20 @@ var FLOW = {
         //
 
         if (NODE.size <= 0) {
-            console.log("NODE: ", NODE, "\n");
             NODE.size = 0;
-            //let down;
-            //debug
-            for (let d of this.drains) {
-                console.log(this.NA.map[d]);
-            }
-            //debug
-
             let levelOfPrevious = this.NA.indexToGrid(NODE.prev.first()).y;
-            if (levelOfPrevious === this.impliedLevel || levelOfPrevious <= this.flood_level) {
-                clearNode(NODE);
-            } else {
-                //need to set new drains
-                throw "new line of DRAINS";
+
+            if (!(levelOfPrevious === this.impliedLevel || levelOfPrevious <= this.flood_level)) {
+                this.flood_level++;
+                console.log("set new drains NODE: ", NODE, "\n");
+                this.next_line_flooded(NODE.prev.first());
             }
+            clearNode(NODE);
+            return;
         }
 
         function clearNode(NODE) {
+            FLOW.NA.map[NODE.prev.first()].next.delete(NODE.index);
             NODE.next.clear();
             NODE.prev.clear();
             FLOW.drains.delete(NODE.index);
@@ -191,6 +186,13 @@ var FLOW = {
             }
         }
         return false;
+    },
+    next_line_flooded(index) {
+        console.log("next_line_flooded", index);
+        let left = this.find_branch_flooded(index, LEFT);
+        let right = this.find_branch_flooded(index, RIGHT);
+        let candidates = [index, ...left, ...right];
+        this.drains.addArray(candidates);
     },
     next_line(grid, NODE, lapsedTime = 17) {
         console.log("NEXT LINE", grid);
@@ -231,9 +233,8 @@ var FLOW = {
             }
             return;
         }
-        for (let c of candidates) {
-            this.terminals.add(c);
-        }
+
+        this.terminals.addArray(candidates);
         this.excess_flow = Math.max(0.001, this.excess_flow);
         this.flow(lapsedTime, 0);
     },
@@ -244,6 +245,18 @@ var FLOW = {
             next_down = grid.add(DOWN);
         }
         return grid;
+    },
+    find_branch_flooded(node, dir) {
+        let grid = this.GA.indexToGrid(node).add(dir);
+        let line = [];
+        let index = this.NA.gridToIndex(grid);
+        while (!this.GA.check(grid, MAPDICT.WALL + MAPDICT.BLOCKWALL)) {
+            if (this.NA.map[index].size === 0) break;
+            line.push(index);
+            grid = grid.add(dir);
+            index = this.NA.gridToIndex(grid);
+        }
+        return line;
     },
     find_branch(node, dir, type) {
         let grid = this.GA.indexToGrid(node).add(dir);

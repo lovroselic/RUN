@@ -327,6 +327,9 @@ Set.prototype.moveFrom = function (s) {
 Set.prototype.first = function () {
   return this.entries().next().value[0];
 };
+Set.prototype.addArray = function(arr) {
+  arr.forEach(el => this.add(el));
+};
 
 class Grid {
   constructor(x = 0, y = 0) {

@@ -40,7 +40,7 @@ var INI = {
     VERTICAL_WALL_WIDTH: 13
 };
 var PRG = {
-    VERSION: "0.07.09",
+    VERSION: "0.07.10",
     NAME: "R.U.N.",
     YEAR: "2022",
     CSS: "color: #239AFF;",
