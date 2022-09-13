@@ -45,6 +45,7 @@ var FLOW = {
     GA: null,
     NA: null,
     flood_level: Infinity,
+    //flood_level_flag: false,
     init(map, origin) {
         this.map = map;
         this.GA = map.GA;
@@ -78,6 +79,9 @@ var FLOW = {
         for (let d of this.drains) {
             console.log(d, "->", this.NA.indexToGrid(d));
         }
+
+        /*if (this.flood_level_flag) this.flood_level++;
+        this.flood_level_flag = false;*/
 
         console.log("terminals:");
         for (let t of this.terminals) {
@@ -162,10 +166,17 @@ var FLOW = {
         if (NODE.size <= 0) {
             NODE.size = 0;
             let levelOfPrevious = this.NA.indexToGrid(NODE.prev.first()).y;
-
-            if (!(levelOfPrevious === this.impliedLevel || levelOfPrevious <= this.flood_level)) {
-                this.flood_level++;
-                console.log("set new drains NODE: ", NODE, "\n");
+            console.log("check NODE: ", NODE, this.NA.indexToGrid(NODE.index),
+                "levelOfPrevious", levelOfPrevious,
+                "this.NA.indexToGrid(NODE.index).y", this.NA.indexToGrid(NODE.index).y,
+                "this.impliedLevel", this.impliedLevel, "\n");
+            if (levelOfPrevious < this.impliedLevel && levelOfPrevious > this.NA.indexToGrid(NODE.index).y) {
+                console.log("..... set new drains NODE: ",
+                    NODE, this.NA.indexToGrid(NODE.index),
+                    "levelOfPrevious", levelOfPrevious,
+                    "this.NA.indexToGrid(NODE.index).y", this.NA.indexToGrid(NODE.index).y,
+                    "this.impliedLevel", this.impliedLevel, "\n");
+                this.flood_level = levelOfPrevious;
                 this.next_line_flooded(NODE.prev.first());
             }
             clearNode(NODE);
@@ -188,7 +199,7 @@ var FLOW = {
         return false;
     },
     next_line_flooded(index) {
-        console.log("next_line_flooded", index);
+        console.log("next_line_flooded", index, this.NA.indexToGrid(index));
         let left = this.find_branch_flooded(index, LEFT);
         let right = this.find_branch_flooded(index, RIGHT);
         let candidates = [index, ...left, ...right];
