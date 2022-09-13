@@ -2,6 +2,7 @@
 /*jshint -W097 */
 /*jshint -W117 */
 /*jshint -W061 */
+/*jshint esversion: 11 */
 "use strict";
 
 /*
@@ -102,7 +103,7 @@ var FLOW = {
             this.calc_flow(n, lapsedTime);
         }
         this.excess_flow = 0;
-        if (this.terminals.size === 0 && this.drains.size > 0){
+        if (this.terminals.size === 0 && this.drains.size > 0) {
             this.terminals = this.drains;
             this.drains = new Set();
         }
@@ -153,7 +154,7 @@ var FLOW = {
             if (this.NA.map[this.NA.gridToIndex(grid)].size > 0) return;
 
             //terminate if not last that reached flood level
-            //and  there are terminals lower than flood level
+            //and there are terminals lower than flood level
 
             if (this.terminals.size > 0 && this.any_terminal_lower() && grid.y < this.flood_level) {
                 return;
@@ -311,7 +312,6 @@ var FLOW = {
         this.next_node(this.origin_index);
     },
     next_node(node) {
-        //console.log("next draw:", node);
         this.draw_node(node);
         for (let n of this.NA.map[node].next) {
             this.next_node(n);
@@ -335,7 +335,16 @@ var FLOW = {
         console.log("\n#############################################");
         console.warn("ReFlow", index, which);
         let grid = this.GA.indexToGrid(index);
-        console.log("grid.y, this.flood_level", grid.y, this.flood_level);
+        let NODE = this.NA.map[index];
+        console.log(grid, "grid.y, this.flood_level", grid.y, this.flood_level, "NODE", NODE);
+
+        if (NODE.size > 0){
+            let preNode = this.NA.map[NODE.prev.first()];
+            NODE.size = preNode.size;
+            NODE.boundaries = preNode.boundaries;
+            NODE.maxFlow = preNode.maxFlow;
+        }
+   
         let correction = 0;
         if (which === MAPDICT.DOOR) correction = 1;
         let impliedLevel = grid.y + correction;
@@ -345,8 +354,13 @@ var FLOW = {
             if (this.terminals.size > 0 && this.drains.size === 0) {
                 this.drains.moveFrom(this.terminals);
             } else {
-                //to be implemented!!!
-                throw "set drains from floodlevel";
+                //drains from floodLevel
+                let startIndex = this.flood_level * this.map.width;
+                for (let i = startIndex; i < startIndex + this.map.width; i++) {
+                    if (this.NA.map[i]?.size === 1) {
+                        this.drains.add(i);
+                    }
+                }
             }
             console.log("drains set", this.drains);
             return this.next_line(grid, this.NA.map[this.origin_index]);
@@ -355,8 +369,6 @@ var FLOW = {
         } else {
             console.log("REFLOW Not applicable");
         }
-
-        //throw "REFLOW";
     }
 };
 
