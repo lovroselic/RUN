@@ -102,6 +102,10 @@ var FLOW = {
             this.calc_flow(n, lapsedTime);
         }
         this.excess_flow = 0;
+        if (this.terminals.size === 0 && this.drains.size > 0){
+            this.terminals = this.drains;
+            this.drains = new Set();
+        }
     },
     calc_flow(node, lapsedTime) {
         let NODE = this.NA.map[node];
@@ -166,10 +170,6 @@ var FLOW = {
         if (NODE.size <= 0) {
             NODE.size = 0;
             let levelOfPrevious = this.NA.indexToGrid(NODE.prev.first()).y;
-            console.log("check NODE: ", NODE, this.NA.indexToGrid(NODE.index),
-                "levelOfPrevious", levelOfPrevious,
-                "this.NA.indexToGrid(NODE.index).y", this.NA.indexToGrid(NODE.index).y,
-                "this.impliedLevel", this.impliedLevel, "\n");
             if (levelOfPrevious < this.impliedLevel && levelOfPrevious > this.NA.indexToGrid(NODE.index).y) {
                 console.log("..... set new drains NODE: ",
                     NODE, this.NA.indexToGrid(NODE.index),
