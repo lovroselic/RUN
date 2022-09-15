@@ -81,8 +81,6 @@ var FLOW = {
             console.log(d, "->", this.NA.indexToGrid(d));
         }
 
-        /*if (this.flood_level_flag) this.flood_level++;
-        this.flood_level_flag = false;*/
 
         console.log("terminals:");
         for (let t of this.terminals) {
@@ -103,13 +101,31 @@ var FLOW = {
             this.calc_flow(n, lapsedTime);
         }
         this.excess_flow = 0;
+
         if (this.terminals.size === 0 && this.drains.size > 0) {
             this.terminals = this.drains;
             this.drains = new Set();
         }
+
+        if (this.terminals.size > 0 && this.drains.size > 0) {
+            if (this.impliedLevel - 1 === this.flood_level) {
+                //let levels = [...this.terminals].map(el => Math.floor(el / this.map.width));
+                //console.log("levels",levels);
+                for (let T of this.terminals) {
+                    let terminalLevel = Math.floor(T / this.map.width);
+                    console.log("T, terminalLevel", T, terminalLevel);
+                    if (terminalLevel === this.flood_level) {
+                        throw "do something about it!";
+                    }
+                }
+
+
+                //throw "FIX THIS!";
+            }
+        }
     },
-    calc_flow(node, lapsedTime) {
-        let NODE = this.NA.map[node];
+    set_node(NODE){
+        let node = NODE.index;
         let ga_value = this.GA.map[node];
         let max_h = GA_FLOW_MAP[ga_value];
         let min_h = GA_FLOW_MAP.MIN_FLOW;
@@ -136,6 +152,10 @@ var FLOW = {
         NODE.boundaries = new Boundaries(min_w, max_w, min_h, max_h, off_x);
         let max_flow = NODE.boundaries.max_w * NODE.boundaries.max_h / (ENGINE.INI.GRIDPIX ** 2);
         NODE.max_flow = max_flow;
+    },
+    calc_flow(node, lapsedTime) {
+        let NODE = this.NA.map[node];
+        this.set_node(NODE);
 
         let flow_update = (lapsedTime / 1000 * (NODE.flow / ENGINE.INI.GRIDPIX ** 2)) * NODE.max_flow;
         NODE.size += flow_update;
@@ -270,7 +290,8 @@ var FLOW = {
         }
         return line;
     },
-    find_branch(node, dir, type) {
+    find_branch(node, dir, type, dig = true) {
+        //console.log("find branch", arguments);
         let grid = this.GA.indexToGrid(node).add(dir);
         let line = [];
         let index;
@@ -289,15 +310,14 @@ var FLOW = {
             let down_grid = grid.add(DOWN);
 
             if (!this.GA.check(down_grid, MAPDICT.WALL + MAPDICT.BLOCKWALL + MAPDICT.TRAP_DOOR)) {
-                console.log("PATH DOWN", down_grid);
+                console.log("PATH DOWN", down_grid, dig);
                 //check if flooded
-                if (this.NA.map[this.NA.gridToIndex(down_grid)].size === 0) {
-                    return this.dig_down(down_grid);
+                if (dig) {
+                    if (this.NA.map[this.NA.gridToIndex(down_grid)].size === 0) {
+                        return this.dig_down(down_grid);
+                    }
                 } else {
-                    console.log(down_grid, "flooded?",
-                        this.NA.map[this.NA.gridToIndex(down_grid)].size,
-                        this.NA.map[this.NA.gridToIndex(down_grid)].index,
-                        this.NA.map[this.NA.gridToIndex(down_grid)].size === 0);
+                    return line;
                 }
             }
 
@@ -337,14 +357,8 @@ var FLOW = {
         let grid = this.GA.indexToGrid(index);
         let NODE = this.NA.map[index];
         console.log(grid, "grid.y, this.flood_level", grid.y, this.flood_level, "NODE", NODE);
+        let cacheType = NODE.type;
 
-        if (NODE.size > 0){
-            let preNode = this.NA.map[NODE.prev.first()];
-            NODE.size = preNode.size;
-            NODE.boundaries = preNode.boundaries;
-            NODE.maxFlow = preNode.maxFlow;
-        }
-   
         let correction = 0;
         if (which === MAPDICT.DOOR) correction = 1;
         let impliedLevel = grid.y + correction;
@@ -363,12 +377,35 @@ var FLOW = {
                 }
             }
             console.log("drains set", this.drains);
-            return this.next_line(grid, this.NA.map[this.origin_index]);
+            this.next_line(grid, this.NA.map[this.origin_index]);
         } else if (this.flood_level === impliedLevel) {
-            return this.next_line(this.dig_down(grid), this.NA.map[this.origin_index]);
+            this.next_line(this.dig_down(grid), this.NA.map[this.origin_index]);
         } else {
             console.log("REFLOW Not applicable");
         }
+
+        // update line after reflow
+        //console.log("checking node size", NODE, NODE.size);
+        if (NODE.size > 0) {
+            let preNode = this.NA.map[NODE.prev.first()];
+            NODE.size = preNode.size;
+            this.set_node(NODE);
+            //console.log(NODE.type, eval(NODE.type));
+            //console.log("check levels", this.flood_level, this.impliedLevel);
+            let branch = this.find_branch(index, eval(cacheType), cacheType, false);
+            let N = index;
+            for (let b of branch) {
+                if (this.impliedLevel - 1 === this.flood_level) {
+                    this.drains.add(b);
+                }
+                this.NA.map[N].next.add(b);
+                this.NA.map[b].prev.add(N);
+                this.NA.map[b].size = preNode.size;
+                this.set_node(this.NA.map[b]);
+                N = b;
+            }
+        }
+        return;
     }
 };
 

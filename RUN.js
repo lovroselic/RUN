@@ -40,7 +40,7 @@ var INI = {
     VERTICAL_WALL_WIDTH: 13
 };
 var PRG = {
-    VERSION: "0.07.13",
+    VERSION: "0.07.14",
     NAME: "R.U.N.",
     YEAR: "2022",
     CSS: "color: #239AFF;",
@@ -157,14 +157,12 @@ class Dynamite {
             if (GA.isDoor(grid) || GA.isBlockWall(grid)) {
                 DESTRUCTION_ANIMATION.add(new Explosion(grid, Grid.toCenter(grid), 'Smoke'));
                 let which = GA.getValue(grid);
-                
                 let idx = GA.gridToIndex(grid);
                 GA.clear(grid, MAPDICT.DOOR);
                 GA.clear(grid, MAPDICT.BLOCKWALL);
                 if (!FLOW.NA.map[idx]) {
                     FLOW.NA.map[idx] = new FlowNode(idx);
                 }
-                FLOW.NA.map[idx].type = 'UP';
                 FLOW.reFlow(idx, which);
             } else if (GA.isTrapDoor(grid)) {
                 DESTRUCTION_ANIMATION.add(new Explosion(grid, FP_Grid.toClass(grid).add(RIGHT, 0.5), 'Smoke'));
