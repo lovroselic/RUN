@@ -35,18 +35,15 @@ var FLOW = {
     CSS: "color: #F3A",
     INI: {
         ORIGIN_SIZE: 0.2,
-        //ORIGIN_FLOW: 512,
-        //ORIGIN_FLOW: 1024,
-        //ORIGIN_FLOW: 2048,
         ORIGIN_FLOW: 4096,
         DRAIN_FACTOR: 2,
+        EPSILON: 0.05,
     },
     layer: 'flood',
     map: null,
     GA: null,
     NA: null,
     flood_level: Infinity,
-    //flood_level_flag: false,
     init(map, origin) {
         this.map = map;
         this.GA = map.GA;
@@ -109,22 +106,88 @@ var FLOW = {
 
         if (this.terminals.size > 0 && this.drains.size > 0) {
             if (this.impliedLevel - 1 === this.flood_level) {
-                //let levels = [...this.terminals].map(el => Math.floor(el / this.map.width));
-                //console.log("levels",levels);
                 for (let T of this.terminals) {
                     let terminalLevel = Math.floor(T / this.map.width);
                     console.log("T, terminalLevel", T, terminalLevel);
                     if (terminalLevel === this.flood_level) {
-                        throw "do something about it!";
+                        if (this.NA.map[T].size > 0) {
+                            console.error("check linking!!!!");
+                            let DrainCandidates = [];
+                            if (this.drains.has(T - 1)) {
+                                DrainCandidates.push(T - 1);
+                            }
+                            if (this.drains.has(T + 1)) {
+                                DrainCandidates.push(T + 1);
+                            }
+                            if (DrainCandidates.length > 0) {
+                                for (let D of DrainCandidates) {
+                                    console.log(T, "->", D);
+                                    this.link_stream(T, D);
+                                }
+                            }
+                            break;
+                        }
                     }
                 }
-
-
-                //throw "FIX THIS!";
             }
         }
+        //console.log("back to flow");
+        return;
     },
-    set_node(NODE){
+    link_stream(terminal, drain) {
+        console.log('link_stream terminal, drain', terminal, drain);
+        let T_NODE = this.NA.map[terminal];
+        let D_NODE = this.NA.map[drain];
+        let terminalLevel = Math.floor(terminal / this.map.width);
+        //console.log(D_NODE.size, T_NODE.size);
+        if (D_NODE.size - FLOW.INI.EPSILON > T_NODE.size) return;
+        let linked = [];
+        let dindex = drain;
+        let tindex = terminal;
+        //follow prev, while same level
+        while (Math.floor(this.NA.map[dindex].prev.first() / this.map.width) === terminalLevel) {
+            //console.log("..dindex", dindex, Math.floor(dindex / this.map.width), terminalLevel);
+            linked.push(dindex);
+            let next = this.NA.map[dindex].prev.first();
+            this.NA.map[tindex].next.add(dindex);
+            this.NA.map[dindex].prev.add(tindex);
+            this.NA.map[dindex].prev.delete(next);
+            this.NA.map[next].next.delete(dindex);
+            tindex = dindex;
+            dindex = next;
+            //console.log("....next", dindex);
+        }
+
+        //dindex is pivot
+        this.NA.map[tindex].next.add(dindex);
+        let root = this.NA.map[dindex].prev.first();
+        this.NA.map[dindex].prev.delete(root);
+        this.NA.map[dindex].prev.add(tindex);
+        this.NA.map[dindex].next.delete(tindex);
+        this.NA.map[root].next.delete(dindex);
+        linked.push(dindex);
+
+        //follow next until, none
+
+        while (this.NA.map[dindex].next.size > 0 && Math.floor(this.NA.map[dindex].next.first() / this.map.width) === terminalLevel) {
+            tindex = dindex;
+            dindex = this.NA.map[dindex].next.first();
+            //console.log("...dindex", dindex, Math.floor(dindex / this.map.width), terminalLevel);
+            linked.push(dindex);
+            this.NA.map[tindex].next.add(dindex);
+            this.NA.map[dindex].prev.add(tindex);
+        }
+
+        //drains to terminals & adjust size
+        for (let L of linked) {
+            this.drains.delete(L);
+            this.terminals.add(L);
+            this.NA.map[L].size = T_NODE.size;
+
+        }
+        return;
+    },
+    set_node(NODE) {
         let node = NODE.index;
         let ga_value = this.GA.map[node];
         let max_h = GA_FLOW_MAP[ga_value];
