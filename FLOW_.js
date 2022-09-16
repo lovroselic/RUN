@@ -7,6 +7,10 @@
 
 /*
     FLOW algorithms
+
+    known issues, TODO:
+    * draining from inaccesible dead ends, which have no downward drainage
+
 */
 class FlowNode {
     constructor(index) {
@@ -18,7 +22,6 @@ class FlowNode {
         this.type = null;
         this.boundaries = null;
         this.max_flow = null;
-        //this.y = null;
     }
 }
 class Boundaries {
@@ -85,6 +88,24 @@ var FLOW = {
         }
         //debug end
         console.log("..........................,,,,,,,,,,\n");
+
+        //what if no terminals?
+        if (this.terminals.size === 0) {
+            //iterate on flood_level
+            let startIndex = this.flood_level * this.map.width;
+            for (let i = startIndex; i < startIndex + this.map.width; i++) {
+                if (this.NA.map[i]?.size === 1) {
+                    let t = i - this.map.width;
+                    if (t > 0 && this.NA.map[t]?.size === 0) {
+                        console.log("candidate for creating terminal->", this.NA.indexToGrid(i), i, "- >", t);
+                        this.terminals.add(i);
+                    }
+                }
+            }
+        }
+
+
+
         //add drain
         //calc drain size
         for (let d of this.drains) {
@@ -131,7 +152,6 @@ var FLOW = {
                 }
             }
         }
-        //console.log("back to flow");
         return;
     },
     link_stream(terminal, drain) {
@@ -240,6 +260,9 @@ var FLOW = {
             //and there are terminals lower than flood level
 
             if (this.terminals.size > 0 && this.any_terminal_lower() && grid.y < this.flood_level) {
+                console.error("this HAPPENED!");
+                console.log(this.flood_level);
+                //throw "WORK HERE!";
                 return;
             }
 
@@ -261,6 +284,7 @@ var FLOW = {
                     "this.NA.indexToGrid(NODE.index).y", this.NA.indexToGrid(NODE.index).y,
                     "this.impliedLevel", this.impliedLevel, "\n");
                 this.flood_level = levelOfPrevious;
+                this.add_drains_from_flood_level(); 
                 this.next_line_flooded(NODE.prev.first());
             }
             clearNode(NODE);
@@ -414,6 +438,14 @@ var FLOW = {
         CTX.fillStyle = pattern;
         CTX.fillRect(drawStart.x, drawStart.y, width, height);
     },
+    add_drains_from_flood_level() {
+        let startIndex = this.flood_level * this.map.width;
+        for (let i = startIndex; i < startIndex + this.map.width; i++) {
+            if (this.NA.map[i]?.size === 1) {
+                this.drains.add(i);
+            }
+        }
+    },
     reFlow(index, which) {
         console.log("\n#############################################");
         console.warn("ReFlow", index, which);
@@ -431,13 +463,7 @@ var FLOW = {
             if (this.terminals.size > 0 && this.drains.size === 0) {
                 this.drains.moveFrom(this.terminals);
             } else {
-                //drains from floodLevel
-                let startIndex = this.flood_level * this.map.width;
-                for (let i = startIndex; i < startIndex + this.map.width; i++) {
-                    if (this.NA.map[i]?.size === 1) {
-                        this.drains.add(i);
-                    }
-                }
+                this.add_drains_from_flood_level();
             }
             console.log("drains set", this.drains);
             this.next_line(grid, this.NA.map[this.origin_index]);
@@ -448,13 +474,10 @@ var FLOW = {
         }
 
         // update line after reflow
-        //console.log("checking node size", NODE, NODE.size);
         if (NODE.size > 0) {
             let preNode = this.NA.map[NODE.prev.first()];
             NODE.size = preNode.size;
             this.set_node(NODE);
-            //console.log(NODE.type, eval(NODE.type));
-            //console.log("check levels", this.flood_level, this.impliedLevel);
             let branch = this.find_branch(index, eval(cacheType), cacheType, false);
             let N = index;
             for (let b of branch) {
