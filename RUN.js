@@ -40,7 +40,7 @@ var INI = {
     VERTICAL_WALL_WIDTH: 13
 };
 var PRG = {
-    VERSION: "0.07.16",
+    VERSION: "0.07.17",
     NAME: "R.U.N.",
     YEAR: "2022",
     CSS: "color: #239AFF;",
@@ -156,7 +156,8 @@ class Dynamite {
         for (let grid of grids) {
             if (GA.isDoor(grid) || GA.isBlockWall(grid)) {
                 DESTRUCTION_ANIMATION.add(new Explosion(grid, Grid.toCenter(grid), 'Smoke'));
-                let which = GA.getValue(grid);
+                //let which = GA.getValue(grid);
+                let which = GA.getValue(grid) & (2 ** GA.gridSizeBit - 1 - MAPDICT.WATER);
                 let idx = GA.gridToIndex(grid);
                 GA.clear(grid, MAPDICT.DOOR);
                 GA.clear(grid, MAPDICT.BLOCKWALL);

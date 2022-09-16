@@ -5,11 +5,13 @@
 /*jshint esversion: 11 */
 "use strict";
 
-/*
+/** 
     FLOW algorithms
 
     known issues, TODO:
     * draining from inaccesible dead ends, which have no downward drainage
+        -> drain through 'cracks'
+            -> find path to origin
 
 */
 class FlowNode {
@@ -34,7 +36,7 @@ class Boundaries {
     }
 }
 var FLOW = {
-    VERSION: "0.02",
+    VERSION: "0.03",
     CSS: "color: #F3A",
     INI: {
         ORIGIN_SIZE: 0.2,
@@ -60,7 +62,6 @@ var FLOW = {
         this.NA.G_set(this.origin, 'flow', FLOW.INI.ORIGIN_FLOW);
         this.NA.G_set(this.origin, 'type', 'UP');
         this.set_flood_level(this.origin.y);
-
         console.log(`%cFLOW initialized`, FLOW.CSS, FLOW.NA);
     },
     make_NA() {
@@ -209,7 +210,9 @@ var FLOW = {
     },
     set_node(NODE) {
         let node = NODE.index;
-        let ga_value = this.GA.map[node];
+        let ga_value = this.GA.map[node] & (2 ** this.GA.gridSizeBit - 1 - MAPDICT.WATER);
+        //let ga_value = this.GA.map[node];
+        console.log(ga_value);
         let max_h = GA_FLOW_MAP[ga_value];
         let min_h = GA_FLOW_MAP.MIN_FLOW;
         let max_w, off_x;
@@ -251,7 +254,8 @@ var FLOW = {
             NODE.size = NODE.max_flow;
             this.terminals.delete(node);
 
-            if (this.GA.map[node] === MAPDICT.TRAP_DOOR) return;
+            //if (this.GA.map[node] === MAPDICT.TRAP_DOOR) return;
+            if (this.GA.icheck(node, MAPDICT.TRAP_DOOR)) return;
             let grid = this.NA.indexToGrid(node).add(UP);
             if (this.GA.check(grid, MAPDICT.WALL + MAPDICT.BLOCKWALL)) return;
             if (this.NA.map[this.NA.gridToIndex(grid)].size > 0) return;
@@ -260,31 +264,19 @@ var FLOW = {
             //and there are terminals lower than flood level
 
             if (this.terminals.size > 0 && this.any_terminal_lower() && grid.y < this.flood_level) {
-                console.error("this HAPPENED!");
-                console.log(this.flood_level);
-                //throw "WORK HERE!";
                 return;
             }
 
             this.excess_flow += excess_flow;
             return this.next_line(grid, NODE, lapsedTime);
         }
-        //if implied level and close to the rest, draining stops and line rebalances and drains -> terminals
-        //watch for //if it has next() pointing downwards, it can only be side branch not top!!!
-        //
-        //
 
         if (NODE.size <= 0) {
             NODE.size = 0;
             let levelOfPrevious = this.NA.indexToGrid(NODE.prev.first()).y;
             if (levelOfPrevious < this.impliedLevel && levelOfPrevious > this.NA.indexToGrid(NODE.index).y) {
-                console.log("..... set new drains NODE: ",
-                    NODE, this.NA.indexToGrid(NODE.index),
-                    "levelOfPrevious", levelOfPrevious,
-                    "this.NA.indexToGrid(NODE.index).y", this.NA.indexToGrid(NODE.index).y,
-                    "this.impliedLevel", this.impliedLevel, "\n");
                 this.flood_level = levelOfPrevious;
-                this.add_drains_from_flood_level(); 
+                this.add_drains_from_flood_level();
                 this.next_line_flooded(NODE.prev.first());
             }
             clearNode(NODE);
@@ -378,7 +370,6 @@ var FLOW = {
         return line;
     },
     find_branch(node, dir, type, dig = true) {
-        //console.log("find branch", arguments);
         let grid = this.GA.indexToGrid(node).add(dir);
         let line = [];
         let index;
@@ -439,9 +430,15 @@ var FLOW = {
         CTX.fillRect(drawStart.x, drawStart.y, width, height);
     },
     add_drains_from_flood_level() {
+        this.NA_to_GA();
         let startIndex = this.flood_level * this.map.width;
         for (let i = startIndex; i < startIndex + this.map.width; i++) {
             if (this.NA.map[i]?.size === 1) {
+                //only if path to origin, else link to origin and skip
+                //
+
+
+
                 this.drains.add(i);
             }
         }
@@ -453,7 +450,6 @@ var FLOW = {
         let NODE = this.NA.map[index];
         console.log(grid, "grid.y, this.flood_level", grid.y, this.flood_level, "NODE", NODE);
         let cacheType = NODE.type;
-
         let correction = 0;
         if (which === MAPDICT.DOOR) correction = 1;
         let impliedLevel = grid.y + correction;
@@ -465,7 +461,7 @@ var FLOW = {
             } else {
                 this.add_drains_from_flood_level();
             }
-            console.log("drains set", this.drains);
+            //console.log("drains set", this.drains);
             this.next_line(grid, this.NA.map[this.origin_index]);
         } else if (this.flood_level === impliedLevel) {
             this.next_line(this.dig_down(grid), this.NA.map[this.origin_index]);
@@ -492,6 +488,13 @@ var FLOW = {
             }
         }
         return;
+    },
+    NA_to_GA(W = MAPDICT.WATER) {
+        for (let index = 0; index < this.NA.map.length; index++) {
+            if (this.NA.map[index]?.size === 1) {
+                this.GA.iset(index, W);
+            }
+        }
     }
 };
 

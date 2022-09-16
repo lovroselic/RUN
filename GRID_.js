@@ -16,7 +16,7 @@ known bugs:
 */
 
 const GRID = {
-  VERSION: "3.06",
+  VERSION: "3.07",
   CSS: "color: #0AA",
   SETTING: {
     ALLOW_CROSS: false,
@@ -519,6 +519,7 @@ var MAPDICT = {
   //alernative1
   TRAP_DOOR: 2 ** 3, //8
   BLOCKWALL: 2 ** 4, //16
+  WATER: 2 ** 7, //128 - fog,water should remain largest!
 };
 class GridArray {
   constructor(sizeX, sizeY, byte = 1, fill = 0) {
@@ -577,6 +578,9 @@ class GridArray {
     if (this.isOutOfBounds(grid)) throw "Grid is out of bounds - ERROR";
     return grid.x + grid.y * this.width;
   }
+  iset(index, bin){
+    this.map[index] |= bin;
+  }
   set(grid, bin) {
     if (this.isOutOfBounds(grid)) throw "Grid is out of bounds - ERROR";
     this.map[this.gridToIndex(grid)] |= bin;
@@ -588,6 +592,9 @@ class GridArray {
   clear(grid, bin) {
     if (this.isOutOfBounds(grid)) throw "Grid is out of bounds - ERROR";
     this.map[this.gridToIndex(grid)] &= (2 ** this.gridSizeBit - 1 - bin);
+  }
+  icheck(index, bin){
+    return this.map[index] & bin;
   }
   check(grid, bin) {
     if (this.isOutOfBounds(grid)) return false;
