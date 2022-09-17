@@ -578,7 +578,7 @@ class GridArray {
     if (this.isOutOfBounds(grid)) throw "Grid is out of bounds - ERROR";
     return grid.x + grid.y * this.width;
   }
-  iset(index, bin){
+  iset(index, bin) {
     this.map[index] |= bin;
   }
   set(grid, bin) {
@@ -589,11 +589,14 @@ class GridArray {
     if (this.isOutOfBounds(grid)) throw "Grid is out of bounds - ERROR";
     this.map[this.gridToIndex(grid)] = value;
   }
+  iclear(index, bin) {
+    this.map[index] &= (2 ** this.gridSizeBit - 1 - bin);
+  }
   clear(grid, bin) {
     if (this.isOutOfBounds(grid)) throw "Grid is out of bounds - ERROR";
     this.map[this.gridToIndex(grid)] &= (2 ** this.gridSizeBit - 1 - bin);
   }
-  icheck(index, bin){
+  icheck(index, bin) {
     return this.map[index] & bin;
   }
   check(grid, bin) {
@@ -608,7 +611,7 @@ class GridArray {
     if (this.isOutOfBounds(grid)) return false;
     return this.map[this.gridToIndex(grid)];
   }
-  iget_and_mask(index, not = 0){
+  iget_and_mask(index, not = 0) {
     return this.map[index] & (2 ** this.gridSizeBit - 1 - not);
   }
   toWall(grid) {
@@ -935,14 +938,15 @@ class GridArray {
     }
     return null;
   }
-  findPath_AStar(
-    start,
-    finish,
-    path = [0],
-    allowCross = false,
-    maxPath = Infinity,
-    maxIterations = Infinity
-  ) {
+  findPath_AStar(start, finish, path = [0], allowCross = false, maxPath = Infinity, maxIterations = Infinity) {
+    /**
+     * potentially obsolete
+     */
+    if (1 == 1) throw "Check usasage!obsolete?";
+    /**
+     * capturing usage
+     */
+
     var Q = new NodeQ("distance");
     let NodeMap = this.setNodeMap("tempNodeMap", path);
     Q.list.push(new SearchNode(start, finish));
@@ -1088,13 +1092,7 @@ class GridArray {
           history.push(nextGrid);
           let dirStack = [].concat(q.stack);
           dirStack.push(dir);
-          let fork = new BlindNode(
-            nextGrid,
-            dirStack,
-            q.path + 1,
-            history,
-            iteration
-          );
+          let fork = new BlindNode(nextGrid, dirStack, q.path + 1, history, iteration);
           T.push(fork);
         }
       }
@@ -1244,18 +1242,6 @@ class NodeArray {
       if (carve) {
         this.map[index] = new CLASS(index);
       }
-    }
-  }
-
-  /**
-   * not sure if this will be used
-   * required only if null -> node or node -> null
-   * to becontinued or deleted
-   */
-  update() {
-
-    for (let [index, element] of this.map.entries()) {
-
     }
   }
   G_set(grid, property, value) {

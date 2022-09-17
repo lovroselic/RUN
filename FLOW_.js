@@ -9,10 +9,8 @@
     FLOW algorithms
 
     known issues, TODO:
-    * draining from inaccesible dead ends, which have no downward drainage
-        -> drain through 'cracks'
-            -> find path to origin
-
+    * join on max size not only on terminal size!!
+    * add terminals only if path!!
 */
 class FlowNode {
     constructor(index) {
@@ -99,6 +97,13 @@ var FLOW = {
                     let t = i - this.map.width;
                     if (t > 0 && this.NA.map[t]?.size === 0) {
                         console.log("candidate for creating terminal->", this.NA.indexToGrid(i), i, "- >", t);
+                        ///only if path to origin
+
+
+
+                        ///
+
+
                         this.terminals.add(i);
                     }
                 }
@@ -264,9 +269,11 @@ var FLOW = {
             NODE.size = 0;
             let levelOfPrevious = this.NA.indexToGrid(NODE.prev.first()).y;
             if (levelOfPrevious < this.impliedLevel && levelOfPrevious > this.NA.indexToGrid(NODE.index).y) {
-                this.flood_level = levelOfPrevious;
-                this.add_drains_from_flood_level();
-                this.next_line_flooded(NODE.prev.first());
+                if (levelOfPrevious > this.flood_level) {
+                    this.flood_level = levelOfPrevious;
+                    this.add_drains_from_flood_level(); // except if it has been already done!
+                    //this.next_line_flooded(NODE.prev.first());
+                }
             }
             clearNode(NODE);
             return;
@@ -286,13 +293,6 @@ var FLOW = {
             }
         }
         return false;
-    },
-    next_line_flooded(index) {
-        console.log("next_line_flooded", index, this.NA.indexToGrid(index));
-        let left = this.find_branch_flooded(index, LEFT);
-        let right = this.find_branch_flooded(index, RIGHT);
-        let candidates = [index, ...left, ...right];
-        this.drains.addArray(candidates);
     },
     next_line(grid, NODE, lapsedTime = 17) {
         console.log("NEXT LINE", grid);
@@ -344,18 +344,6 @@ var FLOW = {
             next_down = grid.add(DOWN);
         }
         return grid;
-    },
-    find_branch_flooded(node, dir) {
-        let grid = this.GA.indexToGrid(node).add(dir);
-        let line = [];
-        let index = this.NA.gridToIndex(grid);
-        while (!this.GA.check(grid, MAPDICT.WALL + MAPDICT.BLOCKWALL)) {
-            if (this.NA.map[index].size === 0) break;
-            line.push(index);
-            grid = grid.add(dir);
-            index = this.NA.gridToIndex(grid);
-        }
-        return line;
     },
     find_branch(node, dir, type, dig = true) {
         let grid = this.GA.indexToGrid(node).add(dir);
@@ -418,18 +406,59 @@ var FLOW = {
         CTX.fillRect(drawStart.x, drawStart.y, width, height);
     },
     add_drains_from_flood_level() {
+        console.log("add_drains_from_flood_level");
         this.NA_to_GA();
         let startIndex = this.flood_level * this.map.width;
         for (let i = startIndex; i < startIndex + this.map.width; i++) {
             if (this.NA.map[i]?.size === 1) {
-                //only if path to origin, else link to origin and skip
-                //
+                let NM = this.GA.findPath_AStar_fast(this.NA.indexToGrid(i), this.origin, [MAPDICT.WATER]);
+                console.log("path->", i, this.NA.indexToGrid(i), NM);
+                if (NM !== null) {
+                    this.drains.add(i);
+                } else {
+                    //dead end
+                    //this.NA.map[this.NA.map[i].prev.first()].next.delete(i);
+
+                    this.flood_link(this.NA.indexToGrid(i));
+                    //link with origin
+                    this.NA.map[i].prev = new Set([this.origin_index]);
+                    this.NA.map[this.origin_index].next.add(i);
+                    //
 
 
-
-                this.drains.add(i);
+                    //console.log("this.NA.map[i]", this.NA.map[i]);
+                    //throw "CHECK!";
+                }
             }
         }
+    },
+    flood_link(start, path = [MAPDICT.WATER]) {
+        var Q = [start];
+        let NodeMap = this.GA.setNodeMap("flood_linkNodeMap", path);
+        NodeMap[start.x][start.y] = null;
+        var selected;
+        let iterations = 0;
+        while (Q.length > 0) {
+            selected = Q.shift();
+            let dirs = this.GA.getDirectionsFromNodeMap(selected, NodeMap);
+            let selected_index = this.GA.gridToIndex(selected);
+            this.NA.map[selected_index].next.clear();
+            //this.NA.map[selected_index].prev.clear();//
+            for (let q = 0; q < dirs.length; q++) {
+                let next = selected.add(dirs[q]);
+                let next_index = this.GA.gridToIndex(next);
+                NodeMap[next.x][next.y] = null;
+                Q.push(next);
+                this.NA.map[selected_index].next.add(next_index);
+                //unlink
+                console.log("deleting from", this.NA.map[next_index].prev.first(), "next", next_index);
+                this.NA.map[this.NA.map[next_index].prev.first()].next.delete(next_index);
+                //
+                this.NA.map[next_index].prev = new Set([selected_index]);
+            }
+            iterations++;
+        }
+        return iterations;
     },
     reFlow(index, which) {
         console.log("\n#############################################");
@@ -479,8 +508,12 @@ var FLOW = {
     },
     NA_to_GA(W = MAPDICT.WATER) {
         for (let index = 0; index < this.NA.map.length; index++) {
-            if (this.NA.map[index]?.size === 1) {
-                this.GA.iset(index, W);
+            if (this.NA.map[index]) {
+                if (this.NA.map[index].size === 1) {
+                    this.GA.iset(index, W);
+                } else {
+                    this.GA.iclear(index, W);
+                }
             }
         }
     }
