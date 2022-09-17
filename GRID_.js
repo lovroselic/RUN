@@ -608,6 +608,9 @@ class GridArray {
     if (this.isOutOfBounds(grid)) return false;
     return this.map[this.gridToIndex(grid)];
   }
+  iget_and_mask(index, not = 0){
+    return this.map[index] & (2 ** this.gridSizeBit - 1 - not);
+  }
   toWall(grid) {
     this.setValue(grid, MAPDICT.WALL);
   }

@@ -36,7 +36,7 @@ class Boundaries {
     }
 }
 var FLOW = {
-    VERSION: "0.03",
+    VERSION: "0.04",
     CSS: "color: #F3A",
     INI: {
         ORIGIN_SIZE: 0.2,
@@ -160,14 +160,12 @@ var FLOW = {
         let T_NODE = this.NA.map[terminal];
         let D_NODE = this.NA.map[drain];
         let terminalLevel = Math.floor(terminal / this.map.width);
-        //console.log(D_NODE.size, T_NODE.size);
         if (D_NODE.size - FLOW.INI.EPSILON > T_NODE.size) return;
         let linked = [];
         let dindex = drain;
         let tindex = terminal;
         //follow prev, while same level
         while (Math.floor(this.NA.map[dindex].prev.first() / this.map.width) === terminalLevel) {
-            //console.log("..dindex", dindex, Math.floor(dindex / this.map.width), terminalLevel);
             linked.push(dindex);
             let next = this.NA.map[dindex].prev.first();
             this.NA.map[tindex].next.add(dindex);
@@ -176,7 +174,6 @@ var FLOW = {
             this.NA.map[next].next.delete(dindex);
             tindex = dindex;
             dindex = next;
-            //console.log("....next", dindex);
         }
 
         //dindex is pivot
@@ -189,11 +186,9 @@ var FLOW = {
         linked.push(dindex);
 
         //follow next until, none
-
         while (this.NA.map[dindex].next.size > 0 && Math.floor(this.NA.map[dindex].next.first() / this.map.width) === terminalLevel) {
             tindex = dindex;
             dindex = this.NA.map[dindex].next.first();
-            //console.log("...dindex", dindex, Math.floor(dindex / this.map.width), terminalLevel);
             linked.push(dindex);
             this.NA.map[tindex].next.add(dindex);
             this.NA.map[dindex].prev.add(tindex);
@@ -204,15 +199,12 @@ var FLOW = {
             this.drains.delete(L);
             this.terminals.add(L);
             this.NA.map[L].size = T_NODE.size;
-
         }
         return;
     },
     set_node(NODE) {
         let node = NODE.index;
-        let ga_value = this.GA.map[node] & (2 ** this.GA.gridSizeBit - 1 - MAPDICT.WATER);
-        //let ga_value = this.GA.map[node];
-        console.log(ga_value);
+        let ga_value = this.GA.iget_and_mask(node, MAPDICT.WATER);
         let max_h = GA_FLOW_MAP[ga_value];
         let min_h = GA_FLOW_MAP.MIN_FLOW;
         let max_w, off_x;
@@ -242,7 +234,6 @@ var FLOW = {
     calc_flow(node, lapsedTime) {
         let NODE = this.NA.map[node];
         this.set_node(NODE);
-
         let flow_update = (lapsedTime / 1000 * (NODE.flow / ENGINE.INI.GRIDPIX ** 2)) * NODE.max_flow;
         NODE.size += flow_update;
         this.overflow(node, NODE, lapsedTime);
@@ -253,8 +244,6 @@ var FLOW = {
             let excess_flow = NODE.size - NODE.max_flow;
             NODE.size = NODE.max_flow;
             this.terminals.delete(node);
-
-            //if (this.GA.map[node] === MAPDICT.TRAP_DOOR) return;
             if (this.GA.icheck(node, MAPDICT.TRAP_DOOR)) return;
             let grid = this.NA.indexToGrid(node).add(UP);
             if (this.GA.check(grid, MAPDICT.WALL + MAPDICT.BLOCKWALL)) return;
@@ -310,7 +299,6 @@ var FLOW = {
         let node = this.GA.gridToIndex(grid);
         let NEW = this.NA.map[node];
         NEW.type = "UP";
-
         let left = this.find_branch(node, LEFT, "LEFT");
         let right = this.find_branch(node, RIGHT, "RIGHT");
         let candidates;
