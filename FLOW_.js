@@ -9,8 +9,8 @@
     FLOW algorithms
 
     known issues, TODO:
+    * door grid after explosion not included in drains
     * join on max size not only on terminal size!!
-    * add terminals only if path!!
 */
 class FlowNode {
     constructor(index) {
@@ -90,27 +90,24 @@ var FLOW = {
 
         //what if no terminals?
         if (this.terminals.size === 0) {
+            this.NA_to_GA();
             //iterate on flood_level
             let startIndex = this.flood_level * this.map.width;
             for (let i = startIndex; i < startIndex + this.map.width; i++) {
                 if (this.NA.map[i]?.size === 1) {
                     let t = i - this.map.width;
                     if (t > 0 && this.NA.map[t]?.size === 0) {
+                        //only if it can flow upward
                         console.log("candidate for creating terminal->", this.NA.indexToGrid(i), i, "- >", t);
                         ///only if path to origin
-
-
-
-                        ///
-
-
-                        this.terminals.add(i);
+                        let NM = this.GA.findPath_AStar_fast(this.NA.indexToGrid(i), this.origin, [MAPDICT.WATER]);
+                        if (NM !== null) {
+                            this.terminals.add(i);
+                        }
                     }
                 }
             }
         }
-
-
 
         //add drain
         //calc drain size
@@ -271,8 +268,7 @@ var FLOW = {
             if (levelOfPrevious < this.impliedLevel && levelOfPrevious > this.NA.indexToGrid(NODE.index).y) {
                 if (levelOfPrevious > this.flood_level) {
                     this.flood_level = levelOfPrevious;
-                    this.add_drains_from_flood_level(); // except if it has been already done!
-                    //this.next_line_flooded(NODE.prev.first());
+                    this.add_drains_from_flood_level();
                 }
             }
             clearNode(NODE);
@@ -410,24 +406,17 @@ var FLOW = {
         this.NA_to_GA();
         let startIndex = this.flood_level * this.map.width;
         for (let i = startIndex; i < startIndex + this.map.width; i++) {
-            if (this.NA.map[i]?.size === 1) {
-                let NM = this.GA.findPath_AStar_fast(this.NA.indexToGrid(i), this.origin, [MAPDICT.WATER]);
-                console.log("path->", i, this.NA.indexToGrid(i), NM);
-                if (NM !== null) {
-                    this.drains.add(i);
-                } else {
-                    //dead end
-                    //this.NA.map[this.NA.map[i].prev.first()].next.delete(i);
-
-                    this.flood_link(this.NA.indexToGrid(i));
-                    //link with origin
-                    this.NA.map[i].prev = new Set([this.origin_index]);
-                    this.NA.map[this.origin_index].next.add(i);
-                    //
-
-
-                    //console.log("this.NA.map[i]", this.NA.map[i]);
-                    //throw "CHECK!";
+            if (this.NA.map[i]) {
+                if (this.NA.map[i].size === this.NA.map[i].max_flow) {
+                    let NM = this.GA.findPath_AStar_fast(this.NA.indexToGrid(i), this.origin, [MAPDICT.WATER]);
+                    console.log("path->", i, this.NA.indexToGrid(i), NM);
+                    if (NM !== null) {
+                        this.drains.add(i);
+                    } else {
+                        this.flood_link(this.NA.indexToGrid(i));
+                        this.NA.map[i].prev = new Set([this.origin_index]);
+                        this.NA.map[this.origin_index].next.add(i);
+                    }
                 }
             }
         }
@@ -437,30 +426,25 @@ var FLOW = {
         let NodeMap = this.GA.setNodeMap("flood_linkNodeMap", path);
         NodeMap[start.x][start.y] = null;
         var selected;
-        let iterations = 0;
         while (Q.length > 0) {
             selected = Q.shift();
             let dirs = this.GA.getDirectionsFromNodeMap(selected, NodeMap);
             let selected_index = this.GA.gridToIndex(selected);
             this.NA.map[selected_index].next.clear();
-            //this.NA.map[selected_index].prev.clear();//
             for (let q = 0; q < dirs.length; q++) {
                 let next = selected.add(dirs[q]);
                 let next_index = this.GA.gridToIndex(next);
                 NodeMap[next.x][next.y] = null;
                 Q.push(next);
                 this.NA.map[selected_index].next.add(next_index);
-                //unlink
-                console.log("deleting from", this.NA.map[next_index].prev.first(), "next", next_index);
                 this.NA.map[this.NA.map[next_index].prev.first()].next.delete(next_index);
-                //
                 this.NA.map[next_index].prev = new Set([selected_index]);
             }
-            iterations++;
         }
-        return iterations;
     },
     reFlow(index, which) {
+        console.log("\n#############################################");
+        console.log("\n#############################################");
         console.log("\n#############################################");
         console.warn("ReFlow", index, which);
         let grid = this.GA.indexToGrid(index);
@@ -475,19 +459,23 @@ var FLOW = {
             //reflow
             if (this.terminals.size > 0 && this.drains.size === 0) {
                 this.drains.moveFrom(this.terminals);
+                console.log("drains from terminals");
             } else {
                 this.add_drains_from_flood_level();
+                console.log("drains from flood level");
             }
-            //console.log("drains set", this.drains);
+            console.log("drains set", this.drains);
             this.next_line(grid, this.NA.map[this.origin_index]);
         } else if (this.flood_level === impliedLevel) {
             this.next_line(this.dig_down(grid), this.NA.map[this.origin_index]);
+            console.log("drains dig next line");
         } else {
             console.log("REFLOW Not applicable");
         }
 
         // update line after reflow
         if (NODE.size > 0) {
+            console.log("updating", NODE, "after reflow");
             let preNode = this.NA.map[NODE.prev.first()];
             NODE.size = preNode.size;
             this.set_node(NODE);
@@ -504,12 +492,13 @@ var FLOW = {
                 N = b;
             }
         }
+        console.log("\n#############################################\n");
         return;
     },
     NA_to_GA(W = MAPDICT.WATER) {
         for (let index = 0; index < this.NA.map.length; index++) {
             if (this.NA.map[index]) {
-                if (this.NA.map[index].size === 1) {
+                if (this.NA.map[index].size === this.NA.map[index].max_flow) {
                     this.GA.iset(index, W);
                 } else {
                     this.GA.iclear(index, W);
