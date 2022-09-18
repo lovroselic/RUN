@@ -40,7 +40,7 @@ var INI = {
     VERTICAL_WALL_WIDTH: 13
 };
 var PRG = {
-    VERSION: "0.07.20",
+    VERSION: "0.07.21",
     NAME: "R.U.N.",
     YEAR: "2022",
     CSS: "color: #239AFF;",
@@ -549,8 +549,8 @@ var GAME = {
         //GAME.prepareForRestart();
         //GAME.completed = false;
         //GAME.won = false;
-        GAME.level = 1;
-        //GAME.level = 7;
+        //GAME.level = 1;
+        GAME.level = 8;
         GAME.score = 0;
         GAME.lives = 3;
         HERO.startInit();

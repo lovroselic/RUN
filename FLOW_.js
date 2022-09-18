@@ -9,7 +9,8 @@
     FLOW algorithms
 
     known issues, TODO:
-    * door grid after explosion not included in drains
+    * door grid after explosion:  drain and terminal at once
+        -root: linkstream drain to drain 
     * join on max size not only on terminal size!!
 */
 class FlowNode {
@@ -449,6 +450,7 @@ var FLOW = {
         console.warn("ReFlow", index, which);
         let grid = this.GA.indexToGrid(index);
         let NODE = this.NA.map[index];
+        let nextGrid = grid.add(eval(NODE.type));
         console.log(grid, "grid.y, this.flood_level", grid.y, this.flood_level, "NODE", NODE);
         let cacheType = NODE.type;
         let correction = 0;
@@ -465,9 +467,11 @@ var FLOW = {
                 console.log("drains from flood level");
             }
             console.log("drains set", this.drains);
-            this.next_line(grid, this.NA.map[this.origin_index]);
+            //this.next_line(grid, this.NA.map[this.origin_index]);
+            this.next_line(nextGrid, this.NA.map[this.origin_index]);
         } else if (this.flood_level === impliedLevel) {
-            this.next_line(this.dig_down(grid), this.NA.map[this.origin_index]);
+            //this.next_line(this.dig_down(grid), this.NA.map[this.origin_index]);
+            this.next_line(this.dig_down(nextGrid), this.NA.map[this.origin_index]);
             console.log("drains dig next line");
         } else {
             console.log("REFLOW Not applicable");
@@ -475,9 +479,12 @@ var FLOW = {
 
         // update line after reflow
         if (NODE.size > 0) {
-            console.log("updating", NODE, "after reflow");
+            console.log("********************************************");
+            console.log("update line after reflow", NODE, "after reflow");
+            console.log("********************************************");
             let preNode = this.NA.map[NODE.prev.first()];
             NODE.size = preNode.size;
+            NODE.type = "UP";
             this.set_node(NODE);
             let branch = this.find_branch(index, eval(cacheType), cacheType, false);
             let N = index;

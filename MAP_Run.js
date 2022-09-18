@@ -70,6 +70,15 @@ var MAP = {
         flow: `{"x":4, "y":7}`,
         bat: [],
     },
+    8: {
+        data: `
+        {"width":"12","height":"12","map":"BEAA3BABAA4BB5ABB62IBB51$ABB9AB"}
+        `,
+        start: `{"x":3, "y":7}`,
+        dynamite: `{"x":1, "y":8}`,
+        flow: `{"x":1, "y":9}`,
+        bat: [],
+    },
     11: {
         data: `
         {"width":"12","height":"12","map":"BB2AEAA2EAA2BABAA4BAA4BB2AA3BAEBB2AA3BB2AEBB3AA6BB18AA2BABB4QB$BB5ABABB5ABB11IBB2ABB19ABB4AA3BB3AA2BB2AA4BA"}
