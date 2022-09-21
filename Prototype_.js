@@ -330,6 +330,9 @@ Set.prototype.first = function () {
 Set.prototype.addArray = function(arr) {
   arr.forEach(el => this.add(el));
 };
+Set.prototype.removeArray = function(arr) {
+  arr.forEach(el => this.delete(el));
+};
 
 class Grid {
   constructor(x = 0, y = 0) {

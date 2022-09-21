@@ -9,9 +9,8 @@
     FLOW algorithms
 
     known issues, TODO:
-    * door grid after explosion:  drain and terminal at once
-        -root: linkstream drain to drain 
-    * join on max size not only on terminal size!!
+    * draining shoul stop if terminal got to same level or higher
+    * join on max size not only on terminal size!!???
 */
 class FlowNode {
     constructor(index) {
@@ -70,6 +69,7 @@ var FLOW = {
     set_flood_level(level) {
         if (level < this.flood_level) {
             this.flood_level = level;
+            console.log("* setting flood level from set FL", this.flood_level);
         }
     },
     flow(lapsedTime, flow = FLOW.INI.ORIGIN_FLOW) {
@@ -87,7 +87,66 @@ var FLOW = {
             console.log(t, "->", this.NA.indexToGrid(t));
         }
         //debug end
-        console.log("..........................,,,,,,,,,,\n");
+        console.log(",,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,\n");
+
+
+        //////////////////////////////////////////////////
+        /*
+        if (this.drains.size > 0) {
+            console.log("check if drains are above terminals and linking is not applicable", this.impliedLevel - 1, this.flood_level, this.impliedLevel - 1 > this.flood_level);
+            if (this.impliedLevel - 1 > this.flood_level) {
+                let toMove = [];
+                for (let D of this.drains) {
+                    let drainLevel = Math.floor(D / this.map.width);
+                    console.log("D, drainLevel", D, drainLevel, this.flood_level, "IL", this.impliedLevel);
+                    console.log("CASE", this.flood_level, this.impliedLevel - 1, this.impliedLevel - 1 === this.flood_level);
+                    if (drainLevel >= this.flood_level) {
+                        toMove.push(D);
+                    }
+                }
+                this.terminals.addArray(toMove);
+                this.drains.removeArray(toMove);
+            }
+        }
+        */
+
+        /*if (this.terminals.size === 0 && this.drains.size > 0) {
+            console.log("drains -> terminals");
+            this.terminals = this.drains;
+            this.drains = new Set();
+        }*/
+
+        console.log("will check for links ...", this.terminals.size, this.drains.size, this.terminals.size > 0 && this.drains.size > 0);
+        if (this.terminals.size > 0 && this.drains.size > 0) {
+            console.log("checking for links", this.impliedLevel, this.flood_level, this.impliedLevel - 1 === this.flood_level);
+            if (this.impliedLevel - 1 === this.flood_level) {
+                for (let T of this.terminals) {
+                    let terminalLevel = Math.floor(T / this.map.width);
+                    console.log("T, terminalLevel", T, terminalLevel, this.flood_level);
+                    if (terminalLevel === this.flood_level) {
+                        console.log("..size", T, this.NA.map[T].size);
+                        console.log("check linking!!!!");
+                        let DrainCandidates = [];
+                        if (this.drains.has(T - 1)) {
+                            DrainCandidates.push(T - 1);
+                        }
+                        if (this.drains.has(T + 1)) {
+                            DrainCandidates.push(T + 1);
+                        }
+                        if (DrainCandidates.length > 0) {
+                            for (let D of DrainCandidates) {
+                                console.log(T, "->", D);
+                                this.link_stream(T, D);
+                            }
+                        } else {
+                            throw "HERE";
+                        }
+                        break;
+
+                    }
+                }
+            }
+        }
 
         //what if no terminals?
         if (this.terminals.size === 0) {
@@ -117,7 +176,7 @@ var FLOW = {
             this.calc_flow(d, lapsedTime);
         }
         this.excess_flow += FLOW.INI.ORIGIN_FLOW * FLOW.INI.DRAIN_FACTOR * this.drains.size;
-        //
+
         for (let n of this.terminals) {
             this.NA.I_set(n, 'flow', (flow + this.excess_flow) / this.terminals.size);
             this.calc_flow(n, lapsedTime);
@@ -125,36 +184,9 @@ var FLOW = {
         this.excess_flow = 0;
 
         if (this.terminals.size === 0 && this.drains.size > 0) {
+            console.log("drains -> terminals");
             this.terminals = this.drains;
             this.drains = new Set();
-        }
-
-        if (this.terminals.size > 0 && this.drains.size > 0) {
-            if (this.impliedLevel - 1 === this.flood_level) {
-                for (let T of this.terminals) {
-                    let terminalLevel = Math.floor(T / this.map.width);
-                    console.log("T, terminalLevel", T, terminalLevel);
-                    if (terminalLevel === this.flood_level) {
-                        if (this.NA.map[T].size > 0) {
-                            console.error("check linking!!!!");
-                            let DrainCandidates = [];
-                            if (this.drains.has(T - 1)) {
-                                DrainCandidates.push(T - 1);
-                            }
-                            if (this.drains.has(T + 1)) {
-                                DrainCandidates.push(T + 1);
-                            }
-                            if (DrainCandidates.length > 0) {
-                                for (let D of DrainCandidates) {
-                                    console.log(T, "->", D);
-                                    this.link_stream(T, D);
-                                }
-                            }
-                            break;
-                        }
-                    }
-                }
-            }
         }
         return;
     },
@@ -249,6 +281,7 @@ var FLOW = {
             this.terminals.delete(node);
             if (this.GA.icheck(node, MAPDICT.TRAP_DOOR)) return;
             let grid = this.NA.indexToGrid(node).add(UP);
+            if (this.GA.isOutOfBounds(grid)) return;
             if (this.GA.check(grid, MAPDICT.WALL + MAPDICT.BLOCKWALL)) return;
             if (this.NA.map[this.NA.gridToIndex(grid)].size > 0) return;
 
@@ -266,12 +299,21 @@ var FLOW = {
         if (NODE.size <= 0) {
             NODE.size = 0;
             let levelOfPrevious = this.NA.indexToGrid(NODE.prev.first()).y;
-            if (levelOfPrevious < this.impliedLevel && levelOfPrevious > this.NA.indexToGrid(NODE.index).y) {
+            let levelOfThis = Math.floor(NODE.index / this.map.width);
+
+            //
+            if (this.flood_level < levelOfThis) {
+                this.drains.delete(NODE.index);
+                this.terminals.add(NODE.index);
+                return;
+            } else if (levelOfPrevious < this.impliedLevel && levelOfPrevious > this.NA.indexToGrid(NODE.index).y) {
                 if (levelOfPrevious > this.flood_level) {
                     this.flood_level = levelOfPrevious;
+                    console.log("* setting flood level from previous", this.flood_level);
                     this.add_drains_from_flood_level();
                 }
             }
+
             clearNode(NODE);
             return;
         }
@@ -298,6 +340,7 @@ var FLOW = {
         NEW.type = "UP";
         let left = this.find_branch(node, LEFT, "LEFT");
         let right = this.find_branch(node, RIGHT, "RIGHT");
+        console.log("..branches", left, right);
         let candidates;
 
         if (Array.isArray(left) && Array.isArray(right)) {
@@ -343,8 +386,9 @@ var FLOW = {
         return grid;
     },
     find_branch(node, dir, type, dig = true) {
-        let grid = this.GA.indexToGrid(node).add(dir);
+        console.log("find branch", node, dir, type, dig);
         let line = [];
+        let grid = this.GA.indexToGrid(node).add(dir);
         let index;
         while (!this.GA.check(grid, MAPDICT.WALL + MAPDICT.BLOCKWALL)) {
             index = this.GA.gridToIndex(grid);
@@ -397,7 +441,7 @@ var FLOW = {
         let grid = this.NA.indexToGrid(node);
         let point = GRID.gridToCoord(grid);
         point.toViewport();
-        let drawStart = point.add(new Vector(NODE.boundaries.offX, ENGINE.INI.GRIDPIX - height));
+        let drawStart = point.add(new Vector(NODE.boundaries.off_x, ENGINE.INI.GRIDPIX - height));
         const pattern = CTX.createPattern(PATTERN.pattern.water.img, "repeat");
         CTX.fillStyle = pattern;
         CTX.fillRect(drawStart.x, drawStart.y, width, height);
@@ -450,9 +494,16 @@ var FLOW = {
         console.warn("ReFlow", index, which);
         let grid = this.GA.indexToGrid(index);
         let NODE = this.NA.map[index];
-        let nextGrid = grid.add(eval(NODE.type));
         console.log(grid, "grid.y, this.flood_level", grid.y, this.flood_level, "NODE", NODE);
+        let nextGrid;
+        if (NODE.type) {
+            nextGrid = grid.add(eval(NODE.type));
+        } else {
+            nextGrid = grid;
+        }
+
         let cacheType = NODE.type;
+        console.log('cacheType', cacheType);
         let correction = 0;
         if (which === MAPDICT.DOOR) correction = 1;
         let impliedLevel = grid.y + correction;
@@ -468,10 +519,11 @@ var FLOW = {
             }
             console.log("drains set", this.drains);
             //this.next_line(grid, this.NA.map[this.origin_index]);
-            this.next_line(nextGrid, this.NA.map[this.origin_index]);
-        } else if (this.flood_level === impliedLevel) {
-            //this.next_line(this.dig_down(grid), this.NA.map[this.origin_index]);
+            //this.next_line(nextGrid, this.NA.map[this.origin_index]);
             this.next_line(this.dig_down(nextGrid), this.NA.map[this.origin_index]);
+        } else if (this.flood_level === impliedLevel) {
+            this.next_line(this.dig_down(grid), this.NA.map[this.origin_index]);
+            //this.next_line(this.dig_down(nextGrid), this.NA.map[this.origin_index]);
             console.log("drains dig next line");
         } else {
             console.log("REFLOW Not applicable");
@@ -486,17 +538,19 @@ var FLOW = {
             NODE.size = preNode.size;
             NODE.type = "UP";
             this.set_node(NODE);
-            let branch = this.find_branch(index, eval(cacheType), cacheType, false);
-            let N = index;
-            for (let b of branch) {
-                if (this.impliedLevel - 1 === this.flood_level) {
-                    this.drains.add(b);
+            if (cacheType) {
+                let branch = this.find_branch(index, eval(cacheType), cacheType, false); //?
+                let N = index;
+                for (let b of branch) {
+                    if (this.impliedLevel - 1 === this.flood_level) {
+                        this.drains.add(b);
+                    }
+                    this.NA.map[N].next.add(b);
+                    this.NA.map[b].prev.add(N);
+                    this.NA.map[b].size = preNode.size;
+                    this.set_node(this.NA.map[b]);
+                    N = b;
                 }
-                this.NA.map[N].next.add(b);
-                this.NA.map[b].prev.add(N);
-                this.NA.map[b].size = preNode.size;
-                this.set_node(this.NA.map[b]);
-                N = b;
             }
         }
         console.log("\n#############################################\n");

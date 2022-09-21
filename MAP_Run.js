@@ -18,7 +18,7 @@ var MAP = {
     },
     2: {
         data: `
-        {"width":"12","height":"12","map":"BB2AA8BB2ABB25ABB3ABABB10AIBB28ABB18AA3BABB20ABB10$ABB3"}
+        {"width":"12","height":"12","map":"BB2AA8BABB23QBB3ABABB9ABB28ABB18AA3BABB20ABB10$IABB7"}
         `,
         start: `{"x":7, "y":6}`,
         dynamite: `{"x":5, "y":6}`,
@@ -77,6 +77,24 @@ var MAP = {
         start: `{"x":3, "y":7}`,
         dynamite: `{"x":1, "y":8}`,
         flow: `{"x":1, "y":9}`,
+        bat: [],
+    },
+    9: {
+        data: `
+        {"width":"12","height":"12","map":"BB2AEBAA2BAA5BB2AA3BEBAA2BB3EBB3AA6BB17ABB6QB$BB6ABB2ABB4ABB13IBAA2BB5IBB16AA3BB3AA3BB5ABB7AA2BB3A"}
+        `,
+        start: `{"x":10, "y":5}`,
+        dynamite: `{"x":5, "y":5}`,
+        flow: `{"x":5, "y":6}`,
+        bat: [],
+    },
+    10: {
+        data: `
+        {"width":"12","height":"12","map":"BB2AEBAA2BAA5BB2AA3BEBB3AA2BB4EBB2AA6BB19ABB5ABB3Q$BB6ABB3AA2BB3ABB3ABB8IBAA2BB4IBB12AA2BB3AA3BB5ABB7AA2BB3A"}
+        `,
+        start: `{"x":10, "y":5}`,
+        dynamite: `{"x":5, "y":5}`,
+        flow: `{"x":5, "y":6}`,
         bat: [],
     },
     11: {
