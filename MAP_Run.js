@@ -8,7 +8,7 @@ console.log("%cMAP for RUN loaded.", "color: #888");
 var MAP = {
     1: {
         data: `
-        {"width":"12","height":"12","map":"BB2AEAA2EAA2BABAA4BAA4BB2AA3BAEBB2AA3BB2AEBB3AA6BB18AA2BABB4QB$BB5ABABB5ABB11IBB2ABB19ABB4AA3BB3AA2BB2AA4BA"}
+        {"width":"12","height":"12","map":"BB2AEAA2EAA3BAA2BABAA3BB2ABAA3BAEBB3AA3BB2ABAEBB2AA6BB5ABB13ABABABB6Q$BB5ABB2ABB5ABABB2ABB6IBB2ABB15ABB3AA2BB3AA2BB2AA4BA"}
         `,
         start: `{"x":4, "y":9}`,
         dynamite: `{"x":2, "y":9}`,
