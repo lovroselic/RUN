@@ -107,6 +107,15 @@ var MAP = {
         bat: [[`{"x":2, "y":7}`, UP, 2], [`{"x":5, "y":3}`, DOWN, 1], [`{"x":6, "y":9}`, RIGHT, 3], [`{"x":10, "y":7}`, DOWN, 2], [`{"x":4, "y":7}`, RIGHT, 4],
         [`{"x":6, "y":4}`, UP, 1], [`{"x":10, "y":5}`, UP, 3], [`{"x":2, "y":1}`, DOWN, 2]]
     },
+    12: {
+        data: `
+        {"width":"12","height":"12","map":"BB2AA2BABB2AA2BEBAA2BB2ABB3AA3BB3ABB17Q$BB4ABB3ABB2ABABABB5AA2BB10ABB54IABB5ABA"}
+        `,
+        start: `{"x":8, "y":1}`,
+        dynamite: `{"x":5, "y":5}`,
+        flow: `{"x":5, "y":6}`,
+        bat: []
+    },
 };
 
 var SPAWN = {

@@ -9,7 +9,7 @@
     FLOW algorithms
 
     known issues, TODO:
-        *
+        * exploding dry blockwall leads to exceptional drainup
 */
 class FlowNode {
     constructor(index) {
@@ -89,31 +89,27 @@ var FLOW = {
         //debug end
         console.log(",,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,\n");
 
-        console.log("will check for links ...", this.terminals.size, this.drains.size, this.terminals.size > 0 && this.drains.size > 0);
         if (this.terminals.size > 0 && this.drains.size > 0) {
-            console.log("checking for links", this.impliedLevel, this.flood_level, this.impliedLevel - 1 === this.flood_level);
-            if (this.impliedLevel - 1 === this.flood_level) {
-                for (let T of this.terminals) {
-                    let terminalLevel = Math.floor(T / this.map.width);
-                    console.log("T, terminalLevel", T, terminalLevel, this.flood_level);
-                    if (terminalLevel === this.flood_level) {
-                        console.log("..size", T, this.NA.map[T].size);
-                        console.log("check linking!!!!");
-                        let DrainCandidates = [];
-                        if (this.drains.has(T - 1)) {
-                            DrainCandidates.push(T - 1);
-                        }
-                        if (this.drains.has(T + 1)) {
-                            DrainCandidates.push(T + 1);
-                        }
-                        if (DrainCandidates.length > 0) {
-                            for (let D of DrainCandidates) {
-                                console.log(T, "->", D);
-                                this.link_stream(T, D);
-                            }
-                        }
-                        break;
+            for (let T of this.terminals) {
+                let terminalLevel = Math.floor(T / this.map.width);
+                console.log("T, terminalLevel", T, terminalLevel, this.flood_level);
+                if (terminalLevel === this.flood_level) {
+                    console.log("..size", T, this.NA.map[T].size);
+                    console.log("check linking!!!!");
+                    let DrainCandidates = [];
+                    if (this.drains.has(T - 1)) {
+                        DrainCandidates.push(T - 1);
                     }
+                    if (this.drains.has(T + 1)) {
+                        DrainCandidates.push(T + 1);
+                    }
+                    if (DrainCandidates.length > 0) {
+                        for (let D of DrainCandidates) {
+                            console.log(T, "->", D);
+                            this.link_stream(T, D);
+                        }
+                    }
+                    break;
                 }
             }
         }
@@ -271,9 +267,11 @@ var FLOW = {
             let levelOfPrevious = this.NA.indexToGrid(NODE.prev.first()).y;
             let levelOfThis = Math.floor(NODE.index / this.map.width);
 
-            if (this.flood_level < levelOfThis) {
+            //if (this.flood_level < levelOfThis) {
+            if (this.flood_level <= levelOfThis) {
                 this.drains.delete(NODE.index);
                 this.terminals.add(NODE.index);
+                console.log("* flood level adjustment blocked");
                 return;
             } else if (levelOfPrevious < this.impliedLevel && levelOfPrevious > this.NA.indexToGrid(NODE.index).y) {
                 if (levelOfPrevious > this.flood_level) {
@@ -496,7 +494,7 @@ var FLOW = {
         console.log(grid, "grid.y, this.flood_level", grid.y, this.flood_level, "NODE", NODE);
         let nextGrid;
 
-        if (NODE.type) {
+        if (NODE.type != "NOWAY") {
             nextGrid = grid.add(eval(NODE.type));
         } else {
             nextGrid = grid;
