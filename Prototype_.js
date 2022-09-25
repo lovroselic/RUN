@@ -325,12 +325,16 @@ Set.prototype.moveFrom = function (s) {
   });
 };
 Set.prototype.first = function () {
-  return this.entries().next().value[0];
+  if (this.entries().next().value) {
+    return this.entries().next().value[0];
+  } else {
+    return null;
+  }
 };
-Set.prototype.addArray = function(arr) {
+Set.prototype.addArray = function (arr) {
   arr.forEach(el => this.add(el));
 };
-Set.prototype.removeArray = function(arr) {
+Set.prototype.removeArray = function (arr) {
   arr.forEach(el => this.delete(el));
 };
 

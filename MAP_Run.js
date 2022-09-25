@@ -116,6 +116,15 @@ var MAP = {
         flow: `{"x":5, "y":6}`,
         bat: []
     },
+    13: {
+        data: `
+        {"width":"12","height":"12","map":"BB2AA2BABB2AA2BEBAA2BB2ABB3AA3BB3ABB17Q$BB4ABB3ABB2ABABABB5AA2BB10ABB54IABB5ABA"}
+        `,
+        start: `{"x":2, "y":3}`,
+        dynamite: `{"x":5, "y":5}`,
+        flow: `{"x":5, "y":6}`,
+        bat: []
+    },
 };
 
 var SPAWN = {

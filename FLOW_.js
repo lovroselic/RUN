@@ -18,7 +18,6 @@ class FlowNode {
         this.prev = new Set();
         this.size = 0;
         this.flow = 0;
-        //this.type = null;
         this.type = 'NOWAY';
         this.boundaries = null;
         this.max_flow = null;
@@ -34,7 +33,7 @@ class Boundaries {
     }
 }
 var FLOW = {
-    VERSION: "0.1",
+    VERSION: "0.8a",
     CSS: "color: #F3A",
     INI: {
         ORIGIN_SIZE: 0.2,
@@ -69,11 +68,11 @@ var FLOW = {
     set_flood_level(level) {
         if (level < this.flood_level) {
             this.flood_level = level;
-            console.log("* setting flood level from set FL", this.flood_level);
+            //console.log("* setting flood level from set FL", this.flood_level);
         }
     },
     flow(lapsedTime, flow = FLOW.INI.ORIGIN_FLOW) {
-        //debug
+        /*
         console.log("\n..........................");
         console.log("flow", lapsedTime);
         console.log("drains:");
@@ -86,16 +85,16 @@ var FLOW = {
         for (let t of this.terminals) {
             console.log(t, "->", this.NA.indexToGrid(t));
         }
-        //debug end
+        
         console.log(",,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,\n");
-
+        */
         if (this.terminals.size > 0 && this.drains.size > 0) {
             for (let T of this.terminals) {
                 let terminalLevel = Math.floor(T / this.map.width);
-                console.log("T, terminalLevel", T, terminalLevel, this.flood_level);
+                //console.log("T, terminalLevel", T, terminalLevel, this.flood_level);
                 if (terminalLevel === this.flood_level) {
-                    console.log("..size", T, this.NA.map[T].size);
-                    console.log("check linking!!!!");
+                    //console.log("..size", T, this.NA.map[T].size);
+                    //console.log("check linking!!!!");
                     let DrainCandidates = [];
                     if (this.drains.has(T - 1)) {
                         DrainCandidates.push(T - 1);
@@ -105,7 +104,7 @@ var FLOW = {
                     }
                     if (DrainCandidates.length > 0) {
                         for (let D of DrainCandidates) {
-                            console.log(T, "->", D);
+                            //console.log(T, "->", D);
                             this.link_stream(T, D);
                         }
                     }
@@ -150,14 +149,14 @@ var FLOW = {
         this.excess_flow = 0;
 
         if (this.terminals.size === 0 && this.drains.size > 0) {
-            console.log("drains -> terminals");
+            //console.log("drains -> terminals");
             this.terminals = this.drains;
             this.drains = new Set();
         }
         return;
     },
     link_stream(terminal, drain) {
-        console.log('link_stream terminal, drain', terminal, drain);
+        //console.log('link_stream terminal, drain', terminal, drain);
         let T_NODE = this.NA.map[terminal];
         let D_NODE = this.NA.map[drain];
         let terminalLevel = Math.floor(terminal / this.map.width);
@@ -267,16 +266,15 @@ var FLOW = {
             let levelOfPrevious = this.NA.indexToGrid(NODE.prev.first()).y;
             let levelOfThis = Math.floor(NODE.index / this.map.width);
 
-            //if (this.flood_level < levelOfThis) {
-            if (this.flood_level <= levelOfThis) {
+            if (this.flood_level < levelOfThis) {
                 this.drains.delete(NODE.index);
                 this.terminals.add(NODE.index);
-                console.log("* flood level adjustment blocked");
+                //console.log("* flood level adjustment blocked");
                 return;
             } else if (levelOfPrevious < this.impliedLevel && levelOfPrevious > this.NA.indexToGrid(NODE.index).y) {
                 if (levelOfPrevious > this.flood_level) {
                     this.flood_level = levelOfPrevious;
-                    console.log("* setting flood level from previous", this.flood_level);
+                    //console.log("* setting flood level from previous", this.flood_level);
                     this.add_drains_from_flood_level();
                 }
             }
@@ -300,13 +298,13 @@ var FLOW = {
         return false;
     },
     next_line(grid, NODE, lapsedTime = 17) {
-        console.log("NEXT LINE", grid);
+        //console.log("NEXT LINE", grid);
         let node = this.GA.gridToIndex(grid);
         let NEW = this.NA.map[node];
         NEW.type = "UP";
         let left = this.find_branch(node, LEFT, "LEFT");
         let right = this.find_branch(node, RIGHT, "RIGHT");
-        console.log("..branches", left, right);
+        //console.log("..branches", left, right);
         let candidates;
 
         if (Array.isArray(left) && Array.isArray(right)) {
@@ -352,7 +350,7 @@ var FLOW = {
         return grid;
     },
     find_branch(node, dir, type, dig = true) {
-        console.log("find branch", node, dir, type, dig);
+        //console.log("find branch", node, dir, type, dig);
         let line = [];
         let grid = this.GA.indexToGrid(node).add(dir);
         let index;
@@ -371,7 +369,7 @@ var FLOW = {
             let down_grid = grid.add(DOWN);
 
             if (!this.GA.check(down_grid, MAPDICT.WALL + MAPDICT.BLOCKWALL + MAPDICT.TRAP_DOOR)) {
-                console.log("PATH DOWN", down_grid, dig);
+                //console.log("PATH DOWN", down_grid, dig);
                 //check if flooded
                 if (dig) {
                     if (this.NA.map[this.NA.gridToIndex(down_grid)].size === 0) {
@@ -412,17 +410,26 @@ var FLOW = {
         CTX.fillStyle = pattern;
         CTX.fillRect(drawStart.x, drawStart.y, width, height);
     },
+    isTerminalAbove(i) {
+        while (i >= 0) {
+            if (this.terminals.has(i)) return true;
+            i -= this.map.width;
+        }
+        return false;
+    },
     add_drains_from_flood_level() {
-        console.log("add_drains_from_flood_level");
+        //console.log("add_drains_from_flood_level");
         this.NA_to_GA();
         let startIndex = this.flood_level * this.map.width;
         for (let i = startIndex; i < startIndex + this.map.width; i++) {
             if (this.NA.map[i]) {
                 if (this.NA.map[i].size === this.NA.map[i].max_flow) {
                     let NM = this.GA.findPath_AStar_fast(this.NA.indexToGrid(i), this.origin, [MAPDICT.WATER]);
-                    console.log("path->", i, this.NA.indexToGrid(i), NM);
+                    //console.log("path->", i, this.NA.indexToGrid(i), NM);
                     if (NM !== null) {
-                        this.drains.add(i);
+                        if (!this.isTerminalAbove(i)) {
+                            this.drains.add(i);
+                        }
                     } else {
                         this.flood_link(this.NA.indexToGrid(i));
                         this.NA.map[this.NA.map[i].prev.first()].next.delete(i); // NEW
@@ -455,23 +462,25 @@ var FLOW = {
         }
     },
     drainUp(index) {
-        console.log("drainUp", index, this.NA.indexToGrid(index));
+        //console.log("drainUp", index, this.NA.indexToGrid(index));
         let upIndex = index - this.map.width;
         let NODE = this.NA.map[upIndex];
-        this.NA.map[NODE.prev.first()].next.delete(NODE.index);
+        this.NA.map[NODE.prev.first()]?.next.delete(NODE.index);
         while (NODE?.size > 0) {
             this.excess_flow += NODE.size;
             NODE.size = 0;
-            console.log("..NODE", NODE, this.NA.indexToGrid(NODE.index));
-            console.log("....", NODE.prev, NODE.next, NODE.prev.first(), NODE.next.first(), this.NA.indexToGrid(NODE.prev.first()), this.NA.indexToGrid(NODE.next.first()));
+            //console.log("..NODE", NODE, this.NA.indexToGrid(NODE.index));
+            //console.log("....", NODE.prev, NODE.next, NODE.prev.first(), NODE.next.first(), this.NA.indexToGrid(NODE.prev.first()), this.NA.indexToGrid(NODE.next.first()));
             //
             //links to side?
-            if (Math.floor(NODE.next.first() / this.map.width) === Math.floor(NODE.index / this.map.width)) {
-                console.warn("next is same level!", NODE.next.first());
-                //link to origin instead
-                this.NA.map[NODE.next.first()].prev.delete(NODE.index);
-                this.NA.map[NODE.next.first()].prev.add(this.origin_index);
-                this.NA.map[this.origin_index].next.add(NODE.next.first());
+            if (NODE.next.first()) {
+                if (Math.floor(NODE.next.first() / this.map.width) === Math.floor(NODE.index / this.map.width)) {
+                    //console.warn("next is same level!", NODE.next.first());
+                    //link to origin instead
+                    this.NA.map[NODE.next.first()].prev.delete(NODE.index);
+                    this.NA.map[NODE.next.first()].prev.add(this.origin_index);
+                    this.NA.map[this.origin_index].next.add(NODE.next.first());
+                }
             }
             //
             NODE.prev.clear();
@@ -484,25 +493,21 @@ var FLOW = {
         //throw "DEBUG";
     },
     reFlow(index, which) {
-        console.log("\n#############################################");
-        console.log("\n#############################################");
-        console.log("\n#############################################");
-        console.warn("ReFlow", index, which);
-        console.log("______________________________________________");
+        //console.warn("ReFlow", index, which);
         let grid = this.GA.indexToGrid(index);
         let NODE = this.NA.map[index];
-        console.log(grid, "grid.y, this.flood_level", grid.y, this.flood_level, "NODE", NODE);
+        //console.log(grid, "NODE", NODE);
         let nextGrid;
 
         if (NODE.type != "NOWAY") {
             nextGrid = grid.add(eval(NODE.type));
-        } else {
+        } else if (which === MAPDICT.BLOCKWALL) {
             nextGrid = grid;
             this.drainUp(index);
         }
 
         let cacheType = NODE.type;
-        console.log('cacheType', cacheType);
+        //console.log('cacheType', cacheType);
         let correction = 0;
         if (which === MAPDICT.DOOR) correction = 1;
         let impliedLevel = grid.y + correction;
@@ -511,25 +516,25 @@ var FLOW = {
             //reflow
             if (this.terminals.size > 0 && this.drains.size === 0) {
                 this.drains.moveFrom(this.terminals);
-                console.log("drains from terminals");
+                //console.log("drains from terminals");
             } else {
                 this.add_drains_from_flood_level();
-                console.log("drains from flood level");
+                //console.log("drains from flood level");
             }
-            console.log("drains set", this.drains);
+            //console.log("drains set", this.drains);
             this.next_line(this.dig_down(nextGrid), this.NA.map[this.origin_index]);
         } else if (this.flood_level === impliedLevel) {
             this.next_line(this.dig_down(grid), this.NA.map[this.origin_index]);
-            console.log("drains dig next line");
+            //console.log("drains dig next line");
         } else {
-            console.log("REFLOW Not applicable");
+            //console.log("REFLOW Not applicable");
         }
 
         // update line after reflow
         if (NODE.size > 0) {
-            console.log("********************************************");
-            console.log("update line after reflow", NODE, "after reflow");
-            console.log("********************************************");
+            //console.log("********************************************");
+            //console.log("update line after reflow", NODE, "after reflow");
+            //console.log("********************************************");
             let preNode = this.NA.map[NODE.prev.first()];
             NODE.size = preNode.size;
             NODE.type = "UP";
@@ -549,7 +554,7 @@ var FLOW = {
                 }
             }
         }
-        console.log("\n#############################################\n");
+        //console.log("\n#############################################\n");
         return;
     },
     NA_to_GA(W = MAPDICT.WATER) {

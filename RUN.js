@@ -40,7 +40,7 @@ var INI = {
     VERTICAL_WALL_WIDTH: 13
 };
 var PRG = {
-    VERSION: "0.07.24",
+    VERSION: "0.08.00",
     NAME: "R.U.N.",
     YEAR: "2022",
     CSS: "color: #239AFF;",
@@ -327,7 +327,7 @@ var HERO = {
         return false;
     },
     manageFlight(lapsedTime) {
-        let Hd = this.actor.sprite().height / ENGINE.INI.GRIDPIX;
+        //let Hd = this.actor.sprite().height / ENGINE.INI.GRIDPIX;
         if (this.mode === 'idle') {
             this.actor.resetIndexes();
             this.actor.refresh();
@@ -363,6 +363,9 @@ var HERO = {
             }
             this.moveState.posToCoord();
             this.setViewport();
+            if (this.moveState.pos.y <= 0) {
+                return GAME.levelEnd();
+            }
         }
     },
     concludeAction() {
@@ -547,10 +550,10 @@ var GAME = {
         ENGINE.watchVisibility(GAME.lostFocus);
         ENGINE.GAME.start(16);
         //GAME.prepareForRestart();
-        //GAME.completed = false;
+        GAME.completed = false;
         GAME.won = false;
         //GAME.level = 1;
-        GAME.level = 12;
+        GAME.level = 13;
 
         GAME.score = 0;
         GAME.lives = 3;
@@ -608,10 +611,12 @@ var GAME = {
     },
     levelEnd() {
         //SPEECH.speak("Good job!");
-        //GAME.levelCompleted = true;
-        //ENGINE.TEXT.centeredText("LEVEL COMPLETED", ENGINE.gameWIDTH, ENGINE.gameHEIGHT / 4);
+        GAME.levelCompleted = true;
+        console.log("LEVEL COMPLETED!");
+        ENGINE.TEXT.centeredText("Level Completed", ENGINE.gameWIDTH, ENGINE.gameHEIGHT / 4);
         //TITLE.endLevel();
         //ENGINE.GAME.ANIMATION.next(ENGINE.KEY.waitFor.bind(null, GAME.nextLevel, "enter"));
+        ENGINE.GAME.ANIMATION.stop();
     },
     nextLevel() {
         GAME.level++;
