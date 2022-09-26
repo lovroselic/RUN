@@ -40,9 +40,10 @@ var INI = {
     BAT_DROWNING_SIZE: 0.5,
     ENERGY: 1000,
     DINAMITE: 5,
+    AIR: 100,
 };
 var PRG = {
-    VERSION: "0.08.01",
+    VERSION: "0.08.02",
     NAME: "R.U.N.",
     YEAR: "2022",
     CSS: "color: #239AFF;",
@@ -96,7 +97,7 @@ var PRG = {
             ["background", "actors", "explosion", "flood", "text", "FPS", "button", "click"],
             "side");
         ENGINE.addBOX("SIDE", ENGINE.sideWIDTH, ENGINE.gameHEIGHT,
-            ["sideback", "score", "lives", "stage", "dinamite", "energy"],
+            ["sideback", "score", "lives", "stage", "dinamite", "energy", "air"],
             "fside");
         ENGINE.addBOX("DOWN", ENGINE.bottomWIDTH, ENGINE.bottomHEIGHT, ["bottom", "bottomText"], null);
         ENGINE.addBOX("LEVEL", ENGINE.gameWIDTH, ENGINE.gameHEIGHT, ["floor", "wall", "grid", "coord"], null);
@@ -576,6 +577,7 @@ var GAME = {
         GAME.prepareForRestart();
         GAME.dinamite = INI.DINAMITE;
         GAME.energy = INI.ENERGY;
+        GAME.air = INI.AIR;
         //MAP.createNewLevel(GAME.level);
         //HERO.energy = MAP[GAME.level].energy;
         GAME.initLevel(GAME.level);
@@ -844,7 +846,7 @@ var TITLE = {
         TITLE.energy();
         TITLE.lives();
         TITLE.stage();
-        //TITLE.radar();
+        TITLE.air();
     },
     startTitle() {
         $("#pause").prop("disabled", true);
@@ -980,136 +982,89 @@ var TITLE = {
         var text = "HISCORE: " + SCORE.SCORE.value[0].toString().padStart(6, "0") + " by " + HS;
         CTX.fillText(text, x, y);
     },
-    score() {
-        ENGINE.clearLayer("score");
-        let CTX = LAYER.score;
-        let fs = 22;
+    _grad(CTX, txt, fs, x, y) {
+        let txtm = CTX.measureText(txt);
+        let gx = x - txtm.width / 2;
+        let gy = y - fs;
+        CTX.fillStyle = this.makeGrad(CTX, gx, gy + RND(0, 10), gx, gy + fs);
+    },
+    _label(CTX, txt, fs, x, y) {
         CTX.font = fs + "px Annie";
-        CTX.fillStyle = GAME.grad;
+        this._grad(CTX, txt, fs, x, y);
         CTX.shadowColor = "#cec967";
         CTX.shadowOffsetX = 1;
         CTX.shadowOffsetY = 1;
         CTX.shadowBlur = 2;
         CTX.textAlign = "center";
+        CTX.fillText(txt, x, y);
+    },
+    _text(layer, txt, y, what, pad) {
+        ENGINE.clearLayer(layer);
+        let CTX = LAYER[layer];
         let x = ENGINE.sideWIDTH / 2;
-        let y = 36;
-        CTX.fillText("SCORE", x, y);
+        let fs = 22;
+        this._label(CTX, txt, fs, x, y);
         CTX.fillStyle = "#FFF";
         CTX.shadowColor = "#DDD";
         CTX.shadowOffsetX = 1;
         CTX.shadowOffsetY = 1;
         CTX.shadowBlur = 1;
         y += fs + 4;
-        CTX.fillText(GAME.score.toString().padStart(6, "0"), x, y);
+        CTX.fillText(GAME[what].toString().padStart(pad, "0"), x, y);
+    },
+    _sprite(layer, txt, y, what, sprite) {
+        ENGINE.clearLayer(layer);
+        let CTX = LAYER[layer];
+        let x = ENGINE.sideWIDTH / 2;
+        let fs = 22;
+        this._label(CTX, txt, fs, x, y);
+        y += fs + SPRITE[sprite].width / 3;
+        CTX.shadowColor = "transparent";
+        CTX.shadowOffsetX = 0;
+        CTX.shadowOffsetY = 0;
+        CTX.shadowBlur = 0;
+        var spread = ENGINE.spreadAroundCenter(GAME[what], x, 32);
+        for (let q = 0; q < GAME[what]; q++) {
+            ENGINE.spriteDraw(layer, spread[q], y, SPRITE[sprite]);
+        }
+    },
+    _percentBar(layer, txt, y, what, firstColor = null) {
+        ENGINE.clearLayer(layer);
+        let CTX = LAYER[layer];
+        let x = ENGINE.sideWIDTH / 2;
+        let fs = 22;
+        this._label(CTX, txt, fs, x, y);
+        y += 8;
+        let percent = GAME[what] / INI[what.toUpperCase()];
+        let colors = ['green', 'yellow', 'red'];
+        if (firstColor){
+            colors[0] = firstColor;
+        }
+        let H = 32;
+        ENGINE.percentBar(percent, y, CTX, ENGINE.sideWIDTH, colors, H);
+    },
+    score() {
+        this._text("score", "SCORE", 36, "score", 6);
         if (GAME.score >= GAME.extraLife[0]) {
             GAME.lives++;
             GAME.extraLife.shift();
             TITLE.lives();
         }
     },
-    dinamite() { 
-        ENGINE.clearLayer("dinamite");
-        let CTX = LAYER.dinamite;
-        let fs = 22;
-        let txt = "DYNAMITE";
-        let txtm = CTX.measureText(txt);
-        CTX.font = fs + "px Annie";
-        let x = ENGINE.sideWIDTH / 2;
-        let y = 264;
-        let gx = x - txtm.width / 2;
-        let gy = y - fs;
-        CTX.fillStyle = this.makeGrad(CTX, gx, gy, gx, gy + fs);
-        CTX.shadowColor = "#cec967";
-        CTX.shadowOffsetX = 1;
-        CTX.shadowOffsetY = 1;
-        CTX.shadowBlur = 2;
-        CTX.textAlign = "center";
-
-        CTX.fillText(txt, x, y);
-        y += fs + 16;
-        CTX.shadowColor = "transparent";
-        CTX.shadowOffsetX = 0;
-        CTX.shadowOffsetY = 0;
-        CTX.shadowBlur = 0;
-        var spread = ENGINE.spreadAroundCenter(GAME.dinamite, x, 32);
-        for (let q = 0; q < GAME.dinamite; q++) {
-            ENGINE.spriteDraw("dinamite", spread[q], y, SPRITE.Dynamite_00);
-        }
+    stage() {
+        this._text("stage", "LEVEL", 200, "level", 2);
+    },
+    dinamite() {
+        this._sprite('dinamite', 'DYNAMITE', 268, 'dinamite', 'Dynamite_00');
     },
     lives() {
-        ENGINE.clearLayer("lives");
-        let CTX = LAYER.lives;
-        let fs = 22;
-        let txt = "LIVES";
-        let txtm = CTX.measureText(txt);
-        CTX.font = fs + "px Annie";
-        let x = ENGINE.sideWIDTH / 2;
-        let y = 100;
-        let gx = x - txtm.width / 2;
-        let gy = y - fs;
-        CTX.fillStyle = this.makeGrad(CTX, gx, gy, gx, gy + fs);
-        CTX.shadowColor = "#cec967";
-        CTX.shadowOffsetX = 1;
-        CTX.shadowOffsetY = 1;
-        CTX.shadowBlur = 2;
-        CTX.textAlign = "center";
-
-        CTX.fillText(txt, x, y);
-        y += fs + 24;
-        CTX.shadowColor = "transparent";
-        CTX.shadowOffsetX = 0;
-        CTX.shadowOffsetY = 0;
-        CTX.shadowBlur = 0;
-        var spread = ENGINE.spreadAroundCenter(GAME.lives, x, 32);
-        for (let q = 0; q < GAME.lives; q++) {
-            ENGINE.spriteDraw("lives", spread[q], y, SPRITE.Hero_idle_left_0);
-        }
+        this._sprite('lives', 'LIVES', 102, 'lives', 'Hero_idle_left_0');
     },
-    stage() {
-        ENGINE.clearLayer("stage");
-        var CTX = LAYER.stage;
-        let fs = 22;
-        let txt = "LEVEL";
-        let txtm = CTX.measureText(txt);
-        CTX.font = fs + "px Annie";
-        let x = ENGINE.sideWIDTH / 2;
-        let y = 200;
-        let gx = x - txtm.width / 2;
-        let gy = y - fs;
-        CTX.fillStyle = this.makeGrad(CTX, gx, gy + 4, gx, gy + fs);
-        CTX.shadowColor = "#cec967";
-        CTX.shadowOffsetX = 1;
-        CTX.shadowOffsetY = 1;
-        CTX.shadowBlur = 2;
-        CTX.textAlign = "center";
-        CTX.fillText(txt, x, y);
-        CTX.fillStyle = "#FFF";
-        CTX.shadowColor = "#DDD";
-        CTX.shadowOffsetX = 1;
-        CTX.shadowOffsetY = 1;
-        CTX.shadowBlur = 1;
-        y += fs + 4;
-        CTX.fillText(GAME.level.toString().padStart(2, "0"), x, y);
+    energy() {
+        this._percentBar("energy", "ENERGY", 350, "energy");
     },
-    energy(){
-        ENGINE.clearLayer("energy");
-        let CTX = LAYER.dinamite;
-        let fs = 22;
-        let txt = "ENERGY";
-        let txtm = CTX.measureText(txt);
-        CTX.font = fs + "px Annie";
-        let x = ENGINE.sideWIDTH / 2;
-        let y = 350;
-        let gx = x - txtm.width / 2;
-        let gy = y - fs;
-        CTX.fillStyle = this.makeGrad(CTX, gx, gy, gx, gy + fs);
-        CTX.shadowColor = "#cec967";
-        CTX.shadowOffsetX = 1;
-        CTX.shadowOffsetY = 1;
-        CTX.shadowBlur = 2;
-        CTX.textAlign = "center";
-
-        CTX.fillText(txt, x, y);
+    air() {
+        this._percentBar("air", "AIR", 420, "air", "blue");
     },
 
     /*gameOver() {

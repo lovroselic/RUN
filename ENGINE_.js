@@ -484,12 +484,7 @@ const ENGINE = {
     CTX.closePath();
     CTX.stroke();
     CTX.fillStyle = "#999";
-    CTX.fillRect(
-      1,
-      1,
-      Math.floor((ENGINE.LOAD_W - 2) * (percent / 100)),
-      ENGINE.LOAD_H - 2
-    );
+    CTX.fillRect(1, 1, Math.floor((ENGINE.LOAD_W - 2) * (percent / 100)), ENGINE.LOAD_H - 2);
     CTX.fillStyle = "black";
     CTX.font = "10px Verdana";
     CTX.fillText(
@@ -499,7 +494,29 @@ const ENGINE = {
     );
     return;
   },
-  statusBar(CTX, x, y, w, h, value, max, color) {
+  percentBar(percent, y, CTX, panelSize, colors, H) {
+    let pad = panelSize / 12;
+    CTX.beginPath();
+    CTX.lineWidth = "1";
+    CTX.strokeStyle = colors[0];
+    var Width = panelSize - 2 * pad;
+    CTX.rect(pad, y, Width, H);
+    CTX.closePath();
+    CTX.stroke();
+    CTX.shadowColor = "transparent";
+    CTX.shadowOffsetX = 0;
+    CTX.shadowOffsetY = 0;
+    CTX.shadowBlur = 0;
+
+    CTX.fillStyle = colors[0];
+    if (percent < 0.2 && percent > 0.1) {
+      CTX.fillStyle = colors[1];
+    } else if (percent <= 0.1) {
+      CTX.fillStyle = colors[2];
+    }
+    CTX.fillRect(pad + 1, y + 1, Math.round(Width * percent) - 2, H - 2);
+  },
+  statusBar(CTX, x, y, w, h, value, max, color, annotate = true) {
     CTX.save();
     ENGINE.resetShadow(CTX);
     let fs = h / 2;
@@ -513,11 +530,13 @@ const ENGINE = {
     CTX.stroke();
     let fraction = value / max;
     CTX.fillRect(x, y, Math.round(fraction * w), h);
-    CTX.fillStyle = "#FFF";
-    CTX.textAlign = "center";
-    let tx = x + w / 2 + fs / 2;
-    let ty = y + h / 2 + fs / 2;
-    CTX.fillText(`${value}/${max}`, tx, ty);
+    if (annotate) {
+      CTX.fillStyle = "#FFF";
+      CTX.textAlign = "center";
+      let tx = x + w / 2 + fs / 2;
+      let ty = y + h / 2 + fs / 2;
+      CTX.fillText(`${value}/${max}`, tx, ty);
+    }
     CTX.restore();
   },
   resetShadow(CTX) {
