@@ -11,7 +11,7 @@ TODO:
 ////////////////////////////////////////////////////
 
 var SPEECH = {
-  VERSION: "1.01",
+  VERSION: "1.02",
   CSS: "color: #0A0",
   interval: 20,
   browserSupport: true,
@@ -36,10 +36,10 @@ var SPEECH = {
     let ready = Promise.all([SPEECH.getVoices()]).then(function () {
       SPEECH.ready = true;
       console.log(`%cSPEECH ${SPEECH.VERSION}: ready`, SPEECH.CSS);
-      SPEECH.voice = SPEECH.voices[0];
+      SPEECH.voice = SPEECH.voices[1];
     });
 
-    let def = new VoiceSetting(1, 1, 1);
+    let def = new VoiceSetting(0.5, 0.9, 1);
     SPEECH.settings = def;
     SPEECH.wait();
   },

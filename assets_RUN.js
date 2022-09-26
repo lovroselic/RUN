@@ -7,7 +7,9 @@
 console.log("%cAssets for RUN ready.", "color: orange");
 
 var LoadTextures = ["BrickWall4.jpg", "RockFloor.jpg"];
-var LoadSprites = [];
+var LoadSprites = [
+    { srcName: "BigBox.png", name: "Box" },
+];
 var LoadSequences = [];
 var LoadSheets = [];
 var ExtendSheetTag = [];

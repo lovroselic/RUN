@@ -38,12 +38,16 @@ var INI = {
     LASER_OFFSET_X: 12,
     VERTICAL_WALL_WIDTH: 13,
     BAT_DROWNING_SIZE: 0.5,
-    ENERGY: 1000,
+    HERO_DROWNING_SIZE: 0.8,
+    ENERGY: 2000,
     DINAMITE: 5,
-    AIR: 100,
+    AIR: 250,
+    LASER_COST: 1,
+    JET_COST: 2,
+    AIR_COST: 1,
 };
 var PRG = {
-    VERSION: "0.08.02",
+    VERSION: "0.08.03",
     NAME: "R.U.N.",
     YEAR: "2022",
     CSS: "color: #239AFF;",
@@ -449,6 +453,38 @@ var HERO = {
             VANISHING.add(new Dynamite(HERO.moveState.pos));
         }
     },
+    manage() {
+        this.collission();
+        this.drowningTest();
+    },
+    drowningTest() {
+        let Hero_head_position = this.moveState.pos.add(new FP_Vector(0, -(47 - 6) / ENGINE.INI.GRIDPIX));
+        let head_grid = Grid.toClass(Hero_head_position);
+        let NODE = FLOW.NA.map[FLOW.NA.gridToIndex(head_grid)];
+        if (NODE.size > 0) {
+            let height = NODE.size / NODE.max_flow;
+            let water_level = head_grid.y + 1 - height;
+            if (water_level < Hero_head_position.y) {
+                GAME.air -= INI.AIR_COST;
+                TITLE.air();
+                if (GAME.air <= 0) {
+                    GAME.air = Math.max(GAME.air, 0);
+                    HERO.die();
+                }
+            } else {
+                breathe();
+            }
+        } else breathe();
+        return;
+
+        function breathe() {
+            if (GAME.air < INI.AIR) {
+                GAME.air += INI.AIR_COST;
+                GAME.air = Math.min(GAME.air, INI.AIR);
+                TITLE.air();
+            }
+        }
+    },
     collission() {
         let grids = [Grid.toClass(this.moveState.pos.add(UP, 0.01))];
         grids.push(Grid.toClass(this.moveState.pos.add(UP, this.actor.height / ENGINE.INI.GRIDPIX)));
@@ -479,6 +515,7 @@ var HERO = {
         let enemy_close = IA.unrollArray(grids);
         for (let e of enemy_close) {
             let enemy = ENEMY_TG.POOL[e - 1];
+            if (!enemy) continue;
             enemy.actor.setArea();
             let hit = (line.overlap(enemy.actor.area));
             if (hit) {
@@ -562,8 +599,8 @@ var GAME = {
         //GAME.prepareForRestart();
         GAME.completed = false;
         GAME.won = false;
-        GAME.level = 1;
-        //GAME.level = 13;
+        //GAME.level = 1;
+        GAME.level = 13;
 
         GAME.score = 0;
         GAME.lives = 3;
@@ -604,9 +641,7 @@ var GAME = {
     continueLevel(level) {
         console.log("game continues on level", level);
         VANISHING.init(MAP[level].map);
-        //SPAWN.monsters(level);
         HERO.init();
-        //HERO.energy = Math.max(Math.round(GRID_SOLO_FLOOR_OBJECT.size / INI.GOLD * MAP[GAME.level].energy), HERO.energy);
         GAME.levelExecute();
     },
     levelExecute() {
@@ -615,6 +650,7 @@ var GAME = {
         GAME.initiateStart();
         GAME.drawFirstFrame(GAME.level);
         GAME.resume();
+        SPEECH.speak("Run, you fool!");
     },
     initiateStart() {
         AUDIO.Fuse.loop = true;
@@ -642,7 +678,8 @@ var GAME = {
         HERO.manageFlight(lapsedTime);
         VANISHING.manage(lapsedTime);
         ENEMY_TG.manage(lapsedTime);
-        HERO.collission();
+        //HERO.collission();
+        HERO.manage();
         DESTRUCTION_ANIMATION.manage(lapsedTime);
         FLOW.flow(lapsedTime);
         GAME.frameDraw(lapsedTime);
@@ -795,12 +832,20 @@ var GAME = {
             //return;
         }
         if (map[ENGINE.KEY.map.ctrl]) {
-            HERO.laser = true;
-            HERO.calcLaser();
-            HERO.laserCollision();
+            if (GAME.energy - INI.LASER_COST > 0) {
+                GAME.energy -= INI.LASER_COST;
+                TITLE.energy();
+                HERO.laser = true;
+                HERO.calcLaser();
+                HERO.laserCollision();
+            }
         }
         if (map[ENGINE.KEY.map.up]) {
-            HERO.verticalMove(lapsedTime);
+            if (GAME.energy - INI.JET_COST > 0) {
+                GAME.energy -= INI.JET_COST;
+                TITLE.energy();
+                HERO.verticalMove(lapsedTime);
+            }
             //return;
         }
         if (map[ENGINE.KEY.map.down]) {
@@ -986,7 +1031,7 @@ var TITLE = {
         let txtm = CTX.measureText(txt);
         let gx = x - txtm.width / 2;
         let gy = y - fs;
-        CTX.fillStyle = this.makeGrad(CTX, gx, gy + RND(0, 10), gx, gy + fs);
+        CTX.fillStyle = this.makeGrad(CTX, gx, gy + 2, gx, gy + fs);
     },
     _label(CTX, txt, fs, x, y) {
         CTX.font = fs + "px Annie";
@@ -1037,7 +1082,7 @@ var TITLE = {
         y += 8;
         let percent = GAME[what] / INI[what.toUpperCase()];
         let colors = ['green', 'yellow', 'red'];
-        if (firstColor){
+        if (firstColor) {
             colors[0] = firstColor;
         }
         let H = 32;

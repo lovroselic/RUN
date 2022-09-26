@@ -514,7 +514,7 @@ const ENGINE = {
     } else if (percent <= 0.1) {
       CTX.fillStyle = colors[2];
     }
-    CTX.fillRect(pad + 1, y + 1, Math.round(Width * percent) - 2, H - 2);
+    CTX.fillRect(pad + 1, y + 1, Math.max(0, Math.round(Width * percent) - 2), H - 2);
   },
   statusBar(CTX, x, y, w, h, value, max, color, annotate = true) {
     CTX.save();
