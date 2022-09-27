@@ -38,7 +38,6 @@ var INI = {
     LASER_OFFSET_X: 12,
     VERTICAL_WALL_WIDTH: 13,
     BAT_DROWNING_SIZE: 0.5,
-    HERO_DROWNING_SIZE: 0.8,
     ENERGY: 2000,
     DINAMITE: 5,
     AIR: 250,
@@ -47,7 +46,7 @@ var INI = {
     AIR_COST: 1,
 };
 var PRG = {
-    VERSION: "0.08.03",
+    VERSION: "0.08.04",
     NAME: "R.U.N.",
     YEAR: "2022",
     CSS: "color: #239AFF;",
@@ -615,8 +614,6 @@ var GAME = {
         GAME.dinamite = INI.DINAMITE;
         GAME.energy = INI.ENERGY;
         GAME.air = INI.AIR;
-        //MAP.createNewLevel(GAME.level);
-        //HERO.energy = MAP[GAME.level].energy;
         GAME.initLevel(GAME.level);
         GAME.continueLevel(GAME.level);
     },
@@ -659,16 +656,52 @@ var GAME = {
         VANISHING.add(new Dynamite(dynamite_pos));
     },
     levelEnd() {
-        //SPEECH.speak("Good job!");
+        let endTexts = ["Good job!"];
+        SPEECH.speak(endTexts.chooseRandom());
         GAME.levelCompleted = true;
         console.log("LEVEL COMPLETED!");
         ENGINE.TEXT.centeredText("Level Completed", ENGINE.gameWIDTH, ENGINE.gameHEIGHT / 4);
-        //TITLE.endLevel();
-        //ENGINE.GAME.ANIMATION.next(ENGINE.KEY.waitFor.bind(null, GAME.nextLevel, "enter"));
         ENGINE.GAME.ANIMATION.stop();
+        ENGINE.GAME.ANIMATION.waitThen(GAME.endLevelAnimation, 100);
+    },
+    endLevelAnimation() {
+        ENGINE.TEXT.centeredText("Calculating bonus", ENGINE.gameWIDTH, ENGINE.gameHEIGHT / 2);
+        ENGINE.GAME.ANIMATION.next(GAME.startEndLevelAnimationEnergy);
+    },
+    startEndLevelAnimationEnergy() {
+        if (ENGINE.GAME.stopAnimation) return;
+        const SDD = 10;
+        GAME.energy -= SDD;
+        GAME.score += SDD;
+        TITLE.score();
+        TITLE.energy();
+        GAME.energy = Math.max(0, GAME.energy);
+        if (GAME.energy === 0) {
+            ENGINE.GAME.ANIMATION.next(GAME.startEndLevelAnimationDynamite);
+        }
+    },
+    _timeAccumulator: 0,
+    startEndLevelAnimationDynamite(lapsedTime) {
+        if (ENGINE.GAME.stopAnimation) return;
+        const SDD = 1;
+        const TAL = 100;
+        GAME._timeAccumulator += lapsedTime;
+        if (GAME._timeAccumulator >= TAL) {
+            GAME._timeAccumulator = 0;
+            GAME.dinamite -= SDD;
+            GAME.score += SDD * 100;
+            TITLE.score();
+            TITLE.dinamite();
+            GAME.dinamite = Math.max(0, GAME.dinamite);
+            if (GAME.dinamite === 0) {
+                ENGINE.TEXT.centeredText("Press ENTER to continue", ENGINE.gameWIDTH, 3 * ENGINE.gameHEIGHT / 4);
+                ENGINE.GAME.ANIMATION.next(ENGINE.KEY.waitFor.bind(null, GAME.nextLevel, "enter"));
+            }
+        }
     },
     nextLevel() {
         GAME.level++;
+        console.log("NEXT LEVEL", GAME.level);
         GAME.levelCompleted = false;
         ENGINE.GAME.ANIMATION.waitThen(GAME.levelStart, 2);
     },
