@@ -46,7 +46,7 @@ var INI = {
     AIR_COST: 1,
 };
 var PRG = {
-    VERSION: "0.08.04",
+    VERSION: "0.09.00",
     NAME: "R.U.N.",
     YEAR: "2022",
     CSS: "color: #239AFF;",
@@ -595,12 +595,10 @@ var GAME = {
         ENGINE.TEXT.setRD(GameRD);
         ENGINE.watchVisibility(GAME.lostFocus);
         ENGINE.GAME.start(16);
-        //GAME.prepareForRestart();
         GAME.completed = false;
         GAME.won = false;
         //GAME.level = 1;
-        GAME.level = 13;
-
+        GAME.level = 3;
         GAME.score = 0;
         GAME.lives = 3;
         HERO.startInit();
