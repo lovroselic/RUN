@@ -18,9 +18,9 @@ var MAP = {
     },
     2: {
         data: `
-        {"width":"16","height":"16","map":"BB3ABB4AA4BAEAA2BB2EAA4BAA4BB31ABB8IBB53ABB8ABB7ABB4AA2BB3ABB2ABB14ABB74$ABB9AA2B"}
+        {"width":"16","height":"16","map":"BB3ABB3QAA4BAA2BABB2QAA4BAA4BB31ABB7IBB54ABB8ABB7ABB4AA2BB3ABB2ABB14ABB74$ABB10AA2"}
         `,
-        start: `{"x":3, "y":10}`,
+        start: `{"x":2, "y":10}`,
         dynamite: `{"x":1, "y":10}`,
         flow: `{"x":1, "y":11}`,
         bat: [],

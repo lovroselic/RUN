@@ -9,7 +9,10 @@
     FLOW algorithms
 
     known issues, TODO:
-        * exploding dry blockwall leads to exceptional drainup
+        * l2. overflow top, explode bottom:
+            * does not start top drains
+                *  if triggered when flood level at 9
+                    * it doesn go to 8!!       
 */
 class FlowNode {
     constructor(index) {
@@ -33,7 +36,7 @@ class Boundaries {
     }
 }
 var FLOW = {
-    VERSION: "0.8.2a",
+    VERSION: "0.8.3a",
     CSS: "color: #F3A",
     DEBUG: true,
     INI: {
@@ -124,7 +127,6 @@ var FLOW = {
                         if (NM !== null) {
                             if (FLOW.DEBUG) console.log("..adding terminal: ", i);
                             this.addTerminal(i);
-                            //this.terminals.add(i);
                         }
                     }
                 }
@@ -163,10 +165,8 @@ var FLOW = {
         while (Math.floor(this.NA.map[dindex].prev.first() / this.map.width) === terminalLevel) {
             linked.push(dindex);
             let next = this.NA.map[dindex].prev.first();
-            this.NA.map[tindex].next.add(dindex);
-            this.NA.map[dindex].prev.add(tindex);
-            this.NA.map[dindex].prev.delete(next);
-            this.NA.map[next].next.delete(dindex);
+            this.link_nodes(tindex, dindex);
+            this.unlink_nodes(next, dindex);
             tindex = dindex;
             dindex = next;
         }
@@ -185,15 +185,13 @@ var FLOW = {
             tindex = dindex;
             dindex = this.NA.map[dindex].next.first();
             linked.push(dindex);
-            this.NA.map[tindex].next.add(dindex);
-            this.NA.map[dindex].prev.add(tindex);
+            this.link_nodes(tindex, dindex);
         }
 
         //drains to terminals & adjust size
         for (let L of linked) {
             this.drains.delete(L);
             this.addTerminal(L);
-            //this.terminals.add(L);
             this.NA.map[L].size = T_NODE.size;
         }
         return;
@@ -241,16 +239,14 @@ var FLOW = {
             this.terminals.delete(node);
             if (this.GA.icheck(node, MAPDICT.TRAP_DOOR)) return;
             let grid = this.NA.indexToGrid(node).add(UP);
+
             if (FLOW.DEBUG) {
                 console.log("\nOVERFLOW analysis for node ", NODE, "\n\tup -> ", grid, "\n\twhich is ", this.NA.map[this.NA.gridToIndex(grid)], "\n");
             }
+
             if (this.GA.isOutOfBounds(grid)) return;
             if (this.GA.check(grid, MAPDICT.WALL + MAPDICT.BLOCKWALL)) return;
             if (this.NA.map[this.NA.gridToIndex(grid)].size > 0) return;
-
-            //terminate if not last that reached flood level
-            //and there are terminals lower than flood level
-
             if (this.terminals.size > 0 && this.any_terminal_lower() && grid.y < this.flood_level) {
                 return;
             }
@@ -267,7 +263,6 @@ var FLOW = {
             if (this.flood_level < levelOfThis) {
                 this.drains.delete(NODE.index);
                 this.addTerminal(NODE.index);
-                //this.terminals.add(NODE.index);
                 if (FLOW.DEBUG) console.log("* flood level adjustment blocked");
                 return;
             } else if (levelOfPrevious < this.impliedLevel && levelOfPrevious > this.NA.indexToGrid(NODE.index).y) {
@@ -322,18 +317,15 @@ var FLOW = {
 
         if (Array.isArray(left) && Array.isArray(right)) {
             this.set_flood_level(this.NA.indexToGrid(node).y);
-            //
-            NODE.next.add(node);
-            NEW.prev.add(NODE.index);
-            //
+            this.safe_unlink_node(node);
+            this.link_nodes(NODE.index, node);
             candidates = [node];
 
             for (let arr of [left, right]) {
                 candidates = candidates.concat(arr);
                 let N = node;
                 for (let element of arr) {
-                    this.NA.map[N].next.add(element);
-                    this.NA.map[element].prev.add(N);
+                    this.link_nodes(N, element);
                     if (FLOW.DEBUG) {
                         if (this.NA.map[element].prev.size > 1) {
                             console.error("Node part of cycle ...", element, this.NA.map[element]);
@@ -379,7 +371,7 @@ var FLOW = {
             index = this.GA.gridToIndex(grid);
 
             if (FLOW.DEBUG) console.log("_branch, checking flood: ", index, "->", this.NA.map[index].size);
-            //stop if flooded
+    
             if (this.NA.map[index].size > 0) {
                 if (FLOW.DEBUG) {
                     console.log(".NODE ", index, "flooded:", this.NA.map[index].size, "terminating branch on", this.NA.map[index]);
@@ -387,7 +379,6 @@ var FLOW = {
                 return line;
             }
 
-            //door
             if (this.GA.check(grid, MAPDICT.DOOR)) {
                 line.push(index);
                 this.NA.map[index].type = type;
@@ -397,7 +388,6 @@ var FLOW = {
 
             if (!this.GA.check(down_grid, MAPDICT.WALL + MAPDICT.BLOCKWALL + MAPDICT.TRAP_DOOR)) {
                 if (FLOW.DEBUG) console.log(".PATH DOWN", down_grid, dig);
-                //check if flooded
                 if (dig) {
                     if (this.NA.map[this.NA.gridToIndex(down_grid)].size === 0) {
                         if (FLOW.DEBUG) console.log("...no flood, diging down", down_grid);
@@ -561,72 +551,80 @@ var FLOW = {
             console.log("Setting drains, FL:", this.flood_level, "IL:", this.impliedLevel);
         }
         if (this.flood_level < impliedLevel) {
-            //reflow
             if (this.terminals.size > 0 && this.drains.size === 0) {
                 this.drainsFromTerminals();
-                if (FLOW.DEBUG) console.log("drains from terminals", this.drains);
+                if (FLOW.DEBUG) console.log("> drains from terminals", this.drains);
                 if (this.drains.size === 0) {
                     this.add_drains_from_flood_level();
-                    if (FLOW.DEBUG) console.log("nothing from terminals, trying drains from flood level", this.drains);
+                    if (FLOW.DEBUG) console.log(">> nothing from terminals, trying drains from flood level", this.drains);
                 }
             } else {
                 this.add_drains_from_flood_level();
-                if (FLOW.DEBUG) console.log("drains from flood level");
+                if (FLOW.DEBUG) console.log("> drains from flood level");
             }
-            if (FLOW.DEBUG) console.log("drains set", this.drains);
+            if (FLOW.DEBUG) console.log("Drains set.....:", this.drains);
             this.next_line(this.dig_down(nextGrid), this.NA.map[this.origin_index]);
-        } else if (this.flood_level === impliedLevel) {
-            this.next_line(this.dig_down(grid), this.NA.map[this.origin_index]);
+        } else if (this.flood_level === impliedLevel && which !== MAPDICT.BLOCKWALL) {
             if (FLOW.DEBUG) console.log("drains dig next line");
+            this.next_line(this.dig_down(grid), this.NA.map[this.origin_index]);
         } else {
             if (FLOW.DEBUG) console.log("REFLOW Not applicable");
             return;
         }
 
         // update line after reflow
-        if (NODE.size >= 0) {
-            if (FLOW.DEBUG) {
-                console.log("********************************************");
-                console.log("update line after reflow", NODE, "after reflow");
-                console.log("********************************************");
-            }
-            let preNode;
-            if (NODE.prev.size > 0) {
-                preNode = this.NA.map[NODE.prev.first()];
-            } else {
-                if (FLOW.DEBUG) console.log("Finding previos wet node for", nextGrid);
-                [preNode, cacheType] = this.find_prev(nextGrid);
-            }
+        if (FLOW.DEBUG) {
+            console.log("***********************************************");
+            console.log("update line after reflow", NODE, "after reflow");
+            console.log("***********************************************");
+        }
+        let preNode;
+        if (NODE.prev.size > 0 && NODE.prev.first() !== this.origin_index) {
+            preNode = NODE.prev.first();
+        } else {
+            if (FLOW.DEBUG) console.log("Finding previos wet node for", nextGrid);
+            [preNode, cacheType] = this.find_prev(nextGrid);
+        }
 
-            NODE.size = this.NA.map[preNode].size;
-            NODE.type = "UP";
-            this.set_node(NODE);
-            //
-            if (cacheType) {
-                let branch = this.find_branch(index, eval(cacheType), cacheType, false);
-                if (which === MAPDICT.BLOCKWALL) {
-                    this.NA.map[index].prev.add(this.origin_index);
-                    this.NA.map[this.origin_index].next.add(index);
-                    if (this.impliedLevel - 1 === this.flood_level) {
-                        this.drains.add(index);
-                    }
-                }
-                if (FLOW.DEBUG) console.log(index, "extending branch", branch);
-                let N = index;
-                for (let b of branch) {
-                    if (this.impliedLevel - 1 === this.flood_level) {
-                        this.drains.add(b);
-                    }
-                    this.NA.map[N].next.add(b);
-                    this.NA.map[b].prev.add(N);
-                    this.NA.map[b].size = this.NA.map[preNode].size;
-                    this.set_node(this.NA.map[b]);
-                    N = b;
-                }
+        if (FLOW.DEBUG) console.log("rechecking preNode", preNode);
+        NODE.size = this.NA.map[preNode].size;
+        NODE.type = "UP";
+        this.set_node(NODE);
+
+        let branch = this.find_branch(index, eval(cacheType), cacheType, false);
+        if (which === MAPDICT.BLOCKWALL) {
+            this.link_nodes(this.origin_index, index);
+
+            if (this.impliedLevel - 1 === this.flood_level) {
+                this.drains.add(index);
             }
         }
-        //throw "DEBUG";
+        if (FLOW.DEBUG) console.log(index, "extending branch", branch);
+        let N = index;
+        for (let b of branch) {
+            if (this.impliedLevel - 1 === this.flood_level) {
+                this.drains.add(b);
+            }
+            this.link_nodes(N, b);
+            this.NA.map[b].size = this.NA.map[preNode].size;
+            this.set_node(this.NA.map[b]);
+            N = b;
+        }
         return;
+    },
+    link_nodes(from, to) {
+        this.NA.map[from].next.add(to);
+        this.NA.map[to].prev.add(from);
+    },
+    safe_unlink_node(node){
+        let prev_node = this.NA.map[node].prev.first();
+        if (prev_node) {
+            this.unlink_nodes(prev_node, node);
+        }
+    },
+    unlink_nodes(from, to) {
+        this.NA.map[from].next.delete(to);
+        this.NA.map[to].prev.delete(from);
     },
     find_prev(grid) {
         if (this.NA.map[this.NA.gridToIndex(grid.add(LEFT))].size > 0) {
