@@ -165,6 +165,7 @@ var FLOW = {
         while (Math.floor(this.NA.map[dindex].prev.first() / this.map.width) === terminalLevel) {
             linked.push(dindex);
             let next = this.NA.map[dindex].prev.first();
+            if (FLOW.DEBUG) console.log("..linking", tindex, "->", dindex);
             this.link_nodes(tindex, dindex);
             this.unlink_nodes(next, dindex);
             tindex = dindex;
@@ -172,6 +173,7 @@ var FLOW = {
         }
 
         //dindex is pivot
+        if (FLOW.DEBUG) console.log("..linking", tindex, "->", dindex);
         this.NA.map[tindex].next.add(dindex);
         let root = this.NA.map[dindex].prev.first();
         this.NA.map[dindex].prev.delete(root);
@@ -185,6 +187,7 @@ var FLOW = {
             tindex = dindex;
             dindex = this.NA.map[dindex].next.first();
             linked.push(dindex);
+            if (FLOW.DEBUG) console.log("..linking", tindex, "->", dindex);
             this.link_nodes(tindex, dindex);
         }
 
@@ -371,7 +374,7 @@ var FLOW = {
             index = this.GA.gridToIndex(grid);
 
             if (FLOW.DEBUG) console.log("_branch, checking flood: ", index, "->", this.NA.map[index].size);
-    
+
             if (this.NA.map[index].size > 0) {
                 if (FLOW.DEBUG) {
                     console.log(".NODE ", index, "flooded:", this.NA.map[index].size, "terminating branch on", this.NA.map[index]);
@@ -544,9 +547,9 @@ var FLOW = {
 
         let cacheType = NODE.type;
         if (FLOW.DEBUG) console.log('cacheType', cacheType, eval(cacheType));
-
         let impliedLevel = grid.y + correction;
         this.impliedLevel = impliedLevel;
+
         if (FLOW.DEBUG) {
             console.log("Setting drains, FL:", this.flood_level, "IL:", this.impliedLevel);
         }
@@ -578,22 +581,23 @@ var FLOW = {
             console.log("update line after reflow", NODE, "after reflow");
             console.log("***********************************************");
         }
-        let preNode;
-        if (NODE.prev.size > 0 && NODE.prev.first() !== this.origin_index) {
-            preNode = NODE.prev.first();
-        } else {
-            if (FLOW.DEBUG) console.log("Finding previos wet node for", nextGrid);
-            [preNode, cacheType] = this.find_prev(nextGrid);
-        }
 
-        if (FLOW.DEBUG) console.log("rechecking preNode", preNode);
+         let preNode;
+         if (NODE.prev.size > 0 && NODE.prev.first() !== this.origin_index) { //this will fail sometimes??
+             preNode = NODE.prev.first();
+         } else {
+             if (FLOW.DEBUG) console.log("Finding previous wet node for", nextGrid);
+             [preNode, cacheType] = this.find_prev(nextGrid);
+         }
+         if (FLOW.DEBUG) console.log("rechecking preNode", preNode);
+
         NODE.size = this.NA.map[preNode].size;
         NODE.type = "UP";
         this.set_node(NODE);
 
         let branch = this.find_branch(index, eval(cacheType), cacheType, false);
         if (which === MAPDICT.BLOCKWALL) {
-            this.link_nodes(this.origin_index, index);
+            this.link_nodes(preNode, index);
 
             if (this.impliedLevel - 1 === this.flood_level) {
                 this.drains.add(index);
@@ -616,7 +620,7 @@ var FLOW = {
         this.NA.map[from].next.add(to);
         this.NA.map[to].prev.add(from);
     },
-    safe_unlink_node(node){
+    safe_unlink_node(node) {
         let prev_node = this.NA.map[node].prev.first();
         if (prev_node) {
             this.unlink_nodes(prev_node, node);
