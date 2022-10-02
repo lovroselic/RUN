@@ -18,12 +18,12 @@ var MAP = {
     },
     2: {
         data: `
-        {"width":"16","height":"16","map":"BB3ABB3QAA4BAA2BABB2QAA4BAA4BB31ABB7IBB54ABB8ABB7ABB4AA2BB3ABB2ABB14ABB74$ABB10AA2"}
+        {"width":"16","height":"16","map":"BB2AA6BABB4AA2BAA3QAA2BB3ABAQAA2BAA4BB9IBB6ABB3ABB12ABB27ABB29ABB7AA2BB8AA2BB5ABB14ABB74$ABB10AA2"}
         `,
         start: `{"x":2, "y":10}`,
         dynamite: `{"x":1, "y":10}`,
         flow: `{"x":1, "y":11}`,
-        bat: [],
+        bat: [[`{"x":3, "y":12}`, UP, 1], [`{"x":2, "y":6}`, RIGHT, 5], [`{"x":1, "y":8}`, UP, 2], [`{"x":6, "y":11}`, RIGHT, 1]],
     },
     3: {
         data: `
