@@ -19,7 +19,7 @@ var DEBUG = {
     FPS: true,
     BUTTONS: false,
     SETTING: true,
-    VERBOSE: false,
+    VERBOSE: true,
     PAINT_TRAIL: false,
     invincible: false,
     INF_LIVES: false,
@@ -46,7 +46,7 @@ var INI = {
     AIR_COST: 1,
 };
 var PRG = {
-    VERSION: "0.09.03",
+    VERSION: "0.10.00",
     NAME: "R.U.N.",
     YEAR: "2022",
     CSS: "color: #239AFF;",
@@ -399,7 +399,7 @@ var HERO = {
         AUDIO.Laser.play();
         this.L.distance += INI.LASER_DELTA;
         this.L.distance = Math.min(this.L.distance, INI.LASER_RANGE);
-        this.L.start = new Point(this.actor.vx, this.actor.vy).translate(UP, INI.LASER_OFFSET_Y).translate(this.moveState.dir, INI.LASER_OFFSET_X);
+        this.L.start = new Point(this.actor.x, this.actor.y).translate(UP, INI.LASER_OFFSET_Y).translate(this.moveState.dir, INI.LASER_OFFSET_X);
         this.L.end = this.L.start.translate(this.moveState.dir, this.L.distance);
         this.L.end.x = Math.max(this.L.end.x, 0);
         this.L.end.x = Math.min(this.L.end.x, MAP[GAME.level].map.width * ENGINE.INI.GRIDPIX - 1);
@@ -430,6 +430,8 @@ var HERO = {
         }
     },
     drawLaser() {
+        this.L.start.toViewport();
+        this.L.end.toViewport();
         let CTX = LAYER.actors;
         let colors = [255, 0, 0];
         CTX.fillStyle = `rgb(${colors})`;
@@ -441,6 +443,8 @@ var HERO = {
             CTX.fillStyle = `rgb(${colors})`;
             colors = [RND(20, 255), RND(0, 20), RND(0, 20)];
         }
+        this.L.start.toAbsolute();
+        this.L.end.toAbsolute();
     },
     dynamite() {
         if (this.floats) return;

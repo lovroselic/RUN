@@ -38,7 +38,7 @@ class Boundaries {
 var FLOW = {
     VERSION: "0.8.3a",
     CSS: "color: #F3A",
-    DEBUG: true,
+    DEBUG: false,
     INI: {
         ORIGIN_SIZE: 0.2,
         ORIGIN_FLOW: 4096,
