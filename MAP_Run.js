@@ -18,12 +18,14 @@ var MAP = {
     },
     2: {
         data: `
-        {"width":"16","height":"16","map":"BB2AA6BABB4AA2BAA3QAA2BB3ABAQAA2BAA4BB9IBB6ABB3ABB12ABB27ABB29ABB7AA2BB8AA2BB5ABB14ABB74$ABB10AA2"}
+        {"width":"16","height":"16","map":"BB2AA6BEBB4AQBAA2BAA4QAA2BAA2BB3ABB2AQABABABEBAA7BB12IBB7ABABB4ABB7ABB11ABB86ABB14AA2BB2$BB11AA4BB2ABB5AA3BB7AA2BB9AA2BAA3"}
         `,
         start: `{"x":2, "y":10}`,
         dynamite: `{"x":1, "y":10}`,
         flow: `{"x":1, "y":11}`,
-        bat: [[`{"x":3, "y":12}`, UP, 1], [`{"x":2, "y":6}`, RIGHT, 5], [`{"x":1, "y":8}`, UP, 2], [`{"x":6, "y":11}`, RIGHT, 1]],
+        bat: [[`{"x":3, "y":12}`, UP, 1], [`{"x":3, "y":6}`, RIGHT, 2], [`{"x":6, "y":6}`, RIGHT, 3], [`{"x":1, "y":8}`, UP, 2], [`{"x":6, "y":11}`, RIGHT, 1],
+        [`{"x":2, "y":6}`, LEFT, 1], [`{"x":12, "y":6}`, RIGHT, 2], [`{"x":14, "y":4}`, DOWN, 2], [`{"x":11, "y":0}`, DOWN, 2], [`{"x":7, "y":4}`, RIGHT, 1],
+        [`{"x":12, "y":4}`, LEFT, 2]],
     },
     3: {
         data: `

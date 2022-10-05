@@ -31,7 +31,8 @@ var INI = {
     A: 20,
     G: 12,
     EXPLOSION_TIMEOUT: 1000,
-    EXPLOSION_RADIUS: 0.75,
+    //EXPLOSION_RADIUS: 0.75,
+    EXPLOSION_RADIUS: 0.999,
     LASER_RANGE: 80,
     LASER_DELTA: 4,
     LASER_OFFSET_Y: 32,
@@ -46,7 +47,7 @@ var INI = {
     AIR_COST: 1,
 };
 var PRG = {
-    VERSION: "0.10.00",
+    VERSION: "0.10.01",
     NAME: "R.U.N.",
     YEAR: "2022",
     CSS: "color: #239AFF;",
@@ -153,7 +154,7 @@ class Dynamite {
         let grids = [this.grid, this.grid.add(DOWN)];
         let GA = MAP[GAME.level].map.GA;
         for (let dir of [LEFT, RIGHT]) {
-            let side = position.add(dir, 2 * INI.EXPLOSION_RADIUS / 3);
+            let side = position.add(dir, INI.EXPLOSION_RADIUS);
             let sideGrid = Grid.toClass(side);
             if (GA.isBlockWall(sideGrid)) {
                 grids.push(sideGrid);
@@ -179,6 +180,9 @@ class Dynamite {
         GAME.repaintLevel(GAME.level);
         let distance = HERO.moveState.pos.EuclidianDistance(position);
         if (distance < INI.EXPLOSION_RADIUS) {
+            if (DEBUG.VERBOSE) {
+                console.log("distance", distance, "HERO.pos:", HERO.moveState.pos, "EXP.pos:", position, "radius:", INI.EXPLOSION_RADIUS);
+            }
             HERO.die();
         }
         //bats
@@ -797,7 +801,9 @@ var GAME = {
     generateTitleText() {
         let text = `${PRG.NAME} ${PRG.VERSION
             }, a game by Lovro Selic, ${"\u00A9"} C00LSch00L ${PRG.YEAR
-            }. Music: 'Which Way Is Away' written and performed by LaughingSkull, ${"\u00A9"
+            }. 
+            Title graphics by Trina Selič. 
+            Music: 'Which Way Is Away' written and performed by LaughingSkull, ${"\u00A9"
             } 2011 Lovro Selic. `;
         text += "     ENGINE, SPEECH, GRID, MAZE, Burrows-Wheeler RLE Compression and GAME code by Lovro Selic using JavaScript. ";
         text = text.split("").join(String.fromCharCode(8202));
@@ -934,6 +940,7 @@ var TITLE = {
         TITLE.clearAllLayers();
         TITLE.blackBackgrounds();
         TITLE.titlePlot();
+        ENGINE.draw("background", (ENGINE.sideWIDTH + ENGINE.gameWIDTH - 480) / 2, (ENGINE.gameHEIGHT - 480) / 2, SPRITE.Title);
         $("#DOWN")[0].scrollIntoView();
         ENGINE.topCanvas = ENGINE.getCanvasName("ROOM");
         TITLE.drawButtons();

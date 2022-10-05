@@ -9,10 +9,7 @@
     FLOW algorithms
 
     known issues, TODO:
-        * l2. overflow top, explode bottom:
-            * does not start top drains
-                *  if triggered when flood level at 9
-                    * it doesn go to 8!!       
+        * double flow to double flowed     
 */
 class FlowNode {
     constructor(index) {
@@ -36,7 +33,7 @@ class Boundaries {
     }
 }
 var FLOW = {
-    VERSION: "0.8.3a",
+    VERSION: "0.8.4a",
     CSS: "color: #F3A",
     DEBUG: false,
     INI: {
@@ -558,14 +555,9 @@ var FLOW = {
         } else if (which === MAPDICT.BLOCKWALL) {
             nextGrid = grid;
             if (this.NA.map[index + this.map.width]) {
-                //nextGrid = grid;
                 downward = true;
-                /*if (this.NA.map[index - this.map.width]?.size > 0) {
-                    this.drainUp(index);
-                }*/
             } else {
                 correction = 1;
-                //nextGrid = grid;
             }
             if (this.NA.map[index - this.map.width]?.size > 0) {
                 upward = true;
@@ -595,7 +587,6 @@ var FLOW = {
                 if (FLOW.DEBUG) console.log("> drains from flood level");
             }
             if (FLOW.DEBUG) console.log("Drains set.....:", this.drains);
-            //stop for corner blockwall?
             this.next_line(this.dig_down(nextGrid), this.NA.map[this.origin_index]);
         } else if (this.flood_level === impliedLevel && which !== MAPDICT.BLOCKWALL) {
             if (FLOW.DEBUG) console.log("drains dig next line");
@@ -605,9 +596,11 @@ var FLOW = {
             return;
         }
 
-        // update line after reflow
+        // update line after reflow, except in theese cases
         if (downward) return;
         if (upward) return;
+        if (this.both_flooded(nextGrid)) return;
+
         if (FLOW.DEBUG) {
             console.log("***********************************************");
             console.log("update line after reflow", NODE, "after reflow");
@@ -661,6 +654,9 @@ var FLOW = {
     unlink_nodes(from, to) {
         this.NA.map[from].next.delete(to);
         this.NA.map[to].prev.delete(from);
+    },
+    both_flooded(grid) {
+        return (this.NA.map[this.NA.gridToIndex(grid.add(LEFT))].size > 0) && (this.NA.map[this.NA.gridToIndex(grid.add(RIGHT))].size > 0);
     },
     find_prev(grid) {
         if (this.NA.map[this.NA.gridToIndex(grid.add(LEFT))].size > 0) {
