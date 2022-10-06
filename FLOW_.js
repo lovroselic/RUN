@@ -33,9 +33,9 @@ class Boundaries {
     }
 }
 var FLOW = {
-    VERSION: "0.8.4a",
+    VERSION: "0.8.5a",
     CSS: "color: #F3A",
-    DEBUG: false,
+    DEBUG: true,
     INI: {
         ORIGIN_SIZE: 0.2,
         ORIGIN_FLOW: 4096,
@@ -324,7 +324,9 @@ var FLOW = {
         let NEW = this.NA.map[node];
         NEW.type = "UP";
         let left = this.find_branch(node, LEFT, "LEFT");
+        if (FLOW.DEBUG) console.log("left:", left);
         let right = this.find_branch(node, RIGHT, "RIGHT");
+        if (FLOW.DEBUG) console.log("right:", right);
         if (FLOW.DEBUG) console.log("..branches", left, right);
         let candidates;
 
@@ -407,6 +409,7 @@ var FLOW = {
                         return this.dig_down(down_grid);
                     } else {
                         if (FLOW.DEBUG) console.log("..flooded. dig stopped.");
+                        //return []; //this would be a bug !!!
                     }
                 } else {
                     return line;
@@ -461,9 +464,10 @@ var FLOW = {
         this.NA_to_GA();
         let startIndex = this.flood_level * this.map.width;
         for (let i = startIndex; i < startIndex + this.map.width; i++) {
+            if (i === this.origin_index) continue;
             if (this.NA.map[i]) {
                 if (this.NA.map[i].size === this.NA.map[i].max_flow) {
-                    let NM = this.GA.findPath_AStar_fast(this.NA.indexToGrid(i), this.origin, [MAPDICT.WATER]);
+                    let NM = this.GA.findPath_AStar_fast(this.NA.indexToGrid(i), this.origin, [MAPDICT.WATER], "include");
                     if (NM !== null) {
                         if (!this.isTerminalAbove(i)) {
                             if (FLOW.DEBUG) console.log(".. adding drain: ", i);
@@ -481,7 +485,7 @@ var FLOW = {
     },
     flood_link(start, path = [MAPDICT.WATER]) {
         var Q = [start];
-        let NodeMap = this.GA.setNodeMap("flood_linkNodeMap", path);
+        let NodeMap = this.GA.setNodeMap("flood_linkNodeMap", path, "include");
         NodeMap[start.x][start.y] = null;
         var selected;
         while (Q.length > 0) {
@@ -525,9 +529,9 @@ var FLOW = {
             NODE = this.NA.map[upIndex];
         }
     },
-    drainsFromTerminals() {
+    drainsFromTerminals(level = this.flood_level) {
         for (let t of this.terminals) {
-            if (Math.floor(t / this.map.width) <= this.flood_level) {
+            if (Math.floor(t / this.map.width) <= level) {
                 this.terminals.delete(t);
                 this.drains.add(t);
             }
@@ -548,6 +552,7 @@ var FLOW = {
         let correction = 0;
         let downward = false;
         let upward = false;
+        let both_dry = this.both_dry(grid);
         if (which === MAPDICT.DOOR) correction = 1;
 
         if (NODE.type != "NOWAY") {
@@ -557,6 +562,7 @@ var FLOW = {
             if (this.NA.map[index + this.map.width]) {
                 downward = true;
             } else {
+                if (FLOW.DEBUG) console.warn("BLOCKWALL default correction");
                 correction = 1;
             }
             if (this.NA.map[index - this.map.width]?.size > 0) {
@@ -564,7 +570,15 @@ var FLOW = {
                 this.drainUp(index);
             }
         }
-        if (FLOW.DEBUG) console.log(grid, "to", nextGrid, "downward", downward, "upward", upward);
+        if (FLOW.DEBUG) {
+            console.log(grid, "to", nextGrid, "downward", downward, "upward", upward);
+            console.log("both dry", both_dry);
+            console.log("correction = ", correction);
+        }
+        if (!downward && !upward && both_dry) {
+            if (FLOW.DEBUG) console.log(".. dry blockwall node, quitting.");
+            return;
+        }
 
         let cacheType = NODE.type;
         if (FLOW.DEBUG) console.log('cacheType', cacheType, eval(cacheType));
@@ -596,10 +610,16 @@ var FLOW = {
             return;
         }
 
+        if (FLOW.DEBUG) {
+            console.log("## Reflow completed, checking if update line required ....");
+            console.log(grid, "to", nextGrid, "downward", downward, "upward", upward);
+            console.log("both flooded", this.both_flooded(nextGrid));
+        }
+
         // update line after reflow, except in theese cases
         if (downward) return;
         if (upward) return;
-        if (this.both_flooded(nextGrid)) return;
+        //if (this.both_flooded(nextGrid)) return;
 
         if (FLOW.DEBUG) {
             console.log("***********************************************");
@@ -615,6 +635,7 @@ var FLOW = {
             [preNode, cacheType] = this.find_prev(nextGrid);
         }
         if (FLOW.DEBUG) console.log("rechecking preNode", preNode);
+        if (preNode === -1) return;
 
         NODE.size = this.NA.map[preNode].size;
         NODE.type = "UP";
@@ -622,6 +643,9 @@ var FLOW = {
 
         let branch = this.find_branch(index, eval(cacheType), cacheType, false);
         if (which === MAPDICT.BLOCKWALL) {
+            if (this.NA.map[index].prev.first() === this.origin_index) {
+                this.unlink_nodes(this.origin_index, index);
+            }
             this.link_nodes(preNode, index);
 
             if (this.impliedLevel - 1 === this.flood_level) {
@@ -655,15 +679,19 @@ var FLOW = {
         this.NA.map[from].next.delete(to);
         this.NA.map[to].prev.delete(from);
     },
+    both_dry(grid) {
+        return (this.NA.map[this.NA.gridToIndex(grid.add(LEFT))] === null || this.NA.map[this.NA.gridToIndex(grid.add(LEFT))].size === 0) &&
+            (this.NA.map[this.NA.gridToIndex(grid.add(RIGHT))] === null || this.NA.map[this.NA.gridToIndex(grid.add(RIGHT))].size === 0);
+    },
     both_flooded(grid) {
-        return (this.NA.map[this.NA.gridToIndex(grid.add(LEFT))].size > 0) && (this.NA.map[this.NA.gridToIndex(grid.add(RIGHT))].size > 0);
+        return (this.NA.map[this.NA.gridToIndex(grid.add(LEFT))]?.size > 0) && (this.NA.map[this.NA.gridToIndex(grid.add(RIGHT))]?.size > 0);
     },
     find_prev(grid) {
-        if (this.NA.map[this.NA.gridToIndex(grid.add(LEFT))].size > 0) {
+        if (this.NA.map[this.NA.gridToIndex(grid.add(LEFT))]?.size > 0) {
             return [this.NA.gridToIndex(grid.add(LEFT)), "RIGHT"];
-        } else if (this.NA.map[this.NA.gridToIndex(grid.add(RIGHT))].size > 0) {
+        } else if (this.NA.map[this.NA.gridToIndex(grid.add(RIGHT))]?.size > 0) {
             return [this.NA.gridToIndex(grid.add(RIGHT)), "LEFT"];
-        } else throw "DRY NODE FUCKUP!";
+        } else return [-1, null];
     },
     NA_to_GA(W = MAPDICT.WATER) {
         for (let index = 0; index < this.NA.map.length; index++) {

@@ -29,12 +29,12 @@ var MAP = {
     },
     3: {
         data: `
-        {"width":"16","height":"16","map":"BB5AA2BB4AA6BAQAA3QBAA9BB21ABB19IBB49ABB3ABB9AA2BB6AA2BB2ABB16ABB74$ABB10AA2"}
+        {"width":"16","height":"16","map":"BB5AQAA3BABB2ABABB2AA20BAA6BB25AA3BB15ABB4ABB2ABB4ABB5QABB10ABB27ABB88$ABB10IBB3QBQA"}
         `,
-        start: `{"x":3, "y":10}`,
-        dynamite: `{"x":1, "y":10}`,
-        flow: `{"x":1, "y":11}`,
-        bat: [],
+        start: `{"x":2, "y":7}`,
+        dynamite: `{"x":1, "y":7}`,
+        flow: `{"x":1, "y":8}`,
+        bat: [[`{"x":3, "y":10}`, UP, 1], [`{"x":5, "y":9}`, DOWN, 1], [`{"x":2, "y":12}`, RIGHT, 5]],
     },
     4: {
         data: `
