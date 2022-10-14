@@ -9,7 +9,7 @@
     FLOW algorithms
 
     known issues, TODO:
-        * double flow to double flowed     
+        *    
 */
 class FlowNode {
     constructor(index) {
@@ -36,7 +36,7 @@ class Boundaries {
     }
 }
 var FLOW = {
-    VERSION: "II.1.0.a",
+    VERSION: "II.3.0.a",
     CSS: "color: #F3A",
     DEBUG: true,
     INI: {
@@ -54,7 +54,6 @@ var FLOW = {
     init(map, origin) {
         this.map = map;
         this.GA = map.GA;
-        //this.make_NA();
         this.origin = origin;
         this.origin_index = this.GA.gridToIndex(this.origin);
         this.make_path();
@@ -79,7 +78,8 @@ var FLOW = {
         let grid = this.origin;
         this.NA.map[this.origin_index].mark = true;
         this.NA.map[this.origin_index].distance = 0;
-        this.path(grid, 0, [grid.add(UP)]);
+        this.set_node(this.NA.map[this.origin_index]);
+        this.path(grid, 1, [grid.add(UP)]);
 
         if (FLOW.DEBUG) {
             console.log("Path done");
@@ -94,14 +94,11 @@ var FLOW = {
 
         let node = this.NA.gridToIndex(grid);
         let NODE = this.NA.map[node];
-        //NODE.distance = distance;
-        //NODE.mark = true;
 
         //immediate termination rules
 
         if (this.GA.check(grid, MAPDICT.TRAP_DOOR)) return;
 
-        // find next(s) //
         let nextNode, nextGrid, nextCandidates, nextNODE, found;
         for (let next of candidates) {
             [found, nextGrid, nextCandidates] = this.find_next(next, distance);
@@ -154,7 +151,6 @@ var FLOW = {
             for (let c of candidates) {
                 let index = this.NA.gridToIndex(c);
                 this.NA.map[index].distance = distance;
-                //this.NA.map[index].mark = true;
                 let up = c.add(UP);
                 if (this.freeUp(up)) {
                     nextCandidates.push(up);
@@ -262,7 +258,7 @@ var FLOW = {
             index = this.GA.gridToIndex(grid);
             if (this.GA.check(grid, MAPDICT.DOOR)) {
                 line.push(index);
-                this.NA.map[index].type = type;
+                this.set_node(this.NA.map[index], type);
                 return line;
             }
             if (this.freeDown(grid.add(DOWN))) {
@@ -270,12 +266,12 @@ var FLOW = {
                 return this.dig_down(grid);
             }
             line.push(index);
-            this.NA.map[index].type = "UP";
+            this.set_node(this.NA.map[index], "UP");
             grid = grid.add(dir);
         }
         return line;
     },
-    set_node(NODE, type) {
+    set_node(NODE, type='UP') {
         NODE.type = type;
         let node = NODE.index;
         let ga_value = this.GA.iget_and_mask(node, MAPDICT.WATER);
@@ -330,6 +326,7 @@ var FLOW = {
         let NODE = this.NA.map[node];
         let layer = "flood";
         let point = GRID.gridToCoord(this.GA.indexToGrid(node));
+        point.toViewport();
         GRID.paintText(point, NODE.distance, layer);
     },
     draw_node(node) {
