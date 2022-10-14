@@ -77,6 +77,7 @@ changelog:
       }
     }
   }
+
   window.RND = RND;
   window.RNDF = RNDF;
   window.coinFlip = coinFlip;
@@ -336,6 +337,9 @@ Set.prototype.addArray = function (arr) {
 };
 Set.prototype.removeArray = function (arr) {
   arr.forEach(el => this.delete(el));
+};
+Set.prototype.intersect = function(x) {
+  return new Set([...this].filter(el => x.has(el)));
 };
 
 class Grid {
