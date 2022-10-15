@@ -20,7 +20,6 @@ var DEBUG = {
     BUTTONS: false,
     SETTING: true,
     VERBOSE: true,
-    PAINT_TRAIL: false,
     invincible: false,
     INF_LIVES: false,
     GRID: true,
@@ -47,7 +46,7 @@ var INI = {
     AIR_COST: 1,
 };
 var PRG = {
-    VERSION: "0.12.00",
+    VERSION: "0.12.01",
     NAME: "R.U.N.",
     YEAR: "2022",
     CSS: "color: #239AFF;",
@@ -164,16 +163,17 @@ class Dynamite {
             if (GA.isDoor(grid) || GA.isBlockWall(grid)) {
                 DESTRUCTION_ANIMATION.add(new Explosion(grid, Grid.toCenter(grid), 'Smoke'));
                 let idx = GA.gridToIndex(grid);
+                let which = GA.iget_and_mask(idx, MAPDICT.WATER);
                 GA.clear(grid, MAPDICT.DOOR);
                 GA.clear(grid, MAPDICT.BLOCKWALL);
                 if (!FLOW.NA.map[idx]) {
                     FLOW.NA.map[idx] = new FlowNode(idx);
                 }
-                FLOW.reflow();
+                FLOW.reflow(grid, which);
             } else if (GA.isTrapDoor(grid)) {
                 DESTRUCTION_ANIMATION.add(new Explosion(grid, FP_Grid.toClass(grid).add(RIGHT, 0.5), 'Smoke'));
                 GA.clear(grid, MAPDICT.TRAP_DOOR);
-                FLOW.reflow();
+                FLOW.reflow(grid, MAPDICT.TRAP_DOOR);
             }
         }
         GAME.repaintLevel(GAME.level);
@@ -605,7 +605,7 @@ var GAME = {
         GAME.completed = false;
         GAME.won = false;
         //GAME.level = 1;
-        GAME.level = 1;
+        GAME.level = 5;
         GAME.score = 0;
         GAME.lives = 3;
         HERO.startInit();

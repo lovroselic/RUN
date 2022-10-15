@@ -516,7 +516,7 @@ var MAPDICT = {
   STAIR: 2 ** 5, //32
   SHRINE: 2 ** 6, // 64
   FOG: 2 ** 7, //128 - fog should remain largest!
-  //alernative1
+  //alternative1
   TRAP_DOOR: 2 ** 3, //8
   BLOCKWALL: 2 ** 4, //16
   WATER: 2 ** 7, //128 - fog,water should remain largest!

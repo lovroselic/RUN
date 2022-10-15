@@ -36,9 +36,10 @@ class Boundaries {
     }
 }
 var FLOW = {
-    VERSION: "II.3.0.a",
+    VERSION: "II.3.1.a",
     CSS: "color: #F3A",
     DEBUG: true,
+    PAINT_DISTANCES: true,
     INI: {
         ORIGIN_SIZE: 0.2,
         ORIGIN_FLOW: 4096,
@@ -48,6 +49,7 @@ var FLOW = {
     },
     layer: 'flood',
     map: null,
+    sizeMap: null,
     GA: null,
     NA: null,
     //flood_level: Infinity,
@@ -56,10 +58,10 @@ var FLOW = {
         this.GA = map.GA;
         this.origin = origin;
         this.origin_index = this.GA.gridToIndex(this.origin);
+        this.sizeMap = new Float32Array(this.map.width * this.map.height);
+        this.sizeMap[this.origin_index] = FLOW.INI.ORIGIN_SIZE;
         this.make_path();
-        //this.NA.G_set(this.origin, 'size', FLOW.INI.ORIGIN_SIZE);
         //this.NA.G_set(this.origin, 'flow', FLOW.INI.ORIGIN_FLOW);
-        //this.NA.G_set(this.origin, 'type', 'UP');
         console.log(`%cFLOW initialized`, FLOW.CSS, FLOW.NA);
     },
     make_NA() {
@@ -271,7 +273,7 @@ var FLOW = {
         }
         return line;
     },
-    set_node(NODE, type='UP') {
+    set_node(NODE, type = 'UP') {
         NODE.type = type;
         let node = NODE.index;
         let ga_value = this.GA.iget_and_mask(node, MAPDICT.WATER);
@@ -304,9 +306,9 @@ var FLOW = {
     flow(lapsedTime, flow = FLOW.INI.ORIGIN_FLOW) {
 
     },
-    reflow() {
+    reflow(grid, which) {
         if (FLOW.DEBUG) {
-            console.warn("ReFlow");
+            console.warn("ReFlow:", grid, which);
         }
         this.make_path();
     },
@@ -316,8 +318,11 @@ var FLOW = {
         this.next_node(this.origin_index);
     },
     next_node(node) {
-        //this.draw_node(node);
-        this.mark_node(node);
+        let NODE = this.NA.map[node];
+        NODE.size = this.sizeMap[node];
+        if (NODE.size === 0) return;
+        this.draw_node(node);
+        if (FLOW.PAINT_DISTANCES) this.mark_node(node);
         for (let n of this.NA.map[node].next) {
             this.next_node(n);
         }

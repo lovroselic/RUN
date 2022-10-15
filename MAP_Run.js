@@ -47,11 +47,11 @@ var MAP = {
     },
     5: {
         data: `
-        {"width":"12","height":"12","map":"BB3AA4BB2AA3BAA2EAA3BABB5AA3BB9ABB6ABB22ABB2IBB3ABB7ABB4AA2BB17AA2BB2ABB24$ABB5AB"}
+        {"width":"12","height":"12","map":"BB2ABB2AA3BB2AA5BB2ABB4ABB2QABABB2AA2BABAEBB7ABB3ABB3ABB4ABB2ABB2ABB2ABB2QBABB5AA3BB4ABB5ABB2ABB10ABB9ABB15AB$IABB5ABAB"}
         `,
         start: `{"x":6, "y":6}`,
-        dynamite: `{"x":4, "y":6}`,
-        flow: `{"x":4, "y":7}`,
+        dynamite: `{"x":5, "y":6}`,
+        flow: `{"x":5, "y":7}`,
         bat: [],
     },
     6: {
