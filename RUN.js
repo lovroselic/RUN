@@ -23,6 +23,7 @@ var DEBUG = {
     invincible: false,
     INF_LIVES: false,
     GRID: true,
+    LINES: true,
 };
 var INI = {
     HERO_LATERAL_SPEED: 150,
@@ -46,7 +47,7 @@ var INI = {
     AIR_COST: 1,
 };
 var PRG = {
-    VERSION: "0.12.01",
+    VERSION: "0.12.02",
     NAME: "R.U.N.",
     YEAR: "2022",
     CSS: "color: #239AFF;",
@@ -97,7 +98,7 @@ var PRG = {
         $(ENGINE.gameWindowId).width(ENGINE.gameWIDTH + ENGINE.sideWIDTH + 4);
         ENGINE.addBOX("TITLE", ENGINE.titleWIDTH, ENGINE.titleHEIGHT, ["title"], null);
         ENGINE.addBOX("ROOM", ENGINE.gameWIDTH, ENGINE.gameHEIGHT,
-            ["background", "actors", "explosion", "flood", "text", "FPS", "button", "click"],
+            ["background", "actors", "explosion", "flood", "debug", "text", "FPS", "button", "click"],
             "side");
         ENGINE.addBOX("SIDE", ENGINE.sideWIDTH, ENGINE.gameHEIGHT,
             ["sideback", "score", "lives", "stage", "dinamite", "energy", "air"],
@@ -748,6 +749,44 @@ var GAME = {
         if (DEBUG.FPS) {
             GAME.FPS(lapsedTime);
         }
+        if (DEBUG.LINES) {
+            GAME.drawDebugLines();
+        }
+    },
+    drawDebugLines() {
+        ENGINE.clearLayer("debug");
+        let CTX = LAYER.debug;
+        //flood level
+        CTX.strokeStyle = "white";
+        CTX.lineWidth = 1;
+        CTX.setLineDash([1, 5]);
+        let y = FLOW.flood_level * ENGINE.INI.GRIDPIX;
+        CTX.beginPath();
+        CTX.moveTo(0, y);
+        CTX.lineTo(FLOW.map.width * ENGINE.INI.GRIDPIX - 1, y);
+        CTX.closePath();
+        CTX.stroke();
+        //min terminal level
+        CTX.strokeStyle = "#10D";
+        CTX.lineDashOffset = 2;
+        CTX.setLineDash([2, 4]);
+        y = FLOW.min_terminal_level * ENGINE.INI.GRIDPIX + 1;
+        CTX.beginPath();
+        CTX.moveTo(0, y);
+        CTX.lineTo(FLOW.map.width * ENGINE.INI.GRIDPIX - 1, y);
+        CTX.closePath();
+        CTX.stroke();
+        //max terminal level
+        CTX.strokeStyle = "#00F";
+        CTX.lineDashOffset = 1;
+        CTX.setLineDash([1, 4]);
+        y = FLOW.max_terminal_level * ENGINE.INI.GRIDPIX + 2;
+        CTX.beginPath();
+        CTX.moveTo(0, y);
+        CTX.lineTo(FLOW.map.width * ENGINE.INI.GRIDPIX - 1, y);
+        CTX.closePath();
+        CTX.stroke();
+        
     },
     repaintLevel(level) {
         ENGINE.clearLayer("wall");
