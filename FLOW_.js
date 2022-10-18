@@ -63,13 +63,15 @@ var FLOW = {
         this.sizeMap[this.origin_index] = FLOW.INI.ORIGIN_SIZE;
         this.make_path();
         this.terminals = new Set([this.origin_index]);
+        this.NA.G_set(this.origin, 'role', "terminal");
+        this.NA.G_set(this.origin, 'flow', FLOW.INI.ORIGIN_FLOW);
         this.drains = new Set();
         this.set_terminal_level();
         this.set_drain_level();
         this.set_flood_level(this.origin.y);
-        this.NA.G_set(this.origin, 'flow', FLOW.INI.ORIGIN_FLOW);
-        this.NA.G_set(this.origin, 'role', "terminal");
+
         this.excess_flow = 0;
+        this.actionLevel = null;
         console.log(`%cFLOW initialized`, FLOW.CSS, FLOW);
     },
     set_terminal_level() {
@@ -350,9 +352,8 @@ var FLOW = {
             console.log("drain_level:", this.drain_level, "max", this.max_drain_level, "min", this.min_drain_level);
         }
 
-
         for (let n of this.terminals) {
-            this.NA.I_set(n, 'flow', (flow + this.excess_flow) / this.terminals.size);
+            this.NA.I_set(n, 'flow', (flow + this.excess_flow * FLOW.INI.ORIGIN_FLOW) / this.terminals.size);
             this.calc_flow(n, lapsedTime);
         }
 
@@ -364,21 +365,45 @@ var FLOW = {
         if (this.DEBUG) console.log("calculating flow for node", node, "update", flow_update, "size", this.sizeMap[node]);
         this.overflow(node);
     },
+    remove_terminal(node) {
+        let NODE = this.NA.map[node];
+        this.terminals.delete(node);
+        NODE.role = null;
+        this.set_terminal_level();
+    },
+    add_terminal(node) {
+        let NODE = this.NA.map[node];
+        this.terminals.add(node);
+        NODE.role = "terminal";
+        this.set_terminal_level();
+    },
     overflow(node) {
         let NODE = this.NA.map[node];
         if (this.sizeMap[node] > NODE.max_flow) {
-            if (this.DEBUG) console.log(".Node", node, "overflowed", NODE.max_flow);
-            this.terminals.delete(node);
-            NODE.role = null;
-            if (this.DEBUG){
-                console.log("next in line", ...NODE.next);
+            //if (this.DEBUG) console.log(".Node", node, "overflowed", NODE.max_flow);
+            this.remove_terminal(node);
+            this.excess_flow = this.sizeMap[node] - NODE.max_flow;
+            this.sizeMap[node] = NODE.max_flow;
+            NODE.size = this.sizeMap[node];
+            if (NODE.next.size === 0) {
+                return;
+            } else {
+                for (let t of NODE.next) {
+                    let distance = this.NA.map[t].distance;
+                    if (distance > NODE.distance) {
+                        this.add_terminal(t);
+                        this.set_flood_level(Math.floor(t / this.map.width));
+                        for (let p of this.NA.map[t].next) {
+                            while (p && this.NA.map[p].distance === distance) {
+                                this.add_terminal(p);
+                                p = this.NA.map[p].next.first();
+                            }
+                        }
+                    }
+                }
             }
-
-
-            //throw "overflow";
         }
     },
-
     set_flood_level(level) {
         if (level < this.flood_level) {
             this.flood_level = level;
@@ -390,6 +415,32 @@ var FLOW = {
             console.warn("ReFlow:", grid, which);
         }
         this.make_path();
+        if (which === MAPDICT.TRAP_DOOR) {
+            this.terminals = new Set([this.origin_index]);
+            this.NA.G_set(this.origin, 'role', "terminal");
+            if (FLOW.DEBUG) {
+                console.log(".reflow after initial explosion");
+            }
+            return;
+        }
+        switch (which) {
+            case MAPDICT.DOOR:
+                this.actionLevel = grid.y;
+                break;
+            case MAPDICT.BLOCKWALL:
+                this.actionLevel = grid.y;
+                if (this.both_side_blocked(grid)) this.actionLevel--;
+                break;
+        }
+
+        if (FLOW.DEBUG) console.log(".actionLevel", this.actionLevel);
+        if (this.actionLevel > this.flood_level) {
+            if (FLOW.DEBUG) console.log("No reflow required!");
+        }
+
+    },
+    both_side_blocked(grid) {
+        return this.NA.map[this.NA.gridToIndex(grid.add(LEFT))] === null && this.NA.map[this.NA.gridToIndex(grid.add(RIGHT))] === null;
     },
 
     draw() {

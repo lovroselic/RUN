@@ -47,7 +47,7 @@ var INI = {
     AIR_COST: 1,
 };
 var PRG = {
-    VERSION: "0.12.02",
+    VERSION: "0.12.03",
     NAME: "R.U.N.",
     YEAR: "2022",
     CSS: "color: #239AFF;",
@@ -786,7 +786,19 @@ var GAME = {
         CTX.lineTo(FLOW.map.width * ENGINE.INI.GRIDPIX - 1, y);
         CTX.closePath();
         CTX.stroke();
-        
+        //action level
+        if (FLOW.actionLevel) {
+            CTX.strokeStyle = "#F0F";
+            CTX.lineDashOffset = 0;
+            CTX.setLineDash([2, 5]);
+            y = FLOW.actionLevel * ENGINE.INI.GRIDPIX + 3;
+            CTX.beginPath();
+            CTX.moveTo(0, y);
+            CTX.lineTo(FLOW.map.width * ENGINE.INI.GRIDPIX - 1, y);
+            CTX.closePath();
+            CTX.stroke();
+        }
+
     },
     repaintLevel(level) {
         ENGINE.clearLayer("wall");
