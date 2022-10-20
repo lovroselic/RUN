@@ -47,7 +47,7 @@ var INI = {
     AIR_COST: 1,
 };
 var PRG = {
-    VERSION: "0.12.03",
+    VERSION: "0.12.04",
     NAME: "R.U.N.",
     YEAR: "2022",
     CSS: "color: #239AFF;",
@@ -767,25 +767,29 @@ var GAME = {
         CTX.closePath();
         CTX.stroke();
         //min terminal level
-        CTX.strokeStyle = "#10D";
-        CTX.lineDashOffset = 2;
-        CTX.setLineDash([2, 4]);
-        y = FLOW.min_terminal_level * ENGINE.INI.GRIDPIX + 1;
-        CTX.beginPath();
-        CTX.moveTo(0, y);
-        CTX.lineTo(FLOW.map.width * ENGINE.INI.GRIDPIX - 1, y);
-        CTX.closePath();
-        CTX.stroke();
+        if (FLOW.min_terminal_level) {
+            CTX.strokeStyle = "#10D";
+            CTX.lineDashOffset = 2;
+            CTX.setLineDash([2, 4]);
+            y = FLOW.min_terminal_level * ENGINE.INI.GRIDPIX + 1;
+            CTX.beginPath();
+            CTX.moveTo(0, y);
+            CTX.lineTo(FLOW.map.width * ENGINE.INI.GRIDPIX - 1, y);
+            CTX.closePath();
+            CTX.stroke();
+        }
         //max terminal level
-        CTX.strokeStyle = "#00F";
-        CTX.lineDashOffset = 1;
-        CTX.setLineDash([1, 4]);
-        y = FLOW.max_terminal_level * ENGINE.INI.GRIDPIX + 2;
-        CTX.beginPath();
-        CTX.moveTo(0, y);
-        CTX.lineTo(FLOW.map.width * ENGINE.INI.GRIDPIX - 1, y);
-        CTX.closePath();
-        CTX.stroke();
+        if (FLOW.max_terminal_level) {
+            CTX.strokeStyle = "#00F";
+            CTX.lineDashOffset = 1;
+            CTX.setLineDash([1, 4]);
+            y = FLOW.max_terminal_level * ENGINE.INI.GRIDPIX + 2;
+            CTX.beginPath();
+            CTX.moveTo(0, y);
+            CTX.lineTo(FLOW.map.width * ENGINE.INI.GRIDPIX - 1, y);
+            CTX.closePath();
+            CTX.stroke();
+        }
         //action level
         if (FLOW.actionLevel) {
             CTX.strokeStyle = "#F0F";

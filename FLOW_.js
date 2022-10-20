@@ -352,10 +352,17 @@ var FLOW = {
             console.log("drain_level:", this.drain_level, "max", this.max_drain_level, "min", this.min_drain_level);
         }
 
+        for (let d of this.drains) {
+            this.NA.I_set(d, 'flow', -FLOW.INI.ORIGIN_FLOW * FLOW.INI.DRAIN_FACTOR);
+            this.calc_flow(d, lapsedTime);
+        }
+        this.excess_flow += FLOW.INI.ORIGIN_FLOW * FLOW.INI.DRAIN_FACTOR * this.drains.size;
+
         for (let n of this.terminals) {
             this.NA.I_set(n, 'flow', (flow + this.excess_flow * FLOW.INI.ORIGIN_FLOW) / this.terminals.size);
             this.calc_flow(n, lapsedTime);
         }
+        this.excess_flow = 0;
 
     },
     calc_flow(node, lapsedTime) {
@@ -371,11 +378,23 @@ var FLOW = {
         NODE.role = null;
         this.set_terminal_level();
     },
+    remove_drain(node) {
+        let NODE = this.NA.map[node];
+        this.drains.delete(node);
+        NODE.role = null;
+        this.set_drain_level();
+    },
     add_terminal(node) {
         let NODE = this.NA.map[node];
         this.terminals.add(node);
         NODE.role = "terminal";
         this.set_terminal_level();
+    },
+    add_drain(node) {
+        let NODE = this.NA.map[node];
+        this.drains.add(node);
+        NODE.role = "drain";
+        this.set_drain_level();
     },
     overflow(node) {
         let NODE = this.NA.map[node];
@@ -385,9 +404,7 @@ var FLOW = {
             this.excess_flow = this.sizeMap[node] - NODE.max_flow;
             this.sizeMap[node] = NODE.max_flow;
             NODE.size = this.sizeMap[node];
-            if (NODE.next.size === 0) {
-                return;
-            } else {
+            if (NODE.next.size > 0) {
                 for (let t of NODE.next) {
                     let distance = this.NA.map[t].distance;
                     if (distance > NODE.distance) {
@@ -402,6 +419,32 @@ var FLOW = {
                     }
                 }
             }
+            return;
+        }
+        if (this.sizeMap[node] < 0) {
+            this.sizeMap[node] = 0;
+            let prev = NODE.prev.first();
+            let levelOfPrevious = this.NA.indexToGrid(prev).y;
+            let levelOfThis = Math.floor(NODE.index / this.map.width);
+            let prevDist = this.NA.map[prev].distance;
+            /*if (FLOW.DEBUG) {
+                console.log("\n UNDERFLOW analysis for node ", NODE, ":", this.NA.map[node]);
+                console.log("\t levelOfThis:", levelOfThis, "; levelOfPrevious", levelOfPrevious, "flood level:", this.flood_level);
+                console.log("\t action level", this.actionLevel);
+            }*/
+            this.remove_drain(node);
+            if (levelOfPrevious <= levelOfThis) return;
+            if (levelOfPrevious <= this.actionLevel) {
+                this.add_drain(prev);
+                this.flood_level = levelOfPrevious;
+                if (FLOW.DEBUG) console.log("* setting flood level from previous", this.flood_level);
+                for (let d of this.NA.map[prev].next){
+                    while (d && this.NA.map[d].distance === prevDist) {
+                        this.add_drain(d);
+                        d = this.NA.map[d].next.first();
+                    }
+                }
+            }
         }
     },
     set_flood_level(level) {
@@ -410,11 +453,35 @@ var FLOW = {
             if (this.DEBUG) console.log("* setting flood level from set FL", this.flood_level);
         }
     },
+    drain_up(index) {
+        if (FLOW.DEBUG) console.log("drainUp", index, this.NA.indexToGrid(index));
+        let upIndex = index - this.map.width;
+        while (this.sizeMap[upIndex] > 0) {
+            if (FLOW.DEBUG) console.log("..draining up NODE", upIndex, this.NA.indexToGrid(upIndex));
+            if (this.terminals.has(upIndex)) {
+                this.remove_drain(upIndex);
+            } else if (this.drains.has(upIndex)) {
+                this.remove_terminal(upIndex);
+            }
+            this.excess_flow += this.sizeMap[upIndex];
+            this.sizeMap[upIndex] = 0;
+            upIndex -= this.map.width;
+        }
+    },
+    drainsFromTerminals(level) {
+        for (let t of this.terminals) {
+            if (Math.floor(t / this.map.width) <= level) {
+                this.remove_terminal(t);
+                this.add_drain(t);
+            }
+        }
+    },
     reflow(grid, which) {
         if (FLOW.DEBUG) {
             console.warn("ReFlow:", grid, which);
         }
         this.make_path();
+        let node = this.NA.gridToIndex(grid);
         if (which === MAPDICT.TRAP_DOOR) {
             this.terminals = new Set([this.origin_index]);
             this.NA.G_set(this.origin, 'role', "terminal");
@@ -423,20 +490,49 @@ var FLOW = {
             }
             return;
         }
+        let upward = false;
         switch (which) {
             case MAPDICT.DOOR:
                 this.actionLevel = grid.y;
+                this.sizeMap[node] = 1;
                 break;
             case MAPDICT.BLOCKWALL:
                 this.actionLevel = grid.y;
                 if (this.both_side_blocked(grid)) this.actionLevel--;
+                if (this.sizeMap[node - this.map.width] > 0) upward = true;
                 break;
         }
 
-        if (FLOW.DEBUG) console.log(".actionLevel", this.actionLevel);
-        if (this.actionLevel > this.flood_level) {
-            if (FLOW.DEBUG) console.log("No reflow required!");
+        if (FLOW.DEBUG) {
+            console.log("############################################");
+            console.log(".actionLevel", this.actionLevel);
+            console.log(".upward", upward);
+            console.log("############################################");
         }
+
+        if (this.actionLevel < this.flood_level) {
+            if (FLOW.DEBUG) console.log("No reflow required! - based on flood level");
+            return;
+        }
+
+        if (upward) this.drain_up(index);
+
+        if (this.terminals.size > 0 && this.actionLevel >= this.max_terminal_level) {
+            this.drainsFromTerminals(this.actionLevel);
+            if (FLOW.DEBUG) console.log("> drains from terminals", this.drains);
+        }
+        if (this.drains.size === 0) {
+
+            if (FLOW.DEBUG) console.log(">> nothing from terminals, trying drains from flood level", this.drains);
+        }
+
+        if (FLOW.DEBUG) console.log("Drains set.....:", this.drains);
+        if (FLOW.DEBUG) {
+            console.log("**************************************************");
+            console.log(".reflow adjustments");
+        }
+
+        //throw "REFLOW DEBUG";
 
     },
     both_side_blocked(grid) {

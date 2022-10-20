@@ -50,10 +50,10 @@ changelog:
     return Math.round(x / N) * N;
   }
   function round10(x) {
-    return Math.round(x / 10) * 10;
+    return roundN(x, 10);
   }
   function round5(x) {
-    return Math.round(x / 5) * 5;
+    return roundN(x, 5);
   }
   function weightedRnd(_json) {
     let json = $.extend(true, {}, _json);
@@ -338,7 +338,7 @@ Set.prototype.addArray = function (arr) {
 Set.prototype.removeArray = function (arr) {
   arr.forEach(el => this.delete(el));
 };
-Set.prototype.intersect = function(x) {
+Set.prototype.intersect = function (x) {
   return new Set([...this].filter(el => x.has(el)));
 };
 
