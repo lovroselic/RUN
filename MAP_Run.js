@@ -47,7 +47,7 @@ var MAP = {
     },
     5: {
         data: `
-        {"width":"12","height":"12","map":"BB2ABB2AA3BB2AA5BB2ABB4ABB2QABABB2AA2BABAEBB7ABB3ABB3ABB4ABB2ABB2ABB2ABB2QBABB5AA3BB4ABB5ABB2ABB10ABB9ABB15AB$IABB5ABAB"}
+        {"width":"12","height":"12","map":"BB2ABB2AA3BB2AA5BB2ABB6ABB2QAA2BB2AA2BABAEBB7ABB2ABAA2BB2ABB4ABB2ABB2ABB2ABQBABB6AA2BB3ABB5ABB2ABB10ABB9ABB15AB$IABB5ABAB"}
         `,
         start: `{"x":6, "y":6}`,
         dynamite: `{"x":5, "y":6}`,
@@ -56,29 +56,29 @@ var MAP = {
     },
     6: {
         data: `
-        {"width":"12","height":"12","map":"BB3AA2BAA3BB2EAA4BAA4BAA3BAA2BB8ABABB5ABB2ABB5ABB6AA3BB8ABB14ABB2ABB3IBB11AA2BB4AA2BB17AA2BB2ABB5$ABAB"}
+        {"width":"12","height":"12","map":"BB2AA3BB2AA3BB2AA4BABABB8ABB2QAA2BB2ABABABABB5ABAA2BB3ABAA2BB3ABB4ABB2ABABB3ABAQBB8AA2BABB2ABABB3ABABB17ABB15AB$ABB3AB"}
         `,
         start: `{"x":6, "y":6}`,
         dynamite: `{"x":4, "y":6}`,
-        flow: `{"x":4, "y":7}`,
+        flow: `{"x":5, "y":7}`,
         bat: [],
     },
     7: {
         data: `
-        {"width":"12","height":"12","map":"BB3AA2BAA3BB2EAA4BAA4BB2ABAA2BB2AA2BB7ABABB5ABB3AA3BB4ABB6AA3BB3ABB4ABB13AA2BB4IBB10ABB4AA2BB17AA2BB2ABB5$ABAB"}
+        {"width":"12","height":"12","map":"BB2AA3BB2AA3BB2AA4BABABB4ABB2QAA2BB3AA2BABABB7ABB3ABB3ABB4ABB2ABB2ABB2ABAQBB7ABABABB2ABB5ABB15ABB5ABB5ABB15AB$ABB3AB"}
         `,
         start: `{"x":6, "y":6}`,
         dynamite: `{"x":4, "y":6}`,
-        flow: `{"x":4, "y":7}`,
+        flow: `{"x":5, "y":7}`,
         bat: [],
     },
     8: {
         data: `
-        {"width":"12","height":"12","map":"BEAA3BABAA4BB5ABB62IBB51$ABB9AB"}
+        {"width":"12","height":"12","map":"BB2AA5BABAA3BB2AA4BABB5ABB2ABAA2BB4AA2BABB7ABB3ABB4ABB4ABB2ABB2ABB2ABB2ABABB6ABABABB3ABB3ABB2ABB15ABB5ABB5ABB15AB$"}
         `,
-        start: `{"x":3, "y":7}`,
-        dynamite: `{"x":1, "y":8}`,
-        flow: `{"x":1, "y":9}`,
+        start: `{"x":6, "y":6}`,
+        dynamite: `{"x":4, "y":6}`,
+        flow: `{"x":5, "y":7}`,
         bat: [],
     },
     9: {

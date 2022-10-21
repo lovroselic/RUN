@@ -123,7 +123,7 @@ var FLOW = {
     },
     path(grid, distance, candidates) {
         /*if (FLOW.DEBUG) {
-            console.log(".path", "from grid", grid, "distance", distance, "candidates", candidates);
+            console.log("\n\n.path", "from grid", grid, "distance", distance, "candidates", candidates);
         }*/
 
         let node = this.NA.gridToIndex(grid);
@@ -143,11 +143,11 @@ var FLOW = {
 
                 /*if (FLOW.DEBUG) {
                     console.log("..continue recursion from ", nextGrid);
+                    console.log("..executing path", nextGrid, distance + 1, nextCandidates);
                 }*/
                 this.path(nextGrid, distance + 1, nextCandidates);
             } else if (nextCandidates === null) {
                 //if (FLOW.DEBUG) console.log("..dead end.");
-                return;
             } else {
                 /*if (FLOW.DEBUG) {
                     console.log("..path retried..with", nextCandidates);
@@ -165,7 +165,7 @@ var FLOW = {
             console.log(".... finding next from:", origin);
         }*/
         if (this.NA.map[this.NA.gridToIndex(origin)].mark) {
-            //if (FLOW.DEBUG) console.log(".... already marked: ", origin);
+            if (FLOW.DEBUG) console.log(".... already marked: ", origin);
             return [false, null, null];
         }
         this.NA.map[this.NA.gridToIndex(origin)].used = true;
@@ -191,7 +191,9 @@ var FLOW = {
                     nextCandidates.push(up);
                 }
             }
-
+            /*if (FLOW.DEBUG) {
+                console.log("...next candidate list:", nextCandidates);
+            }*/
             return [true, origin, nextCandidates];
         }
     },
@@ -399,7 +401,6 @@ var FLOW = {
     overflow(node) {
         let NODE = this.NA.map[node];
         if (this.sizeMap[node] > NODE.max_flow) {
-            //if (this.DEBUG) console.log(".Node", node, "overflowed", NODE.max_flow);
             this.remove_terminal(node);
             this.excess_flow = this.sizeMap[node] - NODE.max_flow;
             this.sizeMap[node] = NODE.max_flow;
@@ -427,18 +428,13 @@ var FLOW = {
             let levelOfPrevious = this.NA.indexToGrid(prev).y;
             let levelOfThis = Math.floor(NODE.index / this.map.width);
             let prevDist = this.NA.map[prev].distance;
-            /*if (FLOW.DEBUG) {
-                console.log("\n UNDERFLOW analysis for node ", NODE, ":", this.NA.map[node]);
-                console.log("\t levelOfThis:", levelOfThis, "; levelOfPrevious", levelOfPrevious, "flood level:", this.flood_level);
-                console.log("\t action level", this.actionLevel);
-            }*/
             this.remove_drain(node);
             if (levelOfPrevious <= levelOfThis) return;
             if (levelOfPrevious <= this.actionLevel) {
                 this.add_drain(prev);
                 this.flood_level = levelOfPrevious;
                 if (FLOW.DEBUG) console.log("* setting flood level from previous", this.flood_level);
-                for (let d of this.NA.map[prev].next){
+                for (let d of this.NA.map[prev].next) {
                     while (d && this.NA.map[d].distance === prevDist) {
                         this.add_drain(d);
                         d = this.NA.map[d].next.first();
@@ -477,11 +473,12 @@ var FLOW = {
         }
     },
     reflow(grid, which) {
+        let node = this.NA.gridToIndex(grid);
         if (FLOW.DEBUG) {
-            console.warn("ReFlow:", grid, which);
+            console.warn("ReFlow:", grid, which, "node", node);
         }
         this.make_path();
-        let node = this.NA.gridToIndex(grid);
+
         if (which === MAPDICT.TRAP_DOOR) {
             this.terminals = new Set([this.origin_index]);
             this.NA.G_set(this.origin, 'role', "terminal");
@@ -494,7 +491,6 @@ var FLOW = {
         switch (which) {
             case MAPDICT.DOOR:
                 this.actionLevel = grid.y;
-                this.sizeMap[node] = 1;
                 break;
             case MAPDICT.BLOCKWALL:
                 this.actionLevel = grid.y;
@@ -514,31 +510,75 @@ var FLOW = {
             if (FLOW.DEBUG) console.log("No reflow required! - based on flood level");
             return;
         }
+        if (which === MAPDICT.DOOR) {
+            this.sizeMap[node] = 1;
+        }
 
         if (upward) this.drain_up(index);
+        let DATA = this.traverse_flow_graph();
+        if (FLOW.DEBUG) console.log("DATA", DATA);
 
         if (this.terminals.size > 0 && this.actionLevel >= this.max_terminal_level) {
             this.drainsFromTerminals(this.actionLevel);
             if (FLOW.DEBUG) console.log("> drains from terminals", this.drains);
         }
         if (this.drains.size === 0) {
-
-            if (FLOW.DEBUG) console.log(">> nothing from terminals, trying drains from flood level", this.drains);
+            for (let d of DATA.index_to_full){
+                this.add_drain(d);
+            }
+            if (FLOW.DEBUG) console.log(">> nothing from terminals, trying drains from flow graph", this.drains);
         }
 
         if (FLOW.DEBUG) console.log("Drains set.....:", this.drains);
         if (FLOW.DEBUG) {
             console.log("**************************************************");
-            console.log(".reflow adjustments");
+            console.log(".reflow: set new terminals");
         }
 
+
+
         //throw "REFLOW DEBUG";
+
+    },
+    traverse_flow_graph() {
+        console.time("traverse");
+        let DATA = {
+            distance_to_empty: Infinity,
+            index_to_empty: [],
+            distance_to_full: -1,
+            index_to_full: [],
+        };
+        this.traverse(this.origin_index, DATA);
+        console.timeEnd("traverse");
+        return DATA;
+    },
+    traverse(node, DATA) {
+        if (this.sizeMap[node] === 0) {
+            if (this.NA.map[node].distance < DATA.distance_to_empty) {
+                DATA.distance_to_empty = this.NA.map[node].distance;
+                DATA.index_to_empty = [node];
+            }
+            else if (this.NA.map[node].distance === DATA.distance_to_empty) {
+                DATA.index_to_empty.push(node);
+            }
+        }
+        if (this.sizeMap[node] === 1) {
+            if (this.NA.map[node].distance > DATA.distance_to_full) {
+                DATA.distance_to_full = this.NA.map[node].distance;
+                DATA.index_to_full = [node];
+            }
+            else if (this.NA.map[node].distance === DATA.distance_to_full) {
+                DATA.index_to_full.push(node);
+            }
+        }
+        for (let n of this.NA.map[node].next) {
+            this.traverse(n, DATA);
+        }
 
     },
     both_side_blocked(grid) {
         return this.NA.map[this.NA.gridToIndex(grid.add(LEFT))] === null && this.NA.map[this.NA.gridToIndex(grid.add(RIGHT))] === null;
     },
-
     draw() {
         ENGINE.clearLayer(this.layer);
         this.next_node(this.origin_index);
