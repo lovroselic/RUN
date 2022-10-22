@@ -123,21 +123,24 @@ var FLOW = {
     },
     path(grid, distance, candidates, sources) {
         if (FLOW.DEBUG) {
+            console.assert(candidates.length === sources.length, "candidates <- sources length mismatch!");
             console.log("\n\n.PATH", "from grid", grid, "distance", distance, "candidates", candidates, "sources", sources);
         }
 
         let node = this.NA.gridToIndex(grid);
-
         if (this.GA.check(grid, MAPDICT.TRAP_DOOR)) return;
-
         let nextNode, nextGrid, nextCandidates, found, nextSources;
 
         for (let [i, next] of candidates.entries()) {
             console.group("candidates from path");
-            if (FLOW.DEBUG) console.log("CANDIDATE:", next, "i", i);
+            if (FLOW.DEBUG) {
+                console.log("CANDIDATE:", next, "i", i);
+                console.log("... candidates", candidates, "sources", sources);
+            }
             [found, nextGrid, nextCandidates, nextSources] = this.find_next(next, distance);
             if (FLOW.DEBUG) {
                 console.log("found", found, "nextGrid", nextGrid, "nextCandidates", nextCandidates, "nextSources", nextSources);
+                console.log("...sanity check, candidates", candidates, "sources", sources, "i");
             }
             if (found) {
                 nextNode = this.NA.gridToIndex(nextGrid);
@@ -145,9 +148,7 @@ var FLOW = {
                     console.log("FOUND: node was", node, "should be?", sources[i], this.NA.gridToIndex(sources[i]));
                 }
 
-                //this.link_nodes(node, nextNode);
                 this.link_nodes(this.NA.gridToIndex(sources[i]), nextNode);
-
 
                 if (FLOW.DEBUG) {
                     console.log("..continue recursion from ", nextGrid);
@@ -159,9 +160,13 @@ var FLOW = {
                 if (FLOW.DEBUG) console.log("..dead end.");
             } else {
                 if (FLOW.DEBUG) {
-                    console.log("..path retried..with", nextCandidates);
+                    console.log("..path retried..with", nextCandidates, "grid", grid, "sources", sources, "nextSources", nextSources);
                 }
-                this.path(grid, distance, nextCandidates, sources);
+                nextSources = [];
+                for (let z = 0; z < nextCandidates.length; z++) {
+                    nextSources.push(grid);
+                }
+                this.path(grid, distance, nextCandidates, nextSources);
             }
             console.groupEnd("candidates from path");
         }
@@ -191,7 +196,6 @@ var FLOW = {
             if (FLOW.DEBUG) {
                 console.log("...line returned:", candidates);
             }
-
             let nextCandidates = [];
             let sources = [];
             for (let c of candidates) {

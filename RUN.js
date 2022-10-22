@@ -47,7 +47,7 @@ var INI = {
     AIR_COST: 1,
 };
 var PRG = {
-    VERSION: "0.12.06",
+    VERSION: "0.12.07",
     NAME: "R.U.N.",
     YEAR: "2022",
     CSS: "color: #239AFF;",
