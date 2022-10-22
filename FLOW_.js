@@ -113,7 +113,7 @@ var FLOW = {
         this.NA.map[this.origin_index].mark = true;
         this.NA.map[this.origin_index].distance = 0;
         this.set_node(this.NA.map[this.origin_index]);
-        this.path(grid, 1, [grid.add(UP)]);
+        this.path(grid, 1, [grid.add(UP)], [grid]);
 
         if (FLOW.DEBUG) {
             console.log("Path done");
@@ -121,99 +121,111 @@ var FLOW = {
             console.timeEnd("PATH");
         }
     },
-    path(grid, distance, candidates) {
-        /*if (FLOW.DEBUG) {
-            console.log("\n\n.path", "from grid", grid, "distance", distance, "candidates", candidates);
-        }*/
+    path(grid, distance, candidates, sources) {
+        if (FLOW.DEBUG) {
+            console.log("\n\n.PATH", "from grid", grid, "distance", distance, "candidates", candidates, "sources", sources);
+        }
 
         let node = this.NA.gridToIndex(grid);
-        let NODE = this.NA.map[node];
-
-        //immediate termination rules
 
         if (this.GA.check(grid, MAPDICT.TRAP_DOOR)) return;
 
-        let nextNode, nextGrid, nextCandidates, nextNODE, found;
-        for (let next of candidates) {
-            [found, nextGrid, nextCandidates] = this.find_next(next, distance);
+        let nextNode, nextGrid, nextCandidates, found, nextSources;
+
+        for (let [i, next] of candidates.entries()) {
+            console.group("candidates from path");
+            if (FLOW.DEBUG) console.log("CANDIDATE:", next, "i", i);
+            [found, nextGrid, nextCandidates, nextSources] = this.find_next(next, distance);
+            if (FLOW.DEBUG) {
+                console.log("found", found, "nextGrid", nextGrid, "nextCandidates", nextCandidates, "nextSources", nextSources);
+            }
             if (found) {
                 nextNode = this.NA.gridToIndex(nextGrid);
-                nextNODE = this.NA.map[nextNode];
-                this.link_nodes(node, nextNode);
+                if (FLOW.DEBUG) {
+                    console.log("FOUND: node was", node, "should be?", sources[i], this.NA.gridToIndex(sources[i]));
+                }
 
-                /*if (FLOW.DEBUG) {
+                //this.link_nodes(node, nextNode);
+                this.link_nodes(this.NA.gridToIndex(sources[i]), nextNode);
+
+
+                if (FLOW.DEBUG) {
                     console.log("..continue recursion from ", nextGrid);
                     console.log("..executing path", nextGrid, distance + 1, nextCandidates);
-                }*/
-                this.path(nextGrid, distance + 1, nextCandidates);
+                }
+
+                this.path(nextGrid, distance + 1, nextCandidates, nextSources);
             } else if (nextCandidates === null) {
-                //if (FLOW.DEBUG) console.log("..dead end.");
+                if (FLOW.DEBUG) console.log("..dead end.");
             } else {
-                /*if (FLOW.DEBUG) {
+                if (FLOW.DEBUG) {
                     console.log("..path retried..with", nextCandidates);
-                }*/
-                this.path(grid, distance, nextCandidates);
+                }
+                this.path(grid, distance, nextCandidates, sources);
             }
+            console.groupEnd("candidates from path");
         }
 
-        /*if (FLOW.DEBUG) {
+        if (FLOW.DEBUG) {
             console.log(".path branch concluded, no more candidates to continue");
-        }*/
+        }
     },
     find_next(origin, distance) {
-        /*if (FLOW.DEBUG) {
-            console.log(".... finding next from:", origin);
-        }*/
+        if (FLOW.DEBUG) {
+            console.log("\n\t.... finding next from:", origin);
+        }
         if (this.NA.map[this.NA.gridToIndex(origin)].mark) {
             if (FLOW.DEBUG) console.log(".... already marked: ", origin);
-            return [false, null, null];
+            return [false, null, null, null];
         }
         this.NA.map[this.NA.gridToIndex(origin)].used = true;
         origin = this.dig_down(origin);
         let candidates, found;
         [found, candidates] = this.next_line(origin);
         if (!found) {
-            /*if (FLOW.DEBUG) {
+            if (FLOW.DEBUG) {
                 console.log("....deeper sources returned:", candidates);
-            }*/
-            return [false, null, candidates];
+            }
+            return [false, null, candidates, null];
         } else {
-            /*if (FLOW.DEBUG) {
+            if (FLOW.DEBUG) {
                 console.log("...line returned:", candidates);
-            }*/
+            }
 
             let nextCandidates = [];
+            let sources = [];
             for (let c of candidates) {
                 let index = this.NA.gridToIndex(c);
                 this.NA.map[index].distance = distance;
                 let up = c.add(UP);
                 if (this.freeUp(up)) {
                     nextCandidates.push(up);
+                    sources.push(c);
                 }
             }
-            /*if (FLOW.DEBUG) {
-                console.log("...next candidate list:", nextCandidates);
-            }*/
-            return [true, origin, nextCandidates];
+            if (FLOW.DEBUG) {
+                console.log("...next candidate list:", nextCandidates, "sources", sources);
+            }
+            return [true, origin, nextCandidates, sources];
         }
     },
     link_nodes(from, to) {
         this.NA.map[from].next.add(to);
         this.NA.map[to].prev.add(from);
-        /*if (FLOW.DEBUG) {
+        if (FLOW.DEBUG) {
             console.log("linked", from, "->", to);
             if (this.NA.map[to].prev.size > 1) {
                 console.error("cycling");
                 throw "CYCLE!";
             }
-        }*/
+        }
     },
     dig_down(grid) {
         let next_down = grid.add(DOWN);
         while (this.freeDown(next_down)) {
             grid = next_down;
             this.NA.map[this.NA.gridToIndex(grid)].used = true;
-            //if (FLOW.DEBUG) console.log(".....digging", grid);
+            if (FLOW.DEBUG) console.log(".....digging", grid);
             next_down = grid.add(DOWN);
         }
         return grid;
@@ -238,15 +250,15 @@ var FLOW = {
         return true;
     },
     next_line(grid) {
-        //if (FLOW.DEBUG) console.log(".....NEXT LINE", grid);
+        if (FLOW.DEBUG) console.log(".....NEXT LINE", grid);
         let node = this.GA.gridToIndex(grid);
         let NODE = this.NA.map[node];
         this.set_node(NODE, "UP");
 
         let left = this.find_branch(grid, LEFT, "LEFT");
-        //if (FLOW.DEBUG) console.log(".......left:", left);
+        if (FLOW.DEBUG) console.log(".......left:", left);
         let right = this.find_branch(grid, RIGHT, "RIGHT");
-        //if (FLOW.DEBUG) console.log(".......right:", right);
+        if (FLOW.DEBUG) console.log(".......right:", right);
 
         let candidates;
         if (Array.isArray(left) && Array.isArray(right)) {
@@ -268,26 +280,26 @@ var FLOW = {
             if (!Array.isArray(right)) {
                 new_grids.push(right);
             }
-            //if (FLOW.DEBUG) console.log("......deeper sources found", new_grids);
+            if (FLOW.DEBUG) console.log("......deeper sources found", new_grids);
             return [false, new_grids];
         }
-        //if (FLOW.DEBUG) console.log(".....candidates ready to return:", candidates);
+        if (FLOW.DEBUG) console.log(".....candidates ready to return:", candidates);
         let candidateGrids = [];
         for (let c of candidates) {
-            /*if (FLOW.DEBUG) {
+            if (FLOW.DEBUG) {
                 if (this.NA.map[c].mark) {
                     console.error("marking already marked!", c, this.NA.indexToGrid(c));
                     throw "marking marked";
                 }
                 console.log("** marking", c, this.NA.indexToGrid(c));
-            }*/
+            }
             this.NA.map[c].mark = true;
             candidateGrids.push(this.NA.indexToGrid(c));
         }
         return [true, candidateGrids];
     },
     find_branch(grid, dir, type) {
-        //if (FLOW.DEBUG) console.log(".....find branch");
+        if (FLOW.DEBUG) console.log(".....find branch");
         let line = [];
         grid = grid.add(dir);
         let index;
@@ -299,7 +311,7 @@ var FLOW = {
                 return line;
             }
             if (this.freeDown(grid.add(DOWN))) {
-                //if (FLOW.DEBUG) console.log("......PATH DOWN", grid.add(DOWN));
+                if (FLOW.DEBUG) console.log("......PATH DOWN", grid.add(DOWN));
                 return this.dig_down(grid);
             }
             line.push(index);
@@ -358,7 +370,7 @@ var FLOW = {
             this.NA.I_set(d, 'flow', -FLOW.INI.ORIGIN_FLOW * FLOW.INI.DRAIN_FACTOR);
             this.calc_flow(d, lapsedTime);
         }
-        this.excess_flow += FLOW.INI.ORIGIN_FLOW * FLOW.INI.DRAIN_FACTOR * this.drains.size;
+        this.excess_flow += FLOW.INI.DRAIN_FACTOR * this.drains.size;
 
         for (let n of this.terminals) {
             this.NA.I_set(n, 'flow', (flow + this.excess_flow * FLOW.INI.ORIGIN_FLOW) / this.terminals.size);
@@ -523,7 +535,7 @@ var FLOW = {
             if (FLOW.DEBUG) console.log("> drains from terminals", this.drains);
         }
         if (this.drains.size === 0) {
-            for (let d of DATA.index_to_full){
+            for (let d of DATA.index_to_full) {
                 this.add_drain(d);
             }
             if (FLOW.DEBUG) console.log(">> nothing from terminals, trying drains from flow graph", this.drains);
@@ -534,7 +546,10 @@ var FLOW = {
             console.log("**************************************************");
             console.log(".reflow: set new terminals");
         }
-
+        for (let t of DATA.index_to_empty) {
+            this.add_terminal(t);
+        }
+        if (FLOW.DEBUG) console.log("new terminals", this.terminals);
 
 
         //throw "REFLOW DEBUG";

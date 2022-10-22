@@ -109,12 +109,14 @@ const GRID = {
           let point = GRID.gridToCoord(grid);
           let text = `${x},${y}`;
           GRID.paintText(point, text, layer, "#BBB");
+          let index = x + dungeon.width * y;
+          point = point.add(DOWN, 12);
+          GRID.paintText(point, index, layer, "#BBB");
         }
       }
     }
   },
   paintText(point, text, layer, color = "#FFF") {
-    //check usage, obsolete?
     var CTX = LAYER[layer];
     CTX.font = "10px Consolas";
     var y = point.y + ENGINE.INI.GRIDPIX / 2;

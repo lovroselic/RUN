@@ -733,8 +733,8 @@ class Point {
     this.x = this.x + ENGINE.VIEWPORT.vx;
     this.y = this.y + ENGINE.VIEWPORT.vy;
   }
-  add(vector) {
-    return new Point(this.x + vector.x, this.y + vector.y);
+  add(vector, len = 1) {
+    return new Point(this.x + vector.x * len, this.y + vector.y * len);
   }
 }
 class Pointer {
