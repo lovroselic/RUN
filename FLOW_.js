@@ -370,6 +370,19 @@ var FLOW = {
             console.log("drain_level:", this.drain_level, "max", this.max_drain_level, "min", this.min_drain_level);
         }
 
+        if (this.terminals.size === 0) {
+            let DATA = this.traverse_flow_graph();
+            if (DATA.index_to_empty.length === 0) return;
+            if (FLOW.DEBUG) console.log("- Adding terminals?", DATA);
+            for (let t of DATA.index_to_empty){
+                this.add_terminal(t);
+            }
+        }
+
+        if (this.terminals.size > 0 && this.drains.size > 0){
+
+        }
+
         for (let d of this.drains) {
             this.NA.I_set(d, 'flow', -FLOW.INI.ORIGIN_FLOW * FLOW.INI.DRAIN_FACTOR);
             this.calc_flow(d, lapsedTime);
@@ -420,6 +433,9 @@ var FLOW = {
             this.remove_terminal(node);
             this.excess_flow = this.sizeMap[node] - NODE.max_flow;
             this.sizeMap[node] = NODE.max_flow;
+
+            if (this.NA.indexToGrid(node).y === this.flood_level && this.max_terminal_level > this.flood_level) return;
+
             NODE.size = this.sizeMap[node];
             if (NODE.next.size > 0) {
                 for (let t of NODE.next) {
@@ -510,7 +526,7 @@ var FLOW = {
                 break;
             case MAPDICT.BLOCKWALL:
                 this.actionLevel = grid.y;
-                if (this.both_side_blocked(grid)) this.actionLevel--;
+                //if (this.both_side_blocked(grid)) this.actionLevel--;
                 if (this.sizeMap[node - this.map.width] > 0) upward = true;
                 break;
         }
@@ -518,6 +534,7 @@ var FLOW = {
         if (FLOW.DEBUG) {
             console.log("############################################");
             console.log(".actionLevel", this.actionLevel);
+            console.log(".flood level", this.flood_level);
             console.log(".upward", upward);
             console.log("############################################");
         }
@@ -527,7 +544,8 @@ var FLOW = {
             return;
         }
         if (which === MAPDICT.DOOR) {
-            this.sizeMap[node] = 1;
+            //this.sizeMap[node] = 1;
+            this.sizeMap[node] = this.sizeMap[this.NA.map[node].prev.first()];
         }
 
         if (upward) this.drain_up(index);
@@ -538,7 +556,7 @@ var FLOW = {
             this.drainsFromTerminals(this.actionLevel);
             if (FLOW.DEBUG) console.log("> drains from terminals", this.drains);
         }
-        if (this.drains.size === 0) {
+        if (this.drains.size === 0 && this.actionLevel >= this.max_terminal_level) {
             for (let d of DATA.index_to_full) {
                 this.add_drain(d);
             }
