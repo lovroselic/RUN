@@ -370,16 +370,26 @@ var FLOW = {
             console.log("drain_level:", this.drain_level, "max", this.max_drain_level, "min", this.min_drain_level);
         }
 
+        if (this.terminals.size === 0 && this.drains.size > 0) {
+            for (let t of this.drains) {
+                this.remove_drain(t);
+                this.add_terminal(t);
+            }
+
+            if (FLOW.DEBUG) console.log("- Terminals from remaining drains", this.terminals);
+        }
+
+
         if (this.terminals.size === 0) {
             let DATA = this.traverse_flow_graph();
             if (DATA.index_to_empty.length === 0) return;
-            if (FLOW.DEBUG) console.log("- Adding terminals?", DATA);
-            for (let t of DATA.index_to_empty){
+            if (FLOW.DEBUG) console.log("- Adding terminals from DATA?", DATA);
+            for (let t of DATA.index_to_empty) {
                 this.add_terminal(t);
             }
         }
 
-        if (this.terminals.size > 0 && this.drains.size > 0){
+        if (this.terminals.size > 0 && this.drains.size > 0) {
 
         }
 
@@ -472,6 +482,11 @@ var FLOW = {
                         d = this.NA.map[d].next.first();
                     }
                 }
+                let p = this.NA.map[prev].prev.first();
+                while (p && this.NA.map[p].distance === prevDist) {
+                    this.add_drain(p);
+                    p = this.NA.map[p].prev.first();
+                }
             }
         }
     },
@@ -544,7 +559,6 @@ var FLOW = {
             return;
         }
         if (which === MAPDICT.DOOR) {
-            //this.sizeMap[node] = 1;
             this.sizeMap[node] = this.sizeMap[this.NA.map[node].prev.first()];
         }
 
