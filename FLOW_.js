@@ -9,7 +9,8 @@
     FLOW algorithms
 
     known issues, TODO:
-        *    
+        * link streams
+        * dead ends  
 */
 class FlowNode {
     constructor(index) {
@@ -216,13 +217,13 @@ var FLOW = {
     link_nodes(from, to) {
         this.NA.map[from].next.add(to);
         this.NA.map[to].prev.add(from);
-        if (FLOW.DEBUG) {
+        /*if (FLOW.DEBUG) {
             console.log("linked", from, "->", to);
             if (this.NA.map[to].prev.size > 1) {
                 console.error("cycling");
                 throw "CYCLE!";
             }
-        }
+        }*/
     },
     dig_down(grid) {
         let next_down = grid.add(DOWN);
@@ -290,13 +291,13 @@ var FLOW = {
         if (FLOW.DEBUG) console.log(".....candidates ready to return:", candidates);
         let candidateGrids = [];
         for (let c of candidates) {
-            if (FLOW.DEBUG) {
+            /*if (FLOW.DEBUG) {
                 if (this.NA.map[c].mark) {
                     console.error("marking already marked!", c, this.NA.indexToGrid(c));
                     throw "marking marked";
                 }
                 console.log("** marking", c, this.NA.indexToGrid(c));
-            }
+            }*/
             this.NA.map[c].mark = true;
             candidateGrids.push(this.NA.indexToGrid(c));
         }
@@ -390,7 +391,21 @@ var FLOW = {
         }
 
         if (this.terminals.size > 0 && this.drains.size > 0) {
+            if (this.min_drain_level === this.max_terminal_level) {
+                let D_SIZE = this.sizeMap[this.drains.first()];
+                let T_SIZE = this.sizeMap[this.terminals.first()];
 
+                if (FLOW.DEBUG) {
+                    console.warn("Linking streams ...", D_SIZE, T_SIZE, D_SIZE - FLOW.INI.EPSILON <= T_SIZE);
+                }
+                if (D_SIZE - FLOW.INI.EPSILON <= T_SIZE) {
+                    for (let d of this.drains) {
+                        this.remove_drain(d);
+                        this.add_terminal(d);
+                        this.sizeMap[d] = T_SIZE;
+                    }
+                }
+            }
         }
 
         for (let d of this.drains) {
