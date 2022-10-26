@@ -26,6 +26,7 @@ class FlowNode {
         this.mark = false;
         this.used = false;
         this.role = null;
+        this.deadEnd = false;
     }
 }
 class Boundaries {
@@ -38,7 +39,7 @@ class Boundaries {
     }
 }
 var FLOW = {
-    VERSION: "II.3.1.a",
+    VERSION: "II.4.0.a",
     CSS: "color: #F3A",
     DEBUG: true,
     PAINT_DISTANCES: true,
@@ -481,28 +482,54 @@ var FLOW = {
         }
         if (this.sizeMap[node] < 0) {
             this.sizeMap[node] = 0;
+            if (FLOW.DEBUG) {
+                console.log(".............................");
+                console.log("draining node", node);
+            }
             let prev = NODE.prev.first();
             let levelOfPrevious = this.NA.indexToGrid(prev).y;
             let levelOfThis = Math.floor(NODE.index / this.map.width);
-            let prevDist = this.NA.map[prev].distance;
             this.remove_drain(node);
+
+            //add possible drain below!
+            let below = node + this.map.width;
+            if (FLOW.DEBUG) {
+                console.log("# BELOW CHECK node", node, "below", below, "size", this.sizeMap[below]);
+            }
+
+            if (this.sizeMap[below] === 1) {
+                this.add_drain(below);
+                let belowLevel = this.NA.indexToGrid(below).y;
+                this.flood_level = belowLevel;
+                if (FLOW.DEBUG) console.log("* setting flood level from below", this.flood_level);
+                this.add_dependant_drains(below);
+            }
+
             if (levelOfPrevious <= levelOfThis) return;
+
             if (levelOfPrevious <= this.actionLevel) {
                 this.add_drain(prev);
                 this.flood_level = levelOfPrevious;
                 if (FLOW.DEBUG) console.log("* setting flood level from previous", this.flood_level);
-                for (let d of this.NA.map[prev].next) {
-                    while (d && this.NA.map[d].distance === prevDist) {
-                        this.add_drain(d);
-                        d = this.NA.map[d].next.first();
-                    }
-                }
-                let p = this.NA.map[prev].prev.first();
-                while (p && this.NA.map[p].distance === prevDist) {
-                    this.add_drain(p);
-                    p = this.NA.map[p].prev.first();
-                }
+                this.add_dependant_drains(prev);
             }
+
+            if (FLOW.DEBUG) {
+                console.log("drain status", this.drains);
+            }
+        }
+    },
+    add_dependant_drains(node) {
+        for (let d of this.NA.map[node].next) {
+            while (d && this.NA.map[d].distance === this.NA.map[node].distance) {
+                this.add_drain(d);
+                d = this.NA.map[d].next.first();
+            }
+        }
+        let p = this.NA.map[node].prev.first();
+        while (p && this.NA.map[p].distance === this.NA.map[node].distance) {
+            this.add_drain(p);
+            p = this.NA.map[p].prev.first();
         }
     },
     set_flood_level(level) {
@@ -573,8 +600,14 @@ var FLOW = {
             if (FLOW.DEBUG) console.log("No reflow required! - based on flood level");
             return;
         }
+        //flooding removed grid
         if (which === MAPDICT.DOOR) {
             this.sizeMap[node] = this.sizeMap[this.NA.map[node].prev.first()];
+        } else if (which === MAPDICT.BLOCKWALL) {
+            this.sizeMap[node] = Math.max(this.sizeMap[node - 1], this.sizeMap[node + 1]);
+            if (this.terminals.has(node - 1) || this.terminals.has(node + 1)) {
+                this.add_terminal(node);
+            }
         }
 
         if (upward) this.drain_up(index);

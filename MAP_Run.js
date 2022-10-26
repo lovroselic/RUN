@@ -56,10 +56,10 @@ var MAP = {
     },
     6: {
         data: `
-        {"width":"12","height":"12","map":"BB2AA3BB2AA3BB2AA4BABABB8ABB2QAA2BB2ABABABABB5ABAA2BB3ABAA2BB3ABB4ABB2ABABB3ABAQBB8AA2BABB2ABABB3ABABB17ABB15AB$ABB3AB"}
+        {"width":"12","height":"12","map":"BB3ABABB2AA2BAA8BABAA2BABB5AQABB8ABABB2ABB9ABB15AA2BB5IBB21ABABB3AA2BB5ABB5ABB9ABB4$ABB6A"}
         `,
         start: `{"x":6, "y":6}`,
-        dynamite: `{"x":4, "y":6}`,
+        dynamite: `{"x":5, "y":6}`,
         flow: `{"x":5, "y":7}`,
         bat: [],
     },

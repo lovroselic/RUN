@@ -27,7 +27,7 @@ var INI = {
   SPACE_Y: 2048
 };
 var PRG = {
-  VERSION: "0.05.02",
+  VERSION: "0.05.03",
   NAME: "MazEditor",
   YEAR: "2022",
   CSS: "color: #239AFF;",
@@ -95,6 +95,7 @@ var GAME = {
     let grid = new Grid(x, y);
     var radio = $("#paint input[name=painter]:checked").val();
     let GA = MAP.map.GA;
+    console.log("DEBUG, grid", grid, radio);
 
     switch (radio) {
       case 'flip':
@@ -253,6 +254,9 @@ var GAME = {
     MAP.height = Import.height;
     $("#horizontalGrid").val(Import.width);
     $("#verticalGrid").val(Import.height);
+    GAME.updateWH();
+    ENGINE.resizeBOX("ROOM");
+    $(ENGINE.gameWindowId).width(ENGINE.gameWIDTH + 4);
     GAME.render();
   },
 };
