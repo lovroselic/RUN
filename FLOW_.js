@@ -26,7 +26,6 @@ class FlowNode {
         this.mark = false;
         this.used = false;
         this.role = null;
-        this.deadEnd = false;
     }
 }
 class Boundaries {
@@ -60,6 +59,7 @@ var FLOW = {
         this.map = map;
         this.GA = map.GA;
         this.origin = origin;
+        this.origin_level = this.origin.y;
         this.origin_index = this.GA.gridToIndex(this.origin);
         this.sizeMap = new Float32Array(this.map.width * this.map.height);
         this.sizeMap[this.origin_index] = FLOW.INI.ORIGIN_SIZE;
@@ -493,25 +493,26 @@ var FLOW = {
 
             //add possible drain below!
             let below = node + this.map.width;
-            if (FLOW.DEBUG) {
-                console.log("# BELOW CHECK node", node, "below", below, "size", this.sizeMap[below]);
-            }
-
-            if (this.sizeMap[below] === 1) {
-                this.add_drain(below);
-                let belowLevel = this.NA.indexToGrid(below).y;
-                this.flood_level = belowLevel;
-                if (FLOW.DEBUG) console.log("* setting flood level from below", this.flood_level);
-                this.add_dependant_drains(below);
+            let belowLevel = this.NA.indexToGrid(below).y;
+            if (belowLevel < this.origin_level) {
+                if (this.sizeMap[below] === 1) {
+                    this.add_drain(below);
+                    //let belowLevel = this.NA.indexToGrid(below).y;
+                    this.flood_level = belowLevel;
+                    if (FLOW.DEBUG) console.log("* setting flood level from below", this.flood_level);
+                    this.add_dependant_drains(below);
+                }
             }
 
             if (levelOfPrevious <= levelOfThis) return;
 
             if (levelOfPrevious <= this.actionLevel) {
-                this.add_drain(prev);
-                this.flood_level = levelOfPrevious;
-                if (FLOW.DEBUG) console.log("* setting flood level from previous", this.flood_level);
-                this.add_dependant_drains(prev);
+                if (!this.drains.has(prev)) {
+                    this.add_drain(prev);
+                    this.flood_level = levelOfPrevious;
+                    if (FLOW.DEBUG) console.log("* setting flood level from previous", this.flood_level);
+                    this.add_dependant_drains(prev);
+                }
             }
 
             if (FLOW.DEBUG) {
@@ -610,7 +611,7 @@ var FLOW = {
             }
         }
 
-        if (upward) this.drain_up(index);
+        if (upward) this.drain_up(node);
         let DATA = this.traverse_flow_graph();
         if (FLOW.DEBUG) console.log("DATA", DATA);
 

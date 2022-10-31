@@ -65,10 +65,10 @@ var MAP = {
     },
     7: {
         data: `
-        {"width":"12","height":"12","map":"BB2AA3BB2AA3BB2AA4BABABB4ABB2QAA2BB3AA2BABABB7ABB3ABB3ABB4ABB2ABB2ABB2ABAQBB7ABABABB2ABB5ABB15ABB5ABB5ABB15AB$ABB3AB"}
+        {"width":"12","height":"12","map":"BB4AA2BAA12BB4AA2BB14ABB13AA2BB11ABB10QBB12AA2BB9ABB30$ABB2IBB8"}
         `,
         start: `{"x":6, "y":6}`,
-        dynamite: `{"x":4, "y":6}`,
+        dynamite: `{"x":5, "y":6}`,
         flow: `{"x":5, "y":7}`,
         bat: [],
     },
