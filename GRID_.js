@@ -521,6 +521,8 @@ var MAPDICT = {
   //alternative1
   TRAP_DOOR: 2 ** 3, //8
   BLOCKWALL: 2 ** 4, //16
+  VACANT_PLACEHODLER: 2 ** 5, //32
+  DEAD_END: 2 ** 6, //64
   WATER: 2 ** 7, //128 - fog,water should remain largest!
 };
 class GridArray {
@@ -551,7 +553,6 @@ class GridArray {
     this.map = GM;
     this.nodeMap = null;
     this.gridSizeBit = byte * 8;
-    //this.changed = false;
     if (fill !== 0) {
       this.map.fill(fill);
     }
@@ -1224,19 +1225,21 @@ class GridArray {
   }
 }
 class NodeArray {
-  constructor(GA, CLASS, path = [0], type = 'value') {
+  constructor(GA, CLASS, path = [0], ignore = [], type = 'value') {
     /**
      * always constructed from GridArray
      */
+    console.log("gridSizeBit", GA.gridSizeBit);
     this.width = GA.width;
     this.height = GA.height;
     this.map = Array(this.width * this.height);
     this.map = this.map.fill(null);
     for (let [index, _] of this.map.entries()) {
+      let check = GA.map[index] & (2 ** GA.gridSizeBit - 1 - ignore.sum());
       let carve;
       switch (type) {
         case 'value':
-          carve = path.includes(GA.map[index]);
+          carve = path.includes(check);
           break;
         default:
           console.error("NodeArray type error!");
