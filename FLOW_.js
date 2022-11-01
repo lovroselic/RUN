@@ -37,7 +37,7 @@ class Boundaries {
     }
 }
 var FLOW = {
-    VERSION: "II.4.0.a",
+    VERSION: "II.6.0.a",
     CSS: "color: #F3A",
     DEBUG: true,
     PAINT_DISTANCES: true,
@@ -480,12 +480,14 @@ var FLOW = {
             //add possible drain below!
             let below = node + this.map.width;
             let belowLevel = this.NA.indexToGrid(below).y;
-            if (belowLevel < this.origin_level && !this.isDeadEnd(below)) {
+            if (belowLevel < this.origin_level) {
                 if (this.sizeMap[below] === 1) {
-                    this.add_drain(below);
-                    this.flood_level = belowLevel;
-                    if (FLOW.DEBUG) console.log("* setting flood level from below", this.flood_level);
-                    this.add_dependant_drains(below);
+                    if (!this.isDeadEnd(below)) {
+                        this.add_drain(below);
+                        this.flood_level = belowLevel;
+                        if (FLOW.DEBUG) console.log("* setting flood level from below", this.flood_level);
+                        this.add_dependant_drains(below);
+                    }
                 }
             }
 
@@ -510,10 +512,15 @@ var FLOW = {
     isDeadEnd(node) {
         if (this.DE_map[node] === 1) return true;
         if (this.DE_map[node] === -1) return false;
-        //
-
-
-        //
+        let NM = this.GA.findPath_AStar_fast(this.NA.indexToGrid(node), this.origin, [MAPDICT.WATER], "include");
+        if (FLOW.DEBUG) {
+            console.log("Dead End test for", node, "grid", this.NA.indexToGrid(node));
+            console.log("NM", NM);
+        }
+        if (NM === null) {
+            this.DE_map[node] = 1;
+            return true;
+        }
         return false;
     },
     add_dependant_drains(node) {
@@ -717,16 +724,13 @@ var FLOW = {
         CTX.fillStyle = pattern;
         CTX.fillRect(drawStart.x, drawStart.y, width, height);
     },
-    NA_to_GA(W = MAPDICT.WATER, DE = MAPDICT.DEAD_END) {
+    NA_to_GA(W = MAPDICT.WATER) {
         for (let index = 0; index < this.NA.map.length; index++) {
             if (this.NA.map[index]) {
                 if (this.sizeMap[index] === this.NA.map[index].max_flow) {
                     this.GA.iset(index, W);
                 } else {
                     this.GA.iclear(index, W);
-                }
-                if (this.DE_map[index] === 1) {
-                    this.GA.iset(index, DE);
                 }
             }
         }
