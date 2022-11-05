@@ -47,7 +47,7 @@ var INI = {
     AIR_COST: 1,
 };
 var PRG = {
-    VERSION: "0.12.16",
+    VERSION: "0.12.17",
     NAME: "R.U.N.",
     YEAR: "2022",
     CSS: "color: #239AFF;",
@@ -499,10 +499,12 @@ var HERO = {
         let enemy_close = IA.unrollArray(grids);
         for (let e of enemy_close) {
             let enemy = ENEMY_TG.POOL[e - 1];
-            let hit = ENGINE.collisionFuzyArea(HERO.actor, enemy.actor);
-            if (hit) {
-                enemy.freeze();
-                HERO.die();
+            if (enemy) {
+                let hit = ENGINE.collisionFuzyArea(HERO.actor, enemy.actor);
+                if (hit) {
+                    enemy.freeze();
+                    HERO.die();
+                }
             }
         }
     },
@@ -607,8 +609,8 @@ var GAME = {
         GAME.won = false;
         //GAME.level = 1;
         //GAME.level = 6;
-        GAME.level = 2;
-        //GAME.level = 12;
+        GAME.level = 3;
+        //GAME.level = 11;
         GAME.score = 0;
         GAME.lives = 3;
         HERO.startInit();

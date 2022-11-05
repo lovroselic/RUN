@@ -16,7 +16,7 @@ known bugs:
 */
 
 const GRID = {
-  VERSION: "3.07",
+  VERSION: "3.08",
   CSS: "color: #0AA",
   SETTING: {
     ALLOW_CROSS: false,
@@ -898,8 +898,12 @@ class GridArray {
     }
     return NODES;
   }
-  findPath_AStar_fast(start, finish, path = [0], type = "value", block = []) {
+  gravity_AStar(start, finish, path = [0], type = "value", block = [], DIR = [LEFT, RIGHT, DOWN]) {
+    return this.findPath_AStar_fast(start, finish, path, type, block, DIR);
+  }
+  findPath_AStar_fast(start, finish, path = [0], type = "value", block = [], DIR = ENGINE.directions) {
     /** 
+    DIR: applicable directions
     return
     null: no path exist
     0: start is the same as finish
@@ -920,9 +924,9 @@ class GridArray {
     Q.queueSimple(NodeMap[start.x][start.y]);
     while (Q.size() > 0) {
       let node = Q.dequeue();
-      for (let D = 0; D < ENGINE.directions.length; D++) {
-        let x = (node.grid.x + ENGINE.directions[D].x + this.width) % this.width;
-        let y = (node.grid.y + ENGINE.directions[D].y + this.height) % this.height;
+      for (let D = 0; D < DIR.length; D++) {
+        let x = (node.grid.x + DIR[D].x + this.width) % this.width;
+        let y = (node.grid.y + DIR[D].y + this.height) % this.height;
 
         let nextNode = NodeMap[x][y];
         if (nextNode) {
@@ -940,68 +944,6 @@ class GridArray {
       }
     }
     return null;
-  }
-  findPath_AStar(start, finish, path = [0], allowCross = false, maxPath = Infinity, maxIterations = Infinity) {
-    /**
-     * potentially obsolete
-     */
-    if (1 == 1) throw "Check usasage!obsolete?";
-    /**
-     * capturing usage
-     */
-
-    var Q = new NodeQ("distance");
-    let NodeMap = this.setNodeMap("tempNodeMap", path);
-    Q.list.push(new SearchNode(start, finish));
-    if (Q.list[0].dist === 0) {
-      Q.list[0].status = "Overlap";
-      return Q.list[0];
-    }
-    NodeMap[start.x][start.y].distance = start.distance(finish);
-    var selected;
-    var iteration = 0;
-    while (Q.list.length > 0) {
-      iteration++;
-      selected = Q.list.shift();
-
-      if (selected.path > maxPath) {
-        selected.status = "PathTooLong";
-        return selected;
-      }
-
-      let dirs = this.getDirectionsFromNodeMap(selected.grid, NodeMap, allowCross);
-      for (let q = 0; q < dirs.length; q++) {
-        let HG = selected.grid.add(dirs[q]);
-
-        if (allowCross) {
-          if (this.outside(HG)) {
-            HG = this.toOtherSide(HG);
-          }
-        }
-
-        let history = [].concat(selected.history);
-        history.push(HG);
-        let I_stack = [].concat(selected.stack);
-        I_stack.push(dirs[q]);
-        let fork = new SearchNode(HG, finish, I_stack, selected.path + 1, history, iteration);
-        if (fork.dist === 0) {
-          fork.status = "Found";
-          return fork;
-        }
-        let node = NodeMap[fork.grid.x][fork.grid.y];
-        if (fork.path < node.distance) {
-          node.distance = fork.path;
-          Q.queue(fork);
-        }
-      }
-
-      if (iteration > maxIterations) {
-        selected.status = "Abandoned";
-        return selected;
-      }
-    }
-    selected.status = "NoSolution";
-    return selected;
   }
   setStackValue(stack, value) {
     for (const grid of stack) {

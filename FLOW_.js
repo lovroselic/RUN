@@ -9,7 +9,7 @@
     FLOW algorithms
 
     known issues, TODO:
-        * circuits 
+        * drain path 
 */
 class FlowNode {
     constructor(index) {
@@ -38,7 +38,7 @@ class Boundaries {
     }
 }
 var FLOW = {
-    VERSION: "II.8.0.a",
+    VERSION: "II.0.9.0",
     CSS: "color: #F3A",
     DEBUG: true,
     PAINT_DISTANCES: true,
@@ -526,7 +526,7 @@ var FLOW = {
             let belowLevel = this.NA.indexToGrid(below).y;
             if (belowLevel < this.origin_level) {
                 if (this.sizeMap[below] === 1) {
-                    if (!this.isDeadEnd(below)) {
+                    if (!this.isDeadEnd(below) && this.drain_path_exists(below)) {
                         this.add_drain(below);
                         this.flood_level = belowLevel;
                         if (FLOW.DEBUG) console.log("* setting flood level from below", this.flood_level);
@@ -539,7 +539,7 @@ var FLOW = {
 
             if (levelOfPrevious <= this.actionLevel) {
                 if (!this.drains.has(prev)) {
-                    if (!this.isDeadEnd(prev)) {
+                    if (!this.isDeadEnd(prev) && this.drain_path_exists(prev)) {
                         this.add_drain(prev);
                         this.flood_level = levelOfPrevious;
                         if (FLOW.DEBUG) console.log("* setting flood level from previous", this.flood_level);
@@ -556,7 +556,8 @@ var FLOW = {
     isDeadEnd(node) {
         if (this.DE_map[node] === 1) return true;
         if (this.DE_map[node] === -1) return false;
-        let NM = this.GA.findPath_AStar_fast(this.NA.indexToGrid(node), this.origin, [MAPDICT.WATER], "include");
+        if (FLOW.DEBUG) console.log("dead end test", this.NA.indexToGrid(node), this.origin);
+        let NM = this.GA.findPath_AStar_fast(this.NA.indexToGrid(node), this.origin, [MAPDICT.WATER], "value");
         if (FLOW.DEBUG) {
             console.log("Dead End test for", node, "grid", this.NA.indexToGrid(node));
             console.log("NM", NM);
@@ -591,9 +592,9 @@ var FLOW = {
         let upIndex = index - this.map.width;
         while (this.sizeMap[upIndex] > 0) {
             if (FLOW.DEBUG) console.log("..draining up NODE", upIndex, this.NA.indexToGrid(upIndex));
-            if (this.terminals.has(upIndex)) {
+            if (this.drains.has(upIndex)) {
                 this.remove_drain(upIndex);
-            } else if (this.drains.has(upIndex)) {
+            } else if (this.terminals.has(upIndex)) {
                 this.remove_terminal(upIndex);
             }
             this.excess_flow += this.sizeMap[upIndex];
@@ -668,7 +669,8 @@ var FLOW = {
 
         if (this.actionLevel >= this.max_terminal_level || this.actionLevel >= this.flood_level) {
             for (let d of DATA.index_to_full) {
-                if (!this.drains_above(d) && this.drain_path_exists(d)) {
+                //if (!this.drains_above(d) && this.drain_path_exists(d)) {
+                if (!this.drains_above(d)) {
                     this.add_drain(d);
                 }
             }
@@ -691,11 +693,15 @@ var FLOW = {
         if (FLOW.DEBUG) console.log("new terminals", this.terminals);
     },
     drains_above(drain) {
-        return this.drain_level.has(Math.floor(drain / this.map.width) - 1);
+        return this.drain_level && this.drain_level.has(Math.floor(drain / this.map.width) - 1);
     },
     drain_path_exists(drain) {
-        if (FLOW.DEBUG) console.log("drain path test for", drain );
-        return true;
+        if (FLOW.DEBUG) console.log("drain path test for", drain);
+        let DP = this.GA.gravity_AStar(this.NA.indexToGrid(drain), this.NA.indexToGrid(this.terminals.first()), [MAPDICT.EMPTY, MAPDICT.WATER], "value");
+        if (FLOW.DEBUG) console.log("DP", this.NA.indexToGrid(drain), this.NA.indexToGrid(this.terminals.first()), "drain path DP->", DP);
+        //throw "DEBUG";
+        if (DP) return true;
+        return false;
     },
     traverse_flow_graph() {
         console.time("traverse");
