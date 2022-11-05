@@ -1229,7 +1229,6 @@ class NodeArray {
     /**
      * always constructed from GridArray
      */
-    console.log("gridSizeBit", GA.gridSizeBit);
     this.width = GA.width;
     this.height = GA.height;
     this.map = Array(this.width * this.height);

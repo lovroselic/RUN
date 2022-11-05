@@ -47,7 +47,7 @@ var INI = {
     AIR_COST: 1,
 };
 var PRG = {
-    VERSION: "0.12.15",
+    VERSION: "0.12.16",
     NAME: "R.U.N.",
     YEAR: "2022",
     CSS: "color: #239AFF;",
@@ -762,7 +762,7 @@ var GAME = {
         CTX.strokeStyle = "white";
         CTX.lineWidth = 1;
         CTX.setLineDash([1, 5]);
-        let y = FLOW.flood_level * ENGINE.INI.GRIDPIX;
+        let y = FLOW.flood_level * ENGINE.INI.GRIDPIX - ENGINE.VIEWPORT.vy;
         CTX.beginPath();
         CTX.moveTo(0, y);
         CTX.lineTo(FLOW.map.width * ENGINE.INI.GRIDPIX - 1, y);
@@ -773,7 +773,7 @@ var GAME = {
             CTX.strokeStyle = "#10D";
             CTX.lineDashOffset = 2;
             CTX.setLineDash([2, 4]);
-            y = FLOW.min_terminal_level * ENGINE.INI.GRIDPIX + 1;
+            y = FLOW.min_terminal_level * ENGINE.INI.GRIDPIX + 1 - ENGINE.VIEWPORT.vy;
             CTX.beginPath();
             CTX.moveTo(0, y);
             CTX.lineTo(FLOW.map.width * ENGINE.INI.GRIDPIX - 1, y);
@@ -785,7 +785,7 @@ var GAME = {
             CTX.strokeStyle = "#00F";
             CTX.lineDashOffset = 1;
             CTX.setLineDash([1, 4]);
-            y = FLOW.max_terminal_level * ENGINE.INI.GRIDPIX + 2;
+            y = FLOW.max_terminal_level * ENGINE.INI.GRIDPIX + 2 - ENGINE.VIEWPORT.vy;
             CTX.beginPath();
             CTX.moveTo(0, y);
             CTX.lineTo(FLOW.map.width * ENGINE.INI.GRIDPIX - 1, y);
@@ -797,7 +797,7 @@ var GAME = {
             CTX.strokeStyle = "#F0F";
             CTX.lineDashOffset = 0;
             CTX.setLineDash([2, 5]);
-            y = FLOW.actionLevel * ENGINE.INI.GRIDPIX + 3;
+            y = FLOW.actionLevel * ENGINE.INI.GRIDPIX + 3 - ENGINE.VIEWPORT.vy;
             CTX.beginPath();
             CTX.moveTo(0, y);
             CTX.lineTo(FLOW.map.width * ENGINE.INI.GRIDPIX - 1, y);
@@ -809,7 +809,7 @@ var GAME = {
             CTX.strokeStyle = "#FF0";
             CTX.lineDashOffset = 2;
             CTX.setLineDash([2, 4]);
-            y = FLOW.min_drain_level * ENGINE.INI.GRIDPIX + 1;
+            y = FLOW.min_drain_level * ENGINE.INI.GRIDPIX + 1 - ENGINE.VIEWPORT.vy;
             CTX.beginPath();
             CTX.moveTo(0, y);
             CTX.lineTo(FLOW.map.width * ENGINE.INI.GRIDPIX - 1, y);
@@ -821,7 +821,7 @@ var GAME = {
             CTX.strokeStyle = "#DD0";
             CTX.lineDashOffset = 1;
             CTX.setLineDash([1, 4]);
-            y = FLOW.max_drain_level * ENGINE.INI.GRIDPIX + 2;
+            y = FLOW.max_drain_level * ENGINE.INI.GRIDPIX + 2 - ENGINE.VIEWPORT.vy;
             CTX.beginPath();
             CTX.moveTo(0, y);
             CTX.lineTo(FLOW.map.width * ENGINE.INI.GRIDPIX - 1, y);

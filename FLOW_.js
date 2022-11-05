@@ -38,7 +38,7 @@ class Boundaries {
     }
 }
 var FLOW = {
-    VERSION: "II.7.0.a",
+    VERSION: "II.8.0.a",
     CSS: "color: #F3A",
     DEBUG: true,
     PAINT_DISTANCES: true,
@@ -666,33 +666,36 @@ var FLOW = {
             if (FLOW.DEBUG) console.log("> drains from terminals", this.drains);
         }
 
-        //
-        /*if (this.drains.size === 0 && this.actionLevel >= this.max_terminal_level) {
+        if (this.actionLevel >= this.max_terminal_level || this.actionLevel >= this.flood_level) {
             for (let d of DATA.index_to_full) {
-                this.add_drain(d);
-            }
-            if (FLOW.DEBUG) console.log(">> nothing from terminals, trying drains from flow graph", this.drains);
-        }*/
-
-        if (this.actionLevel >= this.max_terminal_level) {
-            for (let d of DATA.index_to_full) {
-                console.warn("sanity", d, d - this.map.width, !this.drains.has(d - this.map.width));
-                if (!this.drains.has(d - this.map.width)) {
+                if (!this.drains_above(d) && this.drain_path_exists(d)) {
                     this.add_drain(d);
                 }
             }
-            if (FLOW.DEBUG) console.log(">> nothing from terminals, trying drains from flow graph", this.drains);
+            if (FLOW.DEBUG) console.log(">> adding drains from flow graph", this.drains);
         }
+
+        //action level >= flood level and path drain terminal exists (action level < terminal level)
+        //action level >= flood ; continues to drain without drain path available (action level >= terminal level)
 
         if (FLOW.DEBUG) console.log("Drains set.....:", this.drains);
         if (FLOW.DEBUG) {
             console.log("**************************************************");
             console.log(".reflow: set new terminals");
         }
-        for (let t of DATA.index_to_empty) {
-            this.add_terminal(t);
+        if (this.terminals.size === 0) {
+            for (let t of DATA.index_to_empty) {
+                this.add_terminal(t);
+            }
         }
         if (FLOW.DEBUG) console.log("new terminals", this.terminals);
+    },
+    drains_above(drain) {
+        return this.drain_level.has(Math.floor(drain / this.map.width) - 1);
+    },
+    drain_path_exists(drain) {
+        if (FLOW.DEBUG) console.log("drain path test for", drain );
+        return true;
     },
     traverse_flow_graph() {
         console.time("traverse");
