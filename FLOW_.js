@@ -9,7 +9,7 @@
     FLOW algorithms
 
     known issues, TODO:
-        * drain path 
+        * linking on different levels
 */
 class FlowNode {
     constructor(index) {
@@ -63,7 +63,7 @@ var FLOW = {
         this.origin_index = this.GA.gridToIndex(this.origin);
         this.sizeMap = new Float32Array(this.map.width * this.map.height);
         this.sizeMap[this.origin_index] = FLOW.INI.ORIGIN_SIZE;
-        this.DE_map = new Int8Array(this.map.width * this.map.height);
+        //this.DE_map = new Int8Array(this.map.width * this.map.height);
         this.make_path();
         this.terminals = new Set([this.origin_index]);
         this.NA.G_set(this.origin, 'role', "terminal");
@@ -124,10 +124,10 @@ var FLOW = {
         }
     },
     path(grid, distance, candidates, sources) {
-        if (FLOW.DEBUG) {
+        /*if (FLOW.DEBUG) {
             console.assert(candidates.length === sources.length, "candidates <- sources length mismatch!");
             console.log("\n\n.PATH", "from grid", grid, "distance", distance, "candidates", candidates, "sources", sources);
-        }
+        }*/
 
         let node = this.NA.gridToIndex(grid);
         if (this.GA.check(grid, MAPDICT.TRAP_DOOR)) return;
@@ -140,30 +140,30 @@ var FLOW = {
                 console.log("... candidates", candidates, "sources", sources);
             }
             [found, nextGrid, nextCandidates, nextSources] = this.find_next(next, distance);
-            if (FLOW.DEBUG) {
+            /*if (FLOW.DEBUG) {
                 console.log("found", found, "nextGrid", nextGrid, "nextCandidates", nextCandidates, "nextSources", nextSources);
                 console.log("...sanity check, candidates", candidates, "sources", sources, "i");
-            }
+            }*/
             if (found) {
                 nextNode = this.NA.gridToIndex(nextGrid);
-                if (FLOW.DEBUG) {
+                /*if (FLOW.DEBUG) {
                     console.log("FOUND: node was", node, "should be?", sources[i], this.NA.gridToIndex(sources[i]));
-                }
+                }*/
 
                 this.link_nodes(this.NA.gridToIndex(sources[i]), nextNode);
 
-                if (FLOW.DEBUG) {
+                /*if (FLOW.DEBUG) {
                     console.log("..continue recursion from ", nextGrid);
                     console.log("..executing path", nextGrid, distance + 1, nextCandidates);
-                }
+                }*/
 
                 this.path(nextGrid, distance + 1, nextCandidates, nextSources);
             } else if (nextCandidates === null) {
-                if (FLOW.DEBUG) console.log("..dead end.");
+                //if (FLOW.DEBUG) console.log("..dead end.");
             } else {
-                if (FLOW.DEBUG) {
+                /*if (FLOW.DEBUG) {
                     console.log("..path retried..with", nextCandidates, "grid", grid, "sources", sources, "nextSources", nextSources);
-                }
+                }*/
                 nextSources = [];
                 for (let z = 0; z < nextCandidates.length; z++) {
                     nextSources.push(grid);
@@ -186,14 +186,12 @@ var FLOW = {
             return [false, null, null, null];
         }
         this.NA.map[this.NA.gridToIndex(origin)].used = true;
-        //check if this is really important!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-        //origin = this.dig_down(origin);
         let candidates, found;
         [found, candidates] = this.next_line(origin);
         if (!found) {
-            if (FLOW.DEBUG) {
+            /*if (FLOW.DEBUG) {
                 console.log("....deeper sources returned:", candidates);
-            }
+            }*/
             return [false, null, candidates, null];
         } else {
             if (FLOW.DEBUG) {
@@ -210,28 +208,28 @@ var FLOW = {
                     sources.push(c);
                 }
             }
-            if (FLOW.DEBUG) {
+            /*if (FLOW.DEBUG) {
                 console.log("...next candidate list:", nextCandidates, "sources", sources);
-            }
+            }*/
             return [true, origin, nextCandidates, sources];
         }
     },
     is_circuit(grid) {
-        if (FLOW.DEBUG) {
+        /*if (FLOW.DEBUG) {
             console.log("checking for circuit: ", grid, "passage?",
                 !this.GA.check(grid, MAPDICT.WALL + MAPDICT.BLOCKWALL));
-        }
+        }*/
         if (!this.NA.map[this.NA.gridToIndex(grid)]) return false;
         while (!this.GA.check(grid, MAPDICT.WALL + MAPDICT.BLOCKWALL)) {
             this.NA.map[this.NA.gridToIndex(grid)].circuitChecked = true;
             if (this.NA.map[this.NA.gridToIndex(grid)].mark) {
-                console.log(".circuit found ->", grid);
+                //console.log(".circuit found ->", grid);
                 return true;
             }
             let nextGrid = grid.add(DOWN);
             if (!this.GA.check(nextGrid, MAPDICT.WALL + MAPDICT.BLOCKWALL)) {
                 grid = nextGrid;
-                console.log(".next->", nextGrid);
+                //console.log(".next->", nextGrid);
             } else {
                 let testBoth = [];
                 if (!this.GA.check(grid.add(LEFT), MAPDICT.WALL + MAPDICT.BLOCKWALL) &&
@@ -242,11 +240,11 @@ var FLOW = {
                     !this.NA.map[this.NA.gridToIndex(grid.add(RIGHT))].circuitChecked) {
                     testBoth.push(this.is_circuit(grid.add(RIGHT)));
                 }
-                console.log("..testBoth", testBoth);
+                //console.log("..testBoth", testBoth);
                 return testBoth.includes(true);
             }
         }
-        console.log(".circuit NOT found");
+        //console.log(".circuit NOT found");
         return false;
     },
     link_nodes(from, to) {
@@ -258,7 +256,7 @@ var FLOW = {
         while (this.freeDown(next_down)) {
             grid = next_down;
             this.NA.map[this.NA.gridToIndex(grid)].used = true;
-            if (FLOW.DEBUG) console.log(".....digging", grid);
+            //if (FLOW.DEBUG) console.log(".....digging", grid);
             next_down = grid.add(DOWN);
         }
         return grid;
@@ -289,9 +287,9 @@ var FLOW = {
         this.set_node(NODE, "UP");
 
         let left = this.find_branch(grid, LEFT, "LEFT");
-        if (FLOW.DEBUG) console.log(".......left:", left);
+        //if (FLOW.DEBUG) console.log(".......left:", left);
         let right = this.find_branch(grid, RIGHT, "RIGHT");
-        if (FLOW.DEBUG) console.log(".......right:", right);
+        //if (FLOW.DEBUG) console.log(".......right:", right);
 
         let candidates;
         if (Array.isArray(left) && Array.isArray(right)) {
@@ -316,7 +314,7 @@ var FLOW = {
             if (FLOW.DEBUG) console.log("......deeper sources found", new_grids);
             return [false, new_grids];
         }
-        if (FLOW.DEBUG) console.log(".....candidates ready to return:", candidates);
+        //if (FLOW.DEBUG) console.log(".....candidates ready to return:", candidates);
         let candidateGrids = [];
         for (let c of candidates) {
             this.NA.map[c].mark = true;
@@ -336,7 +334,6 @@ var FLOW = {
                 this.set_node(this.NA.map[index], type);
                 return line;
             }
-            //if (this.freeDown(grid.add(DOWN))) {
             if (this.freeDown(grid.add(DOWN)) && !this.is_circuit(grid)) {
                 if (FLOW.DEBUG) console.log("......PATH DOWN", grid.add(DOWN));
                 return this.dig_down(grid);
@@ -447,7 +444,7 @@ var FLOW = {
         let NODE = this.NA.map[node];
         let flow_update = (lapsedTime / 1000 * (NODE.flow / ENGINE.INI.GRIDPIX ** 2)) * NODE.max_flow;
         this.sizeMap[node] += flow_update;
-        if (this.DEBUG) console.log("calculating flow for node", node, "update", flow_update, "size", this.sizeMap[node]);
+        //if (this.DEBUG) console.log("calculating flow for node", node, "update", flow_update, "size", this.sizeMap[node]);
         this.overflow(node);
     },
     remove_terminal(node) {
@@ -526,7 +523,8 @@ var FLOW = {
             let belowLevel = this.NA.indexToGrid(below).y;
             if (belowLevel < this.origin_level) {
                 if (this.sizeMap[below] === 1) {
-                    if (!this.isDeadEnd(below) && this.drain_path_exists(below)) {
+                    //if (!this.isDeadEnd(below) && this.drain_path_exists(below)) {
+                    if (this.drain_path_exists(below)) {
                         this.add_drain(below);
                         this.flood_level = belowLevel;
                         if (FLOW.DEBUG) console.log("* setting flood level from below", this.flood_level);
@@ -539,7 +537,8 @@ var FLOW = {
 
             if (levelOfPrevious <= this.actionLevel) {
                 if (!this.drains.has(prev)) {
-                    if (!this.isDeadEnd(prev) && this.drain_path_exists(prev)) {
+                    //if (!this.isDeadEnd(prev) && this.drain_path_exists(prev)) {
+                    if (this.drain_path_exists(prev)) {
                         this.add_drain(prev);
                         this.flood_level = levelOfPrevious;
                         if (FLOW.DEBUG) console.log("* setting flood level from previous", this.flood_level);
@@ -553,7 +552,7 @@ var FLOW = {
             }
         }
     },
-    isDeadEnd(node) {
+    /*isDeadEnd(node) {
         if (this.DE_map[node] === 1) return true;
         if (this.DE_map[node] === -1) return false;
         if (FLOW.DEBUG) console.log("dead end test", this.NA.indexToGrid(node), this.origin);
@@ -562,12 +561,12 @@ var FLOW = {
             console.log("Dead End test for", node, "grid", this.NA.indexToGrid(node));
             console.log("NM", NM);
         }
-        if (NM === null) {
+        if (NM === null || NM === 0) {
             this.DE_map[node] = 1;
             return true;
         }
         return false;
-    },
+    },*/
     add_dependant_drains(node) {
         for (let d of this.NA.map[node].next) {
             while (d && this.NA.map[d].distance === this.NA.map[node].distance) {
@@ -611,11 +610,13 @@ var FLOW = {
         }
     },
     reflow(grid, which) {
-        let node = this.NA.gridToIndex(grid);
-        if (FLOW.DEBUG) {
-            console.warn("ReFlow:", grid, which, "node", node);
-        }
         this.make_path();
+        let node = this.NA.gridToIndex(grid);
+        let currentDistance = this.NA.map[node].distance;
+
+        if (FLOW.DEBUG) {
+            console.warn("ReFlow:", grid, which, "node", node, "currentDistance", currentDistance);
+        }
 
         if (which === MAPDICT.TRAP_DOOR) {
             this.terminals = new Set([this.origin_index]);
@@ -660,37 +661,55 @@ var FLOW = {
 
         if (upward) this.drain_up(node);
         let DATA = this.traverse_flow_graph();
-        if (FLOW.DEBUG) console.log("DATA", DATA);
-
-        if (this.terminals.size > 0 && this.actionLevel >= this.max_terminal_level) {
-            this.drainsFromTerminals(this.actionLevel);
-            if (FLOW.DEBUG) console.log("> drains from terminals", this.drains);
+        let sameLevel = (currentDistance === DATA.distance_to_empty - 1) && (DATA.distance_to_empty > DATA.distance_to_full);
+        let actionAboveCurrentFlood = new Set([...DATA.index_to_full].map(x => Math.floor(x / this.map.width))).first() > this.actionLevel;
+        if (FLOW.DEBUG) {
+            console.log("TT DATA", DATA, sameLevel);
+            //console.log("NEW CONDITIONS ", currentDistance < DATA.distance_to_full, currentDistance <= DATA.distance_to_full, currentDistance, DATA.distance_to_full);
+            console.log("TT TEST", "drain levels from DATA.index_to_full",
+                actionAboveCurrentFlood, new Set([...DATA.index_to_full].map(x => Math.floor(x / this.map.width))).first(),
+                this.actionLevel);
         }
 
-        if (this.actionLevel >= this.max_terminal_level || this.actionLevel >= this.flood_level) {
-            for (let d of DATA.index_to_full) {
-                //if (!this.drains_above(d) && this.drain_path_exists(d)) {
-                if (!this.drains_above(d)) {
-                    this.add_drain(d);
-                }
+        if (!sameLevel) {
+            if (this.terminals.size > 0 && this.actionLevel >= this.max_terminal_level) {
+                this.drainsFromTerminals(this.actionLevel);
+                if (FLOW.DEBUG) console.log("> drains from terminals", this.drains);
             }
-            if (FLOW.DEBUG) console.log(">> adding drains from flow graph", this.drains);
         }
 
-        //action level >= flood level and path drain terminal exists (action level < terminal level)
-        //action level >= flood ; continues to drain without drain path available (action level >= terminal level)
+        if (!sameLevel) {
+            if (this.actionLevel >= this.max_terminal_level || this.actionLevel >= this.flood_level) {
+                for (let d of DATA.index_to_full) {
+                    //this.drain_path_exists
+                    //if (!this.drains_above(d) && !this.isDeadEnd(d)) {
+                    if (!this.drains_above(d) && !this.drain_path_exists(d)) {
+                        this.add_drain(d);
+                    }
+                }
+                if (FLOW.DEBUG) console.log(">> adding drains from flow graph", this.drains);
+            }
+        }
 
         if (FLOW.DEBUG) console.log("Drains set.....:", this.drains);
+
         if (FLOW.DEBUG) {
             console.log("**************************************************");
             console.log(".reflow: set new terminals");
         }
         if (this.terminals.size === 0) {
             for (let t of DATA.index_to_empty) {
+                if (this.drains_below(t)) {
+                    this.terminals.clear();
+                    break;
+                }
                 this.add_terminal(t);
             }
         }
         if (FLOW.DEBUG) console.log("new terminals", this.terminals);
+    },
+    drains_below(term) {
+        return this.drain_level && this.drain_level.has(Math.floor(term / this.map.width) + 1);
     },
     drains_above(drain) {
         return this.drain_level && this.drain_level.has(Math.floor(drain / this.map.width) - 1);
@@ -699,7 +718,6 @@ var FLOW = {
         if (FLOW.DEBUG) console.log("drain path test for", drain);
         let DP = this.GA.gravity_AStar(this.NA.indexToGrid(drain), this.NA.indexToGrid(this.terminals.first()), [MAPDICT.EMPTY, MAPDICT.WATER], "value");
         if (FLOW.DEBUG) console.log("DP", this.NA.indexToGrid(drain), this.NA.indexToGrid(this.terminals.first()), "drain path DP->", DP);
-        //throw "DEBUG";
         if (DP) return true;
         return false;
     },
