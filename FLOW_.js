@@ -10,6 +10,8 @@
 
     known issues, TODO:
         * linking on different levels
+        * draining stops too quick
+        * drain under terminal
 */
 class FlowNode {
     constructor(index) {
@@ -38,7 +40,7 @@ class Boundaries {
     }
 }
 var FLOW = {
-    VERSION: "II.0.9.0",
+    VERSION: "II.0.10.0",
     CSS: "color: #F3A",
     DEBUG: true,
     PAINT_DISTANCES: true,
@@ -182,7 +184,7 @@ var FLOW = {
             console.log("\n\t.... finding next from:", origin);
         }
         if (this.NA.map[this.NA.gridToIndex(origin)].mark) {
-            if (FLOW.DEBUG) console.log(".... already marked: ", origin);
+            //if (FLOW.DEBUG) console.log(".... already marked: ", origin);
             return [false, null, null, null];
         }
         this.NA.map[this.NA.gridToIndex(origin)].used = true;
@@ -523,7 +525,6 @@ var FLOW = {
             let belowLevel = this.NA.indexToGrid(below).y;
             if (belowLevel < this.origin_level) {
                 if (this.sizeMap[below] === 1) {
-                    //if (!this.isDeadEnd(below) && this.drain_path_exists(below)) {
                     if (this.drain_path_exists(below)) {
                         this.add_drain(below);
                         this.flood_level = belowLevel;
@@ -537,7 +538,6 @@ var FLOW = {
 
             if (levelOfPrevious <= this.actionLevel) {
                 if (!this.drains.has(prev)) {
-                    //if (!this.isDeadEnd(prev) && this.drain_path_exists(prev)) {
                     if (this.drain_path_exists(prev)) {
                         this.add_drain(prev);
                         this.flood_level = levelOfPrevious;
@@ -552,21 +552,7 @@ var FLOW = {
             }
         }
     },
-    /*isDeadEnd(node) {
-        if (this.DE_map[node] === 1) return true;
-        if (this.DE_map[node] === -1) return false;
-        if (FLOW.DEBUG) console.log("dead end test", this.NA.indexToGrid(node), this.origin);
-        let NM = this.GA.findPath_AStar_fast(this.NA.indexToGrid(node), this.origin, [MAPDICT.WATER], "value");
-        if (FLOW.DEBUG) {
-            console.log("Dead End test for", node, "grid", this.NA.indexToGrid(node));
-            console.log("NM", NM);
-        }
-        if (NM === null || NM === 0) {
-            this.DE_map[node] = 1;
-            return true;
-        }
-        return false;
-    },*/
+
     add_dependant_drains(node) {
         for (let d of this.NA.map[node].next) {
             while (d && this.NA.map[d].distance === this.NA.map[node].distance) {
@@ -663,14 +649,15 @@ var FLOW = {
         let DATA = this.traverse_flow_graph();
         let sameLevel = (currentDistance === DATA.distance_to_empty - 1) && (DATA.distance_to_empty > DATA.distance_to_full);
         let actionAboveCurrentFlood = new Set([...DATA.index_to_full].map(x => Math.floor(x / this.map.width))).first() > this.actionLevel;
+
         if (FLOW.DEBUG) {
             console.log("TT DATA", DATA, sameLevel);
-            //console.log("NEW CONDITIONS ", currentDistance < DATA.distance_to_full, currentDistance <= DATA.distance_to_full, currentDistance, DATA.distance_to_full);
             console.log("TT TEST", "drain levels from DATA.index_to_full",
                 actionAboveCurrentFlood, new Set([...DATA.index_to_full].map(x => Math.floor(x / this.map.width))).first(),
                 this.actionLevel);
         }
 
+        //drains from terminals
         if (!sameLevel) {
             if (this.terminals.size > 0 && this.actionLevel >= this.max_terminal_level) {
                 this.drainsFromTerminals(this.actionLevel);
@@ -678,21 +665,8 @@ var FLOW = {
             }
         }
 
-        if (!sameLevel) {
-            if (this.actionLevel >= this.max_terminal_level || this.actionLevel >= this.flood_level) {
-                for (let d of DATA.index_to_full) {
-                    //this.drain_path_exists
-                    //if (!this.drains_above(d) && !this.isDeadEnd(d)) {
-                    if (!this.drains_above(d) && !this.drain_path_exists(d)) {
-                        this.add_drain(d);
-                    }
-                }
-                if (FLOW.DEBUG) console.log(">> adding drains from flow graph", this.drains);
-            }
-        }
 
-        if (FLOW.DEBUG) console.log("Drains set.....:", this.drains);
-
+        //wedged - new terminals
         if (FLOW.DEBUG) {
             console.log("**************************************************");
             console.log(".reflow: set new terminals");
@@ -707,6 +681,19 @@ var FLOW = {
             }
         }
         if (FLOW.DEBUG) console.log("new terminals", this.terminals);
+        //wedge end
+
+        //then drains from graph
+        if (!sameLevel) {
+            if (this.actionLevel >= this.max_terminal_level || this.actionLevel >= this.flood_level) {
+                for (let d of DATA.index_to_full) {
+                    if (!this.drains_above(d) && this.drain_path_exists(d)) {
+                        this.add_drain(d);
+                    }
+                }
+                if (FLOW.DEBUG) console.log(">> adding drains from flow graph", this.drains);
+            }
+        }
     },
     drains_below(term) {
         return this.drain_level && this.drain_level.has(Math.floor(term / this.map.width) + 1);
@@ -715,9 +702,22 @@ var FLOW = {
         return this.drain_level && this.drain_level.has(Math.floor(drain / this.map.width) - 1);
     },
     drain_path_exists(drain) {
-        if (FLOW.DEBUG) console.log("drain path test for", drain);
+        return this.gravity_drain_path_exists(drain) || this.wet_drain_path_exists(drain);
+    },
+    gravity_drain_path_exists(drain) {
+        if (FLOW.DEBUG) console.log("gravity drain path test for", drain);
         let DP = this.GA.gravity_AStar(this.NA.indexToGrid(drain), this.NA.indexToGrid(this.terminals.first()), [MAPDICT.EMPTY, MAPDICT.WATER], "value");
-        if (FLOW.DEBUG) console.log("DP", this.NA.indexToGrid(drain), this.NA.indexToGrid(this.terminals.first()), "drain path DP->", DP);
+        if (FLOW.DEBUG) console.log("DP", this.NA.indexToGrid(drain), this.NA.indexToGrid(this.terminals.first()), "gravity drain path DP->", DP);
+        if (DP) return true;
+        return false;
+    },
+    wet_drain_path_exists(drain) {
+        if (FLOW.DEBUG) console.log("wet drain path test for", drain);
+        let drainGrid = this.NA.indexToGrid(drain);
+        let terminalGrid = this.NA.indexToGrid(this.terminals.first());
+        if (terminalGrid.y < drainGrid.y) return false;
+        let DP = this.GA.findPath_AStar_fast(drainGrid, terminalGrid, [MAPDICT.WATER], "value");
+        if (FLOW.DEBUG) console.log("DP", this.NA.indexToGrid(drain), this.NA.indexToGrid(this.terminals.first()), "wet drain path DP->", DP);
         if (DP) return true;
         return false;
     },
@@ -755,7 +755,6 @@ var FLOW = {
         for (let n of this.NA.map[node].next) {
             this.traverse(n, DATA);
         }
-
     },
     both_side_blocked(grid) {
         return this.NA.map[this.NA.gridToIndex(grid.add(LEFT))] === null && this.NA.map[this.NA.gridToIndex(grid.add(RIGHT))] === null;
@@ -798,7 +797,7 @@ var FLOW = {
     NA_to_GA(W = MAPDICT.WATER) {
         for (let index = 0; index < this.NA.map.length; index++) {
             if (this.NA.map[index]) {
-                if (this.sizeMap[index] === this.NA.map[index].max_flow) {
+                if (this.sizeMap[index] > 0) {
                     this.GA.iset(index, W);
                 } else {
                     this.GA.iclear(index, W);
