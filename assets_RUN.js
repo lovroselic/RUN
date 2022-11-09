@@ -8,7 +8,7 @@ console.log("%cAssets for RUN ready.", "color: orange");
 
 var LoadTextures = ["BrickWall4.jpg", "RockFloor.jpg"];
 var LoadSprites = [
-    { srcName: "BigBox.png", name: "Box" },
+    //{ srcName: "BigBox.png", name: "Box" },
     { srcName: "Run480.jpg", name: "Title" },
 ];
 var LoadSequences = [];
@@ -43,5 +43,6 @@ var LoadSheetSequences = [
     { srcName: "VertiWall64.png", count: 1, name: "VerticalWall", trim: false },
     { srcName: "HoriWall64.png", count: 1, name: "HorizontalWall", trim: true },
     { srcName: "BlockWall64.png", count: 1, name: "BlockWall", trim: false },
-    { srcName: "Smoke2.png", count: 12, name: "Smoke" }
+    { srcName: "Smoke2.png", count: 12, name: "Smoke" },
+    { srcName: "BigBox.png", count: 1, name: "Box" },
 ];

@@ -30,7 +30,7 @@ const DownRight = new Vector(1, 1);
 const DownLeft = new Vector(-1, 1);
 
 const ENGINE = {
-  VERSION: "3.12.DEV",
+  VERSION: "3.13.DEV",
   CSS: "color: #0FA",
   INI: {
     ANIMATION_INTERVAL: 16,
@@ -2159,6 +2159,10 @@ class Static_ACTOR {
     this.name = spriteClass;
     this.width = this._sprite.width;
     this.height = this._sprite.height;
+    this.x = 0;
+    this.y = 0;
+    this.vx = 0;
+    this.vy = 0;
   }
   sprite() {
     return this._sprite;

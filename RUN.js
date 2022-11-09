@@ -47,7 +47,7 @@ var INI = {
     AIR_COST: 1,
 };
 var PRG = {
-    VERSION: "0.13.00",
+    VERSION: "0.13.01",
     NAME: "R.U.N.",
     YEAR: "2022",
     CSS: "color: #239AFF;",
@@ -452,6 +452,7 @@ var HERO = {
     },
     dynamite() {
         if (this.floats) return;
+        if (VANISHING.POOL.length > 0) return;
         if (GAME.dinamite > 0) {
             GAME.dinamite--;
             TITLE.dinamite();
@@ -462,6 +463,7 @@ var HERO = {
     },
     manage() {
         this.collission();
+        this.collisionBox();
         this.drowningTest();
     },
     drowningTest() {
@@ -490,6 +492,14 @@ var HERO = {
                 GAME.air = Math.min(GAME.air, INI.AIR);
                 TITLE.air();
             }
+        }
+    },
+    collisionBox() {
+        let grid = Grid.toClass(this.moveState.pos.add(UP, 0.01));
+        let IA = MAP[GAME.level].map.grid_solo_floor_object_IA;
+        let box = IA.unroll(grid);
+        if (box.length === 1) {
+            GRID_SOLO_FLOOR_OBJECT.POOL[box[0] - 1].open();
         }
     },
     collission() {
@@ -584,6 +594,24 @@ class Bat {
         this.frozen = true;
     }
 }
+class Box {
+    constructor(grid) {
+        this.grid = grid;
+        this.actor = new Static_ACTOR('Box_00');
+        GRID.gridToSpriteBottomCenter(grid, this.actor);
+    }
+    alignToViewport() {
+        ENGINE.VIEWPORT.alignTo(this.actor);
+    }
+    draw() {
+        this.alignToViewport();
+        ENGINE.drawBottomCenter("actors", this.actor.vx, this.actor.vy, this.actor.sprite());
+        //ENGINE.spriteDraw("actors", this.actor.vx, this.actor.vy, this.actor.sprite());
+    }
+    open() {
+        //throw "OPEN";
+    }
+}
 var GAME = {
     start() {
         console.log("GAME started");
@@ -642,6 +670,7 @@ var GAME = {
         ENGINE.VIEWPORT.setMax({ x: MAP[level].pw, y: MAP[level].ph });
         DESTRUCTION_ANIMATION.init(MAP[level].map);
         ENEMY_TG.init(MAP[level].map);
+        GRID_SOLO_FLOOR_OBJECT.init(MAP[level].map);
         FLOW.init(MAP[level].map, MAP[level].flow);
         SPAWN.spawn(level);
     },
@@ -721,7 +750,7 @@ var GAME = {
         HERO.manageFlight(lapsedTime);
         VANISHING.manage(lapsedTime);
         ENEMY_TG.manage(lapsedTime);
-        //HERO.collission();
+        GRID_SOLO_FLOOR_OBJECT.manage(lapsedTime);
         HERO.manage();
         DESTRUCTION_ANIMATION.manage(lapsedTime);
         FLOW.flow(lapsedTime);
@@ -746,6 +775,7 @@ var GAME = {
         GAME.updateVieport();
         VANISHING.draw();
         ENEMY_TG.draw();
+        GRID_SOLO_FLOOR_OBJECT.draw();
         HERO.draw();
         DESTRUCTION_ANIMATION.draw();
         FLOW.draw();

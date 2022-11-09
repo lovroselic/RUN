@@ -14,7 +14,8 @@ var MAP = {
         dynamite: `{"x":2, "y":9}`,
         flow: `{"x":2, "y":10}`,
         bat: [[`{"x":2, "y":7}`, UP, 2], [`{"x":5, "y":3}`, DOWN, 1], [`{"x":6, "y":9}`, RIGHT, 3], [`{"x":10, "y":7}`, DOWN, 2], [`{"x":4, "y":7}`, RIGHT, 4],
-        [`{"x":6, "y":4}`, UP, 1], [`{"x":10, "y":5}`, UP, 3], [`{"x":2, "y":1}`, DOWN, 2]]
+        [`{"x":6, "y":4}`, UP, 1], [`{"x":10, "y":5}`, UP, 3], [`{"x":2, "y":1}`, DOWN, 2]],
+        box: [],
     },
     2: {
         data: `
@@ -26,15 +27,17 @@ var MAP = {
         bat: [[`{"x":3, "y":12}`, UP, 1], [`{"x":3, "y":6}`, RIGHT, 2], [`{"x":6, "y":6}`, RIGHT, 3], [`{"x":1, "y":8}`, UP, 2], [`{"x":6, "y":11}`, RIGHT, 1],
         [`{"x":2, "y":6}`, LEFT, 1], [`{"x":12, "y":6}`, RIGHT, 2], [`{"x":14, "y":4}`, DOWN, 2], [`{"x":11, "y":0}`, DOWN, 2], [`{"x":7, "y":4}`, RIGHT, 1],
         [`{"x":12, "y":4}`, LEFT, 2]],
+        box: [],
     },
     3: {
         data: `
-        {"width":"16","height":"16","map":"BB5AQAA3BABB2ABABB2AA20BAA6BB25AA3BB15ABB4ABB2ABB4ABB5QABB10ABB27ABB88$ABB10IBB3QBQA"}
+        {"width":"16","height":"16","map":"BB3ABB3AQAA2BAA3BB2AA2BABB2AA22BAA5BABB30AA3BB12ABB4ABB5ABB2ABB5ABB6QAA2BB11ABB26ABB78$ABB2IBB3QBQA"}
         `,
         start: `{"x":2, "y":7}`,
         dynamite: `{"x":1, "y":7}`,
         flow: `{"x":1, "y":8}`,
         bat: [[`{"x":3, "y":10}`, UP, 1], [`{"x":5, "y":9}`, DOWN, 1], [`{"x":2, "y":12}`, RIGHT, 5]],
+        box: [[`{"x":14, "y":8}`], [`{"x":3, "y":7}`]],
     },
     4: {
         data: `
@@ -44,6 +47,7 @@ var MAP = {
         dynamite: `{"x":5, "y":6}`,
         flow: `{"x":5, "y":7}`,
         bat: [],
+        box: [],
     },
     5: {
         data: `
@@ -53,6 +57,7 @@ var MAP = {
         dynamite: `{"x":5, "y":6}`,
         flow: `{"x":5, "y":7}`,
         bat: [],
+        box: [],
     },
     6: {
         data: `
@@ -62,6 +67,7 @@ var MAP = {
         dynamite: `{"x":5, "y":6}`,
         flow: `{"x":5, "y":7}`,
         bat: [],
+        box: [],
     },
     7: {
         data: `
@@ -71,6 +77,7 @@ var MAP = {
         dynamite: `{"x":5, "y":6}`,
         flow: `{"x":5, "y":7}`,
         bat: [],
+        box: [],
     },
     8: {
         data: `
@@ -80,6 +87,7 @@ var MAP = {
         dynamite: `{"x":4, "y":6}`,
         flow: `{"x":5, "y":7}`,
         bat: [],
+        box: [],
     },
     9: {
         data: `
@@ -89,6 +97,7 @@ var MAP = {
         dynamite: `{"x":5, "y":5}`,
         flow: `{"x":5, "y":6}`,
         bat: [],
+        box: [],
     },
     10: {
         data: `
@@ -98,6 +107,7 @@ var MAP = {
         dynamite: `{"x":5, "y":5}`,
         flow: `{"x":5, "y":6}`,
         bat: [],
+        box: [],
     },
     11: {
         data: `
@@ -107,6 +117,7 @@ var MAP = {
         dynamite: `{"x":5, "y":5}`,
         flow: `{"x":5, "y":6}`,
         bat: [],
+        box: [],
     },
     12: {
         data: `
@@ -115,7 +126,8 @@ var MAP = {
         start: `{"x":5, "y":8}`,
         dynamite: `{"x":1, "y":12}`,
         flow: `{"x":1, "y":13}`,
-        bat: []
+        bat: [],
+        box: [],
     },
     13: {
         data: `
@@ -124,7 +136,8 @@ var MAP = {
         start: `{"x":2, "y":3}`,
         dynamite: `{"x":5, "y":5}`,
         flow: `{"x":5, "y":6}`,
-        bat: []
+        bat: [],
+        box: [],
     },
     14: {
         data: `
@@ -133,20 +146,28 @@ var MAP = {
         start: `{"x":2, "y":3}`,
         dynamite: `{"x":5, "y":5}`,
         flow: `{"x":5, "y":6}`,
-        bat: []
+        bat: [],
+        box: [],
     },
 };
 
 var SPAWN = {
     spawn(level) {
         this.spawnBats(level);
+        this.spawnBox(level);
     },
     spawnBats(level) {
-        console.log("spawning bats");
         for (let bat of MAP[level].bat) {
             let start = Grid.toClass(JSON.parse(bat[0]));
             ENEMY_TG.add(new Bat(start, bat[1], bat[2]));
         }
+    },
+    spawnBox(level) {
+        for (let box of MAP[level].box) {
+            let grid = Grid.toClass(JSON.parse(box));
+            GRID_SOLO_FLOOR_OBJECT.add(new Box(grid));
+        }
+        console.log("spawning boxes", GRID_SOLO_FLOOR_OBJECT.POOL);
     }
 };
 

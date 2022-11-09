@@ -5,7 +5,7 @@
 "use strict";
 
 var IAM = {
-    version: "1.05",
+    version: "1.05.1",
     POOL: null,
     draw() {
         for (let obj of this.POOL) {
@@ -204,7 +204,7 @@ var VANISHING = {
 };
 var GRID_SOLO_FLOOR_OBJECT = {
     /*
-    expects simple static objects withouot moveState 
+    expects simple static objects without moveState 
     */
     POOL: null,
     map: null,

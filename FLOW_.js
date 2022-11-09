@@ -40,9 +40,9 @@ class Boundaries {
     }
 }
 var FLOW = {
-    VERSION: "II.0.10.0",
+    VERSION: "II.0.10.1",
     CSS: "color: #F3A",
-    DEBUG: true,
+    DEBUG: false,
     PAINT_DISTANCES: true,
     INI: {
         ORIGIN_SIZE: 0.2,
