@@ -136,7 +136,7 @@ var FLOW = {
         let nextNode, nextGrid, nextCandidates, found, nextSources;
 
         for (let [i, next] of candidates.entries()) {
-            console.group("candidates from path");
+            //console.group("candidates from path");
             if (FLOW.DEBUG) {
                 console.log("CANDIDATE:", next, "i", i);
                 console.log("... candidates", candidates, "sources", sources);
@@ -172,7 +172,7 @@ var FLOW = {
                 }
                 this.path(grid, distance, nextCandidates, nextSources);
             }
-            console.groupEnd("candidates from path");
+            //console.groupEnd("candidates from path");
         }
 
         if (FLOW.DEBUG) {

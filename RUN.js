@@ -47,7 +47,7 @@ var INI = {
     AIR_COST: 1,
 };
 var PRG = {
-    VERSION: "0.13.01",
+    VERSION: "0.13.02",
     NAME: "R.U.N.",
     YEAR: "2022",
     CSS: "color: #239AFF;",
@@ -609,6 +609,13 @@ class Box {
         //ENGINE.spriteDraw("actors", this.actor.vx, this.actor.vy, this.actor.sprite());
     }
     open() {
+        AUDIO.PickBox.play();
+        GRID_SOLO_FLOOR_OBJECT.remove(this.id);
+        GRID_SOLO_FLOOR_OBJECT.requestReIndex();
+        GAME.dinamite = INI.DINAMITE;
+        GAME.energy = INI.ENERGY;
+        TITLE.energy();
+        TITLE.dinamite();
         //throw "OPEN";
     }
 }

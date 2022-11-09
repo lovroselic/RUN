@@ -30,6 +30,7 @@ var LoadAudio = [
     { srcName: "jetpac.mp3", name: "Jetpac" },
     { srcName: "Which Way Is Away - LaughingSkull.mp3", name: "Title" },
     { srcName: "Fuse.mp3", name: "Fuse" },
+    { srcName: "UseScroll.mp3", name: "PickBox" },
 ];
 var LoadFonts = [];
 var LoadRotatedSheetSequences = [];

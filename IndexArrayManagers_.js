@@ -5,7 +5,7 @@
 "use strict";
 
 var IAM = {
-    version: "1.05.1",
+    version: "1.06",
     POOL: null,
     draw() {
         for (let obj of this.POOL) {
@@ -221,6 +221,9 @@ var GRID_SOLO_FLOOR_OBJECT = {
         }
     },
     reIndexRequired: false,
+    requestReIndex() {
+        this.reIndexRequired = true;
+    },
     reIndex() {
         if (!this.reIndexRequired) return;
         this.POOL = this.POOL.filter((el) => el !== null);
