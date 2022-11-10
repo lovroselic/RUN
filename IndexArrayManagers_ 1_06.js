@@ -4,42 +4,29 @@
 /*jshint -W061 */
 "use strict";
 
-/*  
-
-TODO:
-    * some names were changed: it's not compatible with CrawlMaster whitout changing variables in CrawlMaster
-      
-*/
-
-var IndexArrayManagers = {
-    VERSION: "1.99",
-};
-
-class IAM {
-    constructor() {
-        this.POOL = null;
-        this.map = null;
-    }
+var IAM = {
+    version: "1.06",
+    POOL: null,
     draw() {
         for (let obj of this.POOL) {
             if (obj) obj.draw(this.map);
         }
-    }
+    },
     update(lapsedTime) {
         for (let obj of this.POOL) {
             if (obj) obj.update(lapsedTime);
         }
-    }
+    },
     linkMap(map) {
         this.map = map;
-    }
-    add(obj) {
+    },
+    add: function (obj) {
         this.POOL.push(obj);
         obj.id = this.POOL.length;
-    }
+    },
     remove(id) {
         this.POOL[id - 1] = null;
-    }
+    },
     poolToIA(IA) {
         for (const obj of this.POOL) {
             let grid = Grid.toClass(obj.moveState.pos);
@@ -47,50 +34,60 @@ class IAM {
                 IA.next(grid, obj.id);
             }
         }
-    }
+    },
     reIndex() {
         this.POOL = this.POOL.filter((el) => el !== null);
         for (const [index, obj] of this.POOL.entries()) {
             obj.id = index + 1;
         }
-    }
+    },
     init(map) {
         this.POOL = [];
         this.linkMap(map);
-    }
+    },
     isGridFree(grid) {
         return this.map[this.IA].empty(grid);
-    }
+    },
     clearAll() {
         this.POOL = [];
-    }
+    },
     show(id) {
         return this.POOL[id - 1];
-    }
-}
+    },
+};
 
 /** Profile IA Managers */
-class Decor extends IAM {
-    constructor() {
-        super();
-        this.IA = "decor_IA";
-    }
-    poolToIA(IA) {
-        return;
-    }
+var DECOR = {
+    POOL: null,
+    map: null,
+    IA: "decor_IA",
+    draw: IAM.draw,
+    linkMap: IAM.linkMap,
+    add: IAM.add,
+    remove: IAM.remove,
+    init: IAM.init,
+    clearAll: IAM.clearAll,
+    show: IAM.show,
+    get: IAM.show,
+    reIndex: IAM.reIndex,
+    poolToIA(IA) { },
     manage(lapsedTime) {
-        return;
     }
-}
-
-class Profile_Ballistic extends IAM {
-    constructor() {
-        super();
-        this.IA = "ballistic_IA";
-    }
-    poolToIA(IA) {
-        return;
-    }
+};
+var PROFILE_BALLISTIC = {
+    POOL: null,
+    map: null,
+    IA: "ballistic_IA",
+    draw: IAM.draw,
+    linkMap: IAM.linkMap,
+    add: IAM.add,
+    remove: IAM.remove,
+    init: IAM.init,
+    clearAll: IAM.clearAll,
+    show: IAM.show,
+    get: IAM.show,
+    reIndex: IAM.reIndex,
+    poolToIA(IA) { },
     manage(lapsedTime) {
         this.reIndex();
         for (let obj of this.POOL) {
@@ -103,13 +100,20 @@ class Profile_Ballistic extends IAM {
             }
         }
     }
-}
-
-class Profile_Actors extends IAM {
-    constructor() {
-        super();
-        this.IA = "profile_actor_IA";
-    }
+};
+var PROFILE_ACTORS = {
+    POOL: null,
+    map: null,
+    IA: "profile_actor_IA",
+    draw: IAM.draw,
+    linkMap: IAM.linkMap,
+    add: IAM.add,
+    remove: IAM.remove,
+    init: IAM.init,
+    clearAll: IAM.clearAll,
+    show: IAM.show,
+    get: IAM.show,
+    reIndex: IAM.reIndex,
     poolToIA(IA) {
         for (const obj of this.POOL) {
             for (let x = Math.max(0, Math.round(obj.moveState.x - obj.actor.width / 2));
@@ -118,7 +122,7 @@ class Profile_Actors extends IAM {
                 IA.next(new Grid(x, 0), obj.id);
             }
         }
-    }
+    },
     manage(lapsedTime) {
         let map = this.map;
         this.reIndex();
@@ -134,20 +138,29 @@ class Profile_Actors extends IAM {
             }
         }
     }
-}
+};
 
 /** Texture grid IA Managers */
-class Enemy_TG extends IAM {
-    constructor() {
-        super();
-        this.IA = "enemy_tg_IA";
-    }
+var ENEMY_TG = {
+    POOL: null,
+    map: null,
+    IA: "enemy_tg_IA",
+    draw: IAM.draw,
+    linkMap: IAM.linkMap,
+    add: IAM.add,
+    remove: IAM.remove,
+    init: IAM.init,
+    clearAll: IAM.clearAll,
+    show: IAM.show,
+    get: IAM.show,
+    reIndex: IAM.reIndex,
     poolToIA(IA) {
         for (const obj of this.POOL) {
+            //IA.next(obj.moveState.homeGrid, obj.id);
             IA.next(obj.moveState.startGrid, obj.id);
             IA.next(obj.moveState.endGrid, obj.id);
         }
-    }
+    },
     manage(lapsedTime, reference = null) {
         let map = this.map;
         map[this.IA] = new IndexArray(map.width, map.height, 4, 4);
@@ -160,19 +173,26 @@ class Enemy_TG extends IAM {
             if (enemy === null) continue;
             enemy.manage(lapsedTime, map[this.IA]);
         }
-    }
-}
-
-class Vanishing extends IAM {
-    constructor() {
-        super();
-        this.IA = "vanishing_IA";
-    }
+    },
+};
+var VANISHING = {
+    POOL: null,
+    map: null,
+    IA: "vanishing_IA",
+    size: null,
+    draw: IAM.draw,
+    linkMap: IAM.linkMap,
+    add: IAM.add,
+    remove: IAM.remove,
+    init: IAM.init,
+    isGridFree: IAM.isGridFree,
+    reIndex: IAM.reIndex,
     poolToIA(IA) {
         for (const obj of this.POOL) {
             IA.next(obj.grid, obj.id);
         }
-    }
+    },
+    update: IAM.update,
     manage(lapsedTime) {
         let map = this.map;
         map[this.IA] = new IndexArray(map.width, map.height, 1, 1);
@@ -180,28 +200,30 @@ class Vanishing extends IAM {
         this.poolToIA(map[this.IA]);
         this.size = this.POOL.length;
         this.update(lapsedTime);
-    }
-}
-
-class Floor_Object extends IAM {
+    },
+};
+var GRID_SOLO_FLOOR_OBJECT = {
     /*
     expects simple static objects without moveState 
     */
-    constructor(byte = 1, banks = 1) {
-        super();
-        this.IA = "floor_object_IA";
-        this.reIndexRequired = false;
-        this.byte = byte;
-        this.banks = banks;
-    }
+    POOL: null,
+    map: null,
+    IA: "grid_solo_floor_object_IA",
+    size: null,
+    draw: IAM.draw,
+    linkMap: IAM.linkMap,
+    add: IAM.add,
+    remove: IAM.remove,
+    init: IAM.init,
     poolToIA(IA) {
         for (const obj of this.POOL) {
             IA.next(obj.grid, obj.id);
         }
-    }
+    },
+    reIndexRequired: false,
     requestReIndex() {
         this.reIndexRequired = true;
-    }
+    },
     reIndex() {
         if (!this.reIndexRequired) return;
         this.POOL = this.POOL.filter((el) => el !== null);
@@ -209,26 +231,57 @@ class Floor_Object extends IAM {
             obj.id = index + 1;
         }
         this.reIndexRequired = false;
-    }
-    init(map) {
-        this.POOL = [];
-        this.linkMap(map);
-        this.manage();
-    }
+    },
     manage() {
         let map = this.map;
-        map[this.IA] = new IndexArray(map.width, map.height, this.byte, this.banks);
+        map[this.IA] = new IndexArray(map.width, map.height, 1, 1);
         this.reIndex();
         this.poolToIA(map[this.IA]);
         this.size = this.POOL.length;
-    }
-}
+    },
+};
 
-class Destruction_Animation extends IAM {
-    constructor() {
-        super();
-        this.IA = "destranimIA";
-    }
+/**  Raycast IA Managers */
+var FLOOR_OBJECT = {
+    POOL: null,
+    map: null,
+    IA: "floor_objectIA",
+    draw: IAM.draw,
+    linkMap: IAM.linkMap,
+    add: IAM.add,
+    remove: IAM.remove,
+    poolToIA: IAM.poolToIA,
+    init(map) {
+        this.linkMap(map);
+        this.manage(null, map);
+    },
+    reIndexRequired: false,
+    reIndex() {
+        if (!this.reIndexRequired) return;
+        this.POOL = this.POOL.filter((el) => el !== null);
+        for (const [index, obj] of this.POOL.entries()) {
+            obj.id = index + 1;
+        }
+        this.reIndexRequired = false;
+    },
+
+    manage(lapsedTime, map) {
+        map[this.IA] = new IndexArray(map.width, map.height, 4, 4);
+        this.reIndex();
+        this.poolToIA(map[this.IA]);
+    },
+};
+var DESTRUCTION_ANIMATION = {
+    POOL: null,
+    map: null,
+    IA: "destranimIA",
+    init: IAM.init,
+    draw: IAM.draw,
+    linkMap: IAM.linkMap,
+    add: IAM.add,
+    remove: IAM.remove,
+    poolToIA: IAM.poolToIA,
+    reIndex: IAM.reIndex,
     manage(lapsedTime, map = this.map) {
         this.reIndex();
         if (map.width && map.height) {
@@ -238,36 +291,42 @@ class Destruction_Animation extends IAM {
         for (const anim of this.POOL) {
             anim.actor.updateAnimation(lapsedTime);
             if (anim.actor.animationThrough) {
-                this.remove(anim.id);
+                DESTRUCTION_ANIMATION.remove(anim.id);
             }
         }
-    }
-}
-
-class Changing_Animation extends IAM {
-    constructor() {
-        super();
-        this.IA = "changeanimIA";
-    }
+    },
+};
+var CHANGING_ANIMATION = {
+    POOL: null,
+    map: null,
+    IA: "changeanimIA",
+    linkMap: IAM.linkMap,
+    add: IAM.add,
+    remove: IAM.remove,
+    poolToIA: IAM.poolToIA,
+    reIndex: IAM.reIndex,
     manage(lapsedTime, map) {
         map[this.IA] = new IndexArray(map.width, map.height, 4, 4);
         this.reIndex();
         this.poolToIA(map[this.IA]);
         for (const anim of this.POOL) {
-            //anim.lift(lapsedTime);
-            anim.change(lapsedTime);
+            anim.lift(lapsedTime);
             if (anim.complete()) {
                 CHANGING_ANIMATION.remove(anim.id);
             }
         }
     }
-}
-/**  Raycast IA Managers */
-class Missile_RC extends IAM {
-    constructor() {
-        super();
-        this.IA = "missileIA";
-    }
+};
+var MISSILE = {
+    POOL: null,
+    map: null,
+    IA: "missileIA",
+    draw: IAM.draw,
+    linkMap: IAM.linkMap,
+    add: IAM.add,
+    remove: IAM.remove,
+    poolToIA: IAM.poolToIA,
+    reIndex: IAM.reIndex,
     manage(lapsedTime, map) {
         map[this.IA] = new IndexArray(map.width, map.height, 4, 4);
         this.reIndex();
@@ -322,32 +381,34 @@ class Missile_RC extends IAM {
                 }
             }
         }
-    }
-}
+    },
 
-class Decal_IA extends IAM {
-    constructor() {
-        super();
-        this.IA = "decalIA";
-    }
+};
+var DECAL = {
+    POOL: null,
+    map: null,
+    IA: "decalIA",
+    linkMap: IAM.linkMap,
+    add: IAM.add,
+    remove: IAM.remove,
     init(map) {
         this.linkMap(map);
         this.manage(map);
-    }
+    },
     manage(map) {
         map[this.IA] = new IndexArray(map.width, map.height, 4, 4); // = IA
         this.poolToIA(map[this.IA]);
-    }
+    },
     update(map) {
         this.manage(map);
-    }
+    },
     poolToIA(IA) {
         for (const decal of this.POOL) {
             if (decal === null) continue;
             IA.next(decal.floorGrid, decal.id);
             IA.next(decal.grid, decal.id);
         }
-    }
+    },
     calcPosition(position) {
         let offset = new FP_Grid();
         switch (position[0]) {
@@ -379,7 +440,7 @@ class Decal_IA extends IAM {
                 break;
         }
         return offset;
-    }
+    },
     playerBehindPlane(instance) {
         let playerGrid = Grid.toClass(PLAYER.pos);
         let delta = instance.grid.direction(playerGrid);
@@ -391,7 +452,7 @@ class Decal_IA extends IAM {
                 return false;
             } else return true;
         }
-    }
+    },
     drawPosition(instance) {
         let drawPosition = new FP_Grid();
         let leftPosition = new FP_Grid();
@@ -421,13 +482,17 @@ class Decal_IA extends IAM {
         }
         return [drawPosition, leftPosition, rightPosition];
     }
-}
-
-class Enemy_RC extends IAM {
-    constructor() {
-        super();
-        this.IA = "enemyIA";
-    }
+};
+var ENEMY = {
+    POOL: null,
+    map: null,
+    IA: "enemyIA",
+    draw: IAM.draw,
+    linkMap: IAM.linkMap,
+    add: IAM.add,
+    remove: IAM.remove,
+    clearAll: IAM.clearAll,
+    show: IAM.show,
     poolToIA(IA) {
         for (const enemy of this.POOL) {
             if (enemy === null) continue;
@@ -440,7 +505,7 @@ class Enemy_RC extends IAM {
                 }
             }
         }
-    }
+    },
     manage(lapsedTime, map, flagArray) {
         map[this.IA] = new IndexArray(map.width, map.height, 4, 4);
         this.poolToIA(map[this.IA]);
@@ -515,7 +580,8 @@ class Enemy_RC extends IAM {
             }
             enemy.makeMove();
         }
-    }
+    },
+
     analyze() {
         let monsterDict = new DefaultDict(0);
         for (const enemy of this.POOL) {
@@ -528,21 +594,6 @@ class Enemy_RC extends IAM {
         }
         console.groupEnd("ENEMY analysis");
     }
-}
+};
 
-/**  IAM INSTANCES */
-var DECOR = new Decor();
-var PROFILE_BALLISTIC = new Profile_Ballistic();
-var PROFILE_ACTORS = new Profile_Actors();
-var ENEMY_TG = new Enemy_TG();
-var ENEMY_RC = new Enemy_RC();
-var VANISHING = new Vanishing();
-var FLOOR_OBJECT = new Floor_Object();
-var FLOOR_OBJECT4 = new Floor_Object(4, 4);
-var DESTRUCTION_ANIMATION = new Destruction_Animation();
-var CHANGING_ANIMATION = new Changing_Animation();
-var MISSILE = new Missile_RC();
-var DECAL = new Decal_IA();
-/** *********************************************** */
-
-console.log(`%cIndexArrayManagers (IAM) ${IndexArrayManagers.version} ready.`, "color: #7FFFD4");
+console.log(`%cIndexArrayManagers (IAM) ${IAM.version} ready.`, "color: #7FFFD4");

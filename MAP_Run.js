@@ -36,8 +36,9 @@ var MAP = {
         start: `{"x":2, "y":7}`,
         dynamite: `{"x":1, "y":7}`,
         flow: `{"x":1, "y":8}`,
-        bat: [[`{"x":3, "y":10}`, UP, 1], [`{"x":5, "y":9}`, DOWN, 1], [`{"x":2, "y":12}`, RIGHT, 5]],
-        box: [[`{"x":14, "y":8}`], [`{"x":3, "y":7}`]],
+        bat: [[`{"x":3, "y":10}`, UP, 1], [`{"x":5, "y":9}`, DOWN, 1], [`{"x":2, "y":12}`, RIGHT, 5], [`{"x":12, "y":11}`, RIGHT, 2], [`{"x":14, "y":10}`, LEFT, 2],
+        [`{"x":12, "y":6}`, DOWN, 2]],
+        box: [[`{"x":14, "y":8}`]],
     },
     4: {
         data: `
@@ -165,9 +166,9 @@ var SPAWN = {
     spawnBox(level) {
         for (let box of MAP[level].box) {
             let grid = Grid.toClass(JSON.parse(box));
-            GRID_SOLO_FLOOR_OBJECT.add(new Box(grid));
+            FLOOR_OBJECT.add(new Box(grid));
         }
-        console.log("spawning boxes", GRID_SOLO_FLOOR_OBJECT.POOL);
+        console.log("spawning boxes", FLOOR_OBJECT.POOL);
     }
 };
 

@@ -47,7 +47,7 @@ var INI = {
     AIR_COST: 1,
 };
 var PRG = {
-    VERSION: "0.13.02",
+    VERSION: "0.14.00",
     NAME: "R.U.N.",
     YEAR: "2022",
     CSS: "color: #239AFF;",
@@ -75,7 +75,7 @@ var PRG = {
         $("#engine_version").html(ENGINE.VERSION);
         $("#grid_version").html(GRID.VERSION);
         $("#maze_version").html(DUNGEON.VERSION);
-        $("#iam_version").html(IAM.version);
+        $("#iam_version").html(IndexArrayManagers.VERSION);
         $("#lib_version").html(LIB.VERSION);
 
         $("#toggleHelp").click(function () {
@@ -496,10 +496,10 @@ var HERO = {
     },
     collisionBox() {
         let grid = Grid.toClass(this.moveState.pos.add(UP, 0.01));
-        let IA = MAP[GAME.level].map.grid_solo_floor_object_IA;
+        let IA = MAP[GAME.level].map.floor_object_IA;
         let box = IA.unroll(grid);
         if (box.length === 1) {
-            GRID_SOLO_FLOOR_OBJECT.POOL[box[0] - 1].open();
+            FLOOR_OBJECT.POOL[box[0] - 1].open();
         }
     },
     collission() {
@@ -610,8 +610,8 @@ class Box {
     }
     open() {
         AUDIO.PickBox.play();
-        GRID_SOLO_FLOOR_OBJECT.remove(this.id);
-        GRID_SOLO_FLOOR_OBJECT.requestReIndex();
+        FLOOR_OBJECT.remove(this.id);
+        FLOOR_OBJECT.requestReIndex();
         GAME.dinamite = INI.DINAMITE;
         GAME.energy = INI.ENERGY;
         TITLE.energy();
@@ -677,7 +677,7 @@ var GAME = {
         ENGINE.VIEWPORT.setMax({ x: MAP[level].pw, y: MAP[level].ph });
         DESTRUCTION_ANIMATION.init(MAP[level].map);
         ENEMY_TG.init(MAP[level].map);
-        GRID_SOLO_FLOOR_OBJECT.init(MAP[level].map);
+        FLOOR_OBJECT.init(MAP[level].map);
         FLOW.init(MAP[level].map, MAP[level].flow);
         SPAWN.spawn(level);
     },
@@ -757,7 +757,7 @@ var GAME = {
         HERO.manageFlight(lapsedTime);
         VANISHING.manage(lapsedTime);
         ENEMY_TG.manage(lapsedTime);
-        GRID_SOLO_FLOOR_OBJECT.manage(lapsedTime);
+        FLOOR_OBJECT.manage(lapsedTime);
         HERO.manage();
         DESTRUCTION_ANIMATION.manage(lapsedTime);
         FLOW.flow(lapsedTime);
@@ -782,7 +782,7 @@ var GAME = {
         GAME.updateVieport();
         VANISHING.draw();
         ENEMY_TG.draw();
-        GRID_SOLO_FLOOR_OBJECT.draw();
+        FLOOR_OBJECT.draw();
         HERO.draw();
         DESTRUCTION_ANIMATION.draw();
         FLOW.draw();
@@ -910,6 +910,7 @@ var GAME = {
         $("#startGame").prop("disabled", true);
 
         PATTERN.create("water", 0, 0, [205, 255], [0.65, 0.85]);
+        
     },
     setTitle() {
         const text = GAME.generateTitleText();
