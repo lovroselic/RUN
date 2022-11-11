@@ -47,7 +47,7 @@ var INI = {
     AIR_COST: 1,
 };
 var PRG = {
-    VERSION: "0.14.01",
+    VERSION: "0.14.02",
     NAME: "R.U.N.",
     YEAR: "2022",
     CSS: "color: #239AFF;",
@@ -528,6 +528,9 @@ var HERO = {
         }
         let line = new RectArea(lineStart.x, lineStart.y, this.L.distance, 1);
         let grids = [GRID.pointToGrid(new Point(this.actor.x, this.actor.y).translate(UP, INI.LASER_OFFSET_Y).translate(this.moveState.dir, INI.LASER_OFFSET_X))];
+
+        if (MAP[GAME.level].map.GA.isOutOfBounds(grids[0])) return;
+
         let D = Math.floor(this.L.distance / ENGINE.INI.GRIDPIX);
         grids.push(grids[0].add(this.moveState.dir, D));
         let IA = MAP[GAME.level].map.enemy_tg_IA;
@@ -614,7 +617,7 @@ class Snake extends Enemy {
         this.alignToViewport();
         this.score = 25;
         this.maxOff = 42;
-        this.speed = 80;
+        this.speed = 100;
     }
     position() {
         GRID.gridToSprite(this.grid, this.actor);
@@ -711,7 +714,7 @@ var GAME = {
         //GAME.level = 1;
         //GAME.level = 6;
         //GAME.level = 2;
-        GAME.level = 4;
+        GAME.level = 5;
         GAME.score = 0;
         GAME.lives = 3;
         HERO.startInit();
