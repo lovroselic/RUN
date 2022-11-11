@@ -47,7 +47,7 @@ var INI = {
     AIR_COST: 1,
 };
 var PRG = {
-    VERSION: "0.14.00",
+    VERSION: "0.14.01",
     NAME: "R.U.N.",
     YEAR: "2022",
     CSS: "color: #239AFF;",
@@ -543,8 +543,32 @@ var HERO = {
         }
     }
 };
-class Bat {
+class Enemy {
+    constructor() {
+        this.frozen = false;
+    }
+    alignToViewport() {
+        ENGINE.VIEWPORT.alignTo(this.actor);
+    }
+    draw() {
+        this.alignToViewport();
+        ENGINE.spriteDraw("actors", this.actor.vx, this.actor.vy, this.actor.sprite());
+    }
+    drown() {
+        ENEMY_TG.remove(this.id);
+    }
+    freeze() {
+        this.frozen = true;
+    }
+    die() {
+        DESTRUCTION_ANIMATION.add(new Explosion(this.moveState.homeGrid, GRID.coordToFP_Grid(this.actor.x, this.actor.y), 'SmokeExp'));
+        ENEMY_TG.remove(this.id);
+        GAME.addScore(this.score);
+    }
+}
+class Bat extends Enemy {
     constructor(from, dir, distance) {
+        super();
         this.speed = 2;
         this.from = from;
         this.to = this.from.add(dir, distance);
@@ -554,11 +578,7 @@ class Bat {
         this.actor = new ACTOR(this.name, 0, 0, "front", ASSET[this.name], this.fps);
         GRID.gridToSprite(this.from, this.actor);
         this.alignToViewport();
-        this.frozen = false;
         this.score = 10;
-    }
-    alignToViewport() {
-        ENGINE.VIEWPORT.alignTo(this.actor);
     }
     makeMove() {
         if (GRID.same(this.moveState.endGrid, this.to)) {
@@ -578,20 +598,66 @@ class Bat {
             this.makeMove();
         }
     }
+}
+class Snake extends Enemy {
+    constructor(grid, dir) {
+        super();
+        this.grid = grid;
+        this.dir = dir;
+        this.fps = 15;
+        this.moveState = new MoveState(grid, NOWAY, MAP[GAME.level].map.GA);
+        this.name = `Snaky${dir.capitalize()}`;
+        this.actor = new ACTOR(this.name, 0, 0, "linear", ASSET[this.name], this.fps);
+        this.off = 0;
+        this.offsign = 1;
+        this.position();
+        this.alignToViewport();
+        this.score = 25;
+        this.maxOff = 42;
+        this.speed = 80;
+    }
+    position() {
+        GRID.gridToSprite(this.grid, this.actor);
+        let diff = Math.floor((ENGINE.INI.GRIDPIX - this.actor.sprite().width) / 2);
+        switch (this.dir) {
+            case "LEFT":
+                this.actor.x -= diff;
+                this.actor.x -= this.off;
+                break;
+            case "RIGHT":
+                this.actor.x += diff;
+                this.actor.x += this.off;
+                break;
+        }
+    }
+    move(lapsedTime) {
+        let diff = this.speed * lapsedTime / 1000;
+        this.off += diff * this.offsign;
+        if (this.off >= this.maxOff) {
+            this.off = this.maxOff;
+            this.offsign = -1;
+        } else if (this.off <= 0) {
+            this.off = 0;
+            this.offsign = 1;
+        }
+    }
+    manage(lapsedTime) {
+        if (this.frozen) return;
+        this.move(lapsedTime);
+        this.position();
+        this.actor.updateAnimation(lapsedTime);
+    }
     draw() {
         this.alignToViewport();
-        ENGINE.spriteDraw("actors", this.actor.vx, this.actor.vy, this.actor.sprite());
-    }
-    drown() {
-        ENEMY_TG.remove(this.id);
-    }
-    die() {
-        DESTRUCTION_ANIMATION.add(new Explosion(this.moveState.homeGrid, GRID.coordToFP_Grid(this.actor.x, this.actor.y), 'SmokeExp'));
-        ENEMY_TG.remove(this.id);
-        GAME.addScore(this.score);
-    }
-    freeze() {
-        this.frozen = true;
+        let left, right;
+        if (this.dir === "LEFT") {
+            left = this.off;
+            right = 0;
+        } else {
+            left = 0;
+            right = this.off;
+        }
+        ENGINE.spriteDrawPart("actors", this.actor.vx, this.actor.vy, this.actor.sprite(), 0, left, right);
     }
 }
 class Box {
@@ -645,11 +711,12 @@ var GAME = {
         //GAME.level = 1;
         //GAME.level = 6;
         //GAME.level = 2;
-        GAME.level = 3;
+        GAME.level = 4;
         GAME.score = 0;
         GAME.lives = 3;
         HERO.startInit();
-        GAME.fps = new FPS_measurement();
+        //GAME.fps = new FPS_measurement();
+        GAME.fps = new FPS_short_term_measurement(300);
         GAME.levelStart();
     },
     levelStart() {
@@ -910,7 +977,7 @@ var GAME = {
         $("#startGame").prop("disabled", true);
 
         PATTERN.create("water", 0, 0, [205, 255], [0.65, 0.85]);
-        
+
     },
     setTitle() {
         const text = GAME.generateTitleText();

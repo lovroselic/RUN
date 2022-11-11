@@ -46,4 +46,6 @@ var LoadSheetSequences = [
     { srcName: "BlockWall64.png", count: 1, name: "BlockWall", trim: false },
     { srcName: "Smoke2.png", count: 12, name: "Smoke" },
     { srcName: "BigBox.png", count: 1, name: "Box" },
+    { srcName: "SnakyLeft.png", count: 4, name: "SnakyLeft" },
+    { srcName: "SnakyRight.png", count: 4, name: "SnakyRight" },
 ];

@@ -20,7 +20,7 @@ as used by LS
 changelog:
 3.00: new fresh version
 3.04: updates for Invasion
-3.05: RNDF, updates for RUN, Set prototypes
+3.05: RNDF, updates for RUN, Set prototypes, substr -> substring updates
 */
 
 (function () {
@@ -288,7 +288,7 @@ Array.prototype.removeValueOnce = function (value) {
   }
 };
 String.prototype.capitalize = function () {
-  return this.charAt(0).toUpperCase() + this.substr(1).toLowerCase();
+  return this.charAt(0).toUpperCase() + this.substring(1).toLowerCase();
 };
 String.prototype.trimSpace = function () {
   let temp = this.split(" ");
@@ -305,7 +305,7 @@ String.prototype.changeChar = function (at, char) {
 String.prototype.splitByN = function (N) {
   let result = [];
   for (let i = 0, LN = this.length; i < LN; i += N) {
-    result.push(this.substr(i, N));
+    result.push(this.substring(i, N));
   }
   return result;
 };

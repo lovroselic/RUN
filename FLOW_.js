@@ -722,7 +722,7 @@ var FLOW = {
         return false;
     },
     traverse_flow_graph() {
-        console.time("traverse");
+        //console.time("traverse");
         let DATA = {
             distance_to_empty: Infinity,
             index_to_empty: [],
@@ -730,7 +730,7 @@ var FLOW = {
             index_to_full: [],
         };
         this.traverse(this.origin_index, DATA);
-        console.timeEnd("traverse");
+        //console.timeEnd("traverse");
         return DATA;
     },
     traverse(node, DATA) {

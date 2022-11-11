@@ -16,6 +16,7 @@ var MAP = {
         bat: [[`{"x":2, "y":7}`, UP, 2], [`{"x":5, "y":3}`, DOWN, 1], [`{"x":6, "y":9}`, RIGHT, 3], [`{"x":10, "y":7}`, DOWN, 2], [`{"x":4, "y":7}`, RIGHT, 4],
         [`{"x":6, "y":4}`, UP, 1], [`{"x":10, "y":5}`, UP, 3], [`{"x":2, "y":1}`, DOWN, 2]],
         box: [],
+        snake: [],
     },
     2: {
         data: `
@@ -28,10 +29,11 @@ var MAP = {
         [`{"x":2, "y":6}`, LEFT, 1], [`{"x":12, "y":6}`, RIGHT, 2], [`{"x":14, "y":4}`, DOWN, 2], [`{"x":11, "y":0}`, DOWN, 2], [`{"x":7, "y":4}`, RIGHT, 1],
         [`{"x":12, "y":4}`, LEFT, 2]],
         box: [],
+        snake: [],
     },
     3: {
         data: `
-        {"width":"16","height":"16","map":"BB3ABB3AQAA2BAA3BB2AA2BABB2AA22BAA5BABB30AA3BB12ABB4ABB5ABB2ABB5ABB6QAA2BB11ABB26ABB78$ABB2IBB3QBQA"}
+        {"width":"16","height":"16","map":"BB3ABB3AQAA2BAA3BB2AA2BABB2AA14BB4AA8BAA8BB2ABABB42AA3BB18ABB4ABB11ABB2ABB11ABB12QBB4AB$ABB26ABB20AA4BB3AA2BB9AA2BB2IBB3QBQA"}
         `,
         start: `{"x":2, "y":7}`,
         dynamite: `{"x":1, "y":7}`,
@@ -39,16 +41,19 @@ var MAP = {
         bat: [[`{"x":3, "y":10}`, UP, 1], [`{"x":5, "y":9}`, DOWN, 1], [`{"x":2, "y":12}`, RIGHT, 5], [`{"x":12, "y":11}`, RIGHT, 2], [`{"x":14, "y":10}`, LEFT, 2],
         [`{"x":12, "y":6}`, DOWN, 2]],
         box: [[`{"x":14, "y":8}`]],
+        snake: [],
     },
     4: {
         data: `
-        {"width":"12","height":"12","map":"BB2AA5BABAA3BB2ABAA4BB6AA2BB2AA2BABB2AA2BABB7ABB5ABB3ABB4ABB2ABB2AA2BB2ABB2QBABB5AA3BB4ABB5ABB2ABB10ABB9ABB7ABB5$IABB7"}
+        {"width":"16","height":"16","map":"BB3ABB3AQAA2BAA3BB2AA2BABB2AA14BB4AA8BAA8BB2ABABB42AA3BB18ABB4ABB11ABB2ABB11ABB12QBB4AB$ABB26ABB20AA4BB3AA2BB9AA2BB2IBB3QBQA"}
         `,
-        start: `{"x":7, "y":6}`,
-        dynamite: `{"x":5, "y":6}`,
-        flow: `{"x":5, "y":7}`,
-        bat: [],
-        box: [],
+        start: `{"x":9, "y":6}`,
+        dynamite: `{"x":1, "y":7}`,
+        flow: `{"x":1, "y":8}`,
+        bat: [[`{"x":3, "y":10}`, UP, 1], [`{"x":5, "y":9}`, DOWN, 1], [`{"x":2, "y":12}`, RIGHT, 5], [`{"x":12, "y":11}`, RIGHT, 2], [`{"x":14, "y":10}`, LEFT, 2],
+        [`{"x":12, "y":6}`, DOWN, 2]],
+        box: [[`{"x":14, "y":8}`]],
+        snake: [[`{"x":7, "y":5}`, "LEFT"], [`{"x":8, "y":4}`, "RIGHT"]],
     },
     5: {
         data: `
@@ -59,6 +64,7 @@ var MAP = {
         flow: `{"x":5, "y":7}`,
         bat: [],
         box: [],
+        snake: [],
     },
     6: {
         data: `
@@ -69,6 +75,7 @@ var MAP = {
         flow: `{"x":5, "y":7}`,
         bat: [],
         box: [],
+        snake: [],
     },
     7: {
         data: `
@@ -79,6 +86,7 @@ var MAP = {
         flow: `{"x":5, "y":7}`,
         bat: [],
         box: [],
+        snake: [],
     },
     8: {
         data: `
@@ -89,6 +97,7 @@ var MAP = {
         flow: `{"x":5, "y":7}`,
         bat: [],
         box: [],
+        snake: [],
     },
     9: {
         data: `
@@ -99,6 +108,7 @@ var MAP = {
         flow: `{"x":5, "y":6}`,
         bat: [],
         box: [],
+        snake: [],
     },
     10: {
         data: `
@@ -109,6 +119,7 @@ var MAP = {
         flow: `{"x":5, "y":6}`,
         bat: [],
         box: [],
+        snake: [],
     },
     11: {
         data: `
@@ -119,6 +130,7 @@ var MAP = {
         flow: `{"x":5, "y":6}`,
         bat: [],
         box: [],
+        snake: [],
     },
     12: {
         data: `
@@ -129,6 +141,7 @@ var MAP = {
         flow: `{"x":1, "y":13}`,
         bat: [],
         box: [],
+        snake: [],
     },
     13: {
         data: `
@@ -139,6 +152,7 @@ var MAP = {
         flow: `{"x":5, "y":6}`,
         bat: [],
         box: [],
+        snake: [],
     },
     14: {
         data: `
@@ -149,6 +163,7 @@ var MAP = {
         flow: `{"x":5, "y":6}`,
         bat: [],
         box: [],
+        snake: [],
     },
 };
 
@@ -156,6 +171,14 @@ var SPAWN = {
     spawn(level) {
         this.spawnBats(level);
         this.spawnBox(level);
+        this.spawnSnakes(level);
+    },
+    spawnSnakes(level){
+        for (let snake of MAP[level].snake){
+            let grid = Grid.toClass(JSON.parse(snake[0]));
+            ENEMY_TG.add(new Snake(grid, snake[1]));
+        }
+        console.log("spawning snakes", ENEMY_TG.POOL);
     },
     spawnBats(level) {
         for (let bat of MAP[level].bat) {
@@ -168,7 +191,6 @@ var SPAWN = {
             let grid = Grid.toClass(JSON.parse(box));
             FLOOR_OBJECT.add(new Box(grid));
         }
-        console.log("spawning boxes", FLOOR_OBJECT.POOL);
     }
 };
 

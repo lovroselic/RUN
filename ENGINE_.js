@@ -256,18 +256,23 @@ const ENGINE = {
     let CTX = LAYER[layer];
     CTX.drawImage(image, X - image.width / 2, Y - image.height);
   },
-  drawPart(layer, X, Y, image, line) {
+  spriteDrawPart(layer, X, Y, image, top = 0, left = 0, right = 0, bottom = 0) {
+    let CX = Math.floor(X - Math.floor(image.width / 2));
+    let CY = Math.floor(Y - Math.floor(image.height / 2));
+    this.drawPart(layer, CX, CY, image, top, left, right, bottom);
+  },
+  drawPart(layer, X, Y, image, top = 0, left = 0, right = 0, bottom = 0) {
     let CTX = LAYER[layer];
     CTX.drawImage(
       image,
-      0,
-      line,
-      image.width,
-      image.height - line,
-      X,
-      Y,
-      image.width,
-      image.height - line
+      left,
+      top,
+      image.width - left - right,
+      image.height - top - bottom,
+      X + left,
+      Y + top,
+      image.width - left - right,
+      image.height - top - bottom,
     );
   },
   drawPool(layer, pool, sprite) {
@@ -2935,6 +2940,23 @@ class FPS_measurement {
   }
   getFps() {
     return this.average.toFixed(1);
+  }
+}
+class FPS_short_term_measurement extends FPS_measurement {
+  constructor(len = 100) {
+    super();
+    this.len = len;
+  }
+  reset() {
+    this.data = [];
+    this.average = 0;
+  }
+  update(fps) {
+    this.data.push(fps);
+    if (this.data.length > this.len) {
+      this.data.shift();
+    }
+    this.average = this.data.average();
   }
 }
 var FILTER = {
