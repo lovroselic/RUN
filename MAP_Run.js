@@ -45,15 +45,15 @@ var MAP = {
     },
     4: {
         data: `
-        {"width":"16","height":"16","map":"BB3ABB3AQAA2BAA3BB2AA2BABB2AA14BB3AA8BAA6BB2ABABABB42AA3BB18ABB4ABB11ABB2ABB11ABB12QBB3ABB2$ABB26ABB20AA3BB4AA3BB9AA2BB2IBB3QBQA"}
+        {"width":"16","height":"16","map":"BQABB5AA7BAQAA5BABB3AA2BABB2AA3BB8ABB2ABB3ABB2AA3BAA2BAA4BAA2BB9ABB13AA2BQABB3AA2BB6AA3BB4ABB6IABB4ABB2AA2QABB3$BB11ABB14AA2QBB49AA5BAA2BB4ABB6ABABB8AQQ2BB2QQ3BA"}
         `,
-        start: `{"x":9, "y":6}`,
-        dynamite: `{"x":1, "y":7}`,
-        flow: `{"x":1, "y":8}`,
-        bat: [[`{"x":3, "y":10}`, UP, 1], [`{"x":5, "y":9}`, DOWN, 1], [`{"x":2, "y":12}`, RIGHT, 5], [`{"x":12, "y":11}`, RIGHT, 2], [`{"x":14, "y":10}`, LEFT, 2],
-        [`{"x":12, "y":6}`, DOWN, 2]],
-        box: [[`{"x":14, "y":8}`]],
-        snake: [[`{"x":7, "y":5}`, "LEFT"], [`{"x":8, "y":4}`, "RIGHT"], [`{"x":7, "y":1}`, "LEFT"],],
+        start: `{"x":2, "y":12}`,
+        dynamite: `{"x":1, "y":13}`,
+        flow: `{"x":1, "y":14}`,
+        bat: [[`{"x":2, "y":7}`, RIGHT, 1], [`{"x":9, "y":7}`, RIGHT, 5], [`{"x":14, "y":4}`, DOWN, 3]],
+        box: [[`{"x":12, "y":10}`]],
+        snake: [[`{"x":1, "y":10}`, "LEFT"], [`{"x":1, "y":8}`, "RIGHT"], [`{"x":4, "y":9}`, "LEFT"], [`{"x":6, "y":8}`, "RIGHT"],
+        [`{"x":13, "y":9}`, "LEFT"], [`{"x":5, "y":3}`, "LEFT"], [`{"x":4, "y":1}`, "RIGHT"],],
     },
     5: {
         data: `
@@ -68,7 +68,7 @@ var MAP = {
     },
     6: {
         data: `
-        {"width":"12","height":"12","map":"BB3ABABB2AA2BAA8BABAA2BABB5AQABB8ABABB2ABB9ABB15AA2BB5IBB21ABABB3AA2BB5ABB5ABB9ABB4$ABB6A"}
+        {"width":"12","height":"12","map":"BB2AA5BABAA3BB2AA5BB8ABB3AA3BB2AA2BABB8ABB2ABAA2BB3ABB4ABB2ABB2ABB2ABB2ABABB6AA2BB4ABB3IBB2ABB2ABB10ABB9ABB15AB$ABB3"}
         `,
         start: `{"x":6, "y":6}`,
         dynamite: `{"x":5, "y":6}`,
@@ -173,8 +173,8 @@ var SPAWN = {
         this.spawnBox(level);
         this.spawnSnakes(level);
     },
-    spawnSnakes(level){
-        for (let snake of MAP[level].snake){
+    spawnSnakes(level) {
+        for (let snake of MAP[level].snake) {
             let grid = Grid.toClass(JSON.parse(snake[0]));
             ENEMY_TG.add(new Snake(grid, snake[1]));
         }

@@ -40,9 +40,9 @@ class Boundaries {
     }
 }
 var FLOW = {
-    VERSION: "II.0.10.1",
+    VERSION: "II.0.11",
     CSS: "color: #F3A",
-    DEBUG: false,
+    DEBUG: true,
     PAINT_DISTANCES: true,
     INI: {
         ORIGIN_SIZE: 0.2,
@@ -488,6 +488,15 @@ var FLOW = {
             this.remove_terminal(node);
             this.excess_flow = this.sizeMap[node] - NODE.max_flow;
             this.sizeMap[node] = NODE.max_flow;
+
+            /*if (this.DEBUG){
+                console.log(
+                    "OVERFLOW DEBUG",
+                    this.NA.indexToGrid(node).y,
+                    this.flood_level,
+                    this.max_terminal_level
+                );
+            }*/
 
             if (this.NA.indexToGrid(node).y === this.flood_level && this.max_terminal_level > this.flood_level) return;
 

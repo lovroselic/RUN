@@ -47,7 +47,7 @@ var INI = {
     AIR_COST: 1,
 };
 var PRG = {
-    VERSION: "0.14.02",
+    VERSION: "0.14.03",
     NAME: "R.U.N.",
     YEAR: "2022",
     CSS: "color: #239AFF;",
@@ -505,6 +505,7 @@ var HERO = {
     collission() {
         let grids = [Grid.toClass(this.moveState.pos.add(UP, 0.01))];
         grids.push(Grid.toClass(this.moveState.pos.add(UP, this.actor.height / ENGINE.INI.GRIDPIX)));
+        if (MAP[GAME.level].map.GA.isOutOfBounds(grids[1])) return;
         let IA = MAP[GAME.level].map.enemy_tg_IA;
         let enemy_close = IA.unrollArray(grids);
         for (let e of enemy_close) {
@@ -646,6 +647,8 @@ class Snake extends Enemy {
     }
     manage(lapsedTime) {
         if (this.frozen) return;
+        let NODE = FLOW.NA.map[FLOW.NA.gridToIndex(this.moveState.homeGrid)];
+        if (NODE.size > INI.BAT_DROWNING_SIZE) this.drown();
         this.move(lapsedTime);
         this.position();
         this.actor.updateAnimation(lapsedTime);
