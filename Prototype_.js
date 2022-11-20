@@ -202,12 +202,19 @@ Array.prototype.compare = function (array) {
   }
   return true;
 };
+Array.prototype.removeIfInArray = function (arr) {
+  for (var x = this.length - 1; x >= 0; x--) {
+    if (arr.includes(this[x])) {
+      this.splice(x, 1);
+    }
+  }
+};
+
 Array.prototype.remove = function (value) {
   var LN = this.length;
-  for (var x = 0; x < LN; x++) {
+  for (var x = this.length - 1; x >= 0; x--) {
     if (this[x] === value) {
       this.splice(x, 1);
-      this.remove(value);
     }
   }
 };

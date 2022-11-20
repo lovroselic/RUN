@@ -23,7 +23,7 @@ var DEBUG = {
     invincible: false,
     INF_LIVES: false,
     GRID: true,
-    LINES: true,
+    LINES: false,
 };
 var INI = {
     HERO_LATERAL_SPEED: 150,
@@ -47,7 +47,7 @@ var INI = {
     AIR_COST: 1,
 };
 var PRG = {
-    VERSION: "0.14.04",
+    VERSION: "0.15.00",
     NAME: "R.U.N.",
     YEAR: "2022",
     CSS: "color: #239AFF;",
@@ -161,21 +161,24 @@ class Dynamite {
             }
         }
         for (let grid of grids) {
+            let idx = GA.gridToIndex(grid);
             if (GA.isDoor(grid) || GA.isBlockWall(grid)) {
                 DESTRUCTION_ANIMATION.add(new Explosion(grid, Grid.toCenter(grid), 'Smoke'));
-                let idx = GA.gridToIndex(grid);
-                let which = GA.iget_and_mask(idx, MAPDICT.WATER);
+                //let idx = GA.gridToIndex(grid);
+                //let which = GA.iget_and_mask(idx, MAPDICT.WATER);
                 GA.clear(grid, MAPDICT.DOOR);
                 GA.clear(grid, MAPDICT.BLOCKWALL);
                 if (!FLOW.NA.map[idx]) {
                     FLOW.NA.map[idx] = new FlowNode(idx);
+                    //FLOW.set_node(idx);
                 }
-                FLOW.reflow(grid, which);
+                //FLOW.reflow(grid, which);
             } else if (GA.isTrapDoor(grid)) {
                 DESTRUCTION_ANIMATION.add(new Explosion(grid, FP_Grid.toClass(grid).add(RIGHT, 0.5), 'Smoke'));
                 GA.clear(grid, MAPDICT.TRAP_DOOR);
-                FLOW.reflow(grid, MAPDICT.TRAP_DOOR);
+                //FLOW.reflow(grid, MAPDICT.TRAP_DOOR);
             }
+            FLOW.set_node(idx);
         }
         GAME.repaintLevel(GAME.level);
         let distance = HERO.moveState.pos.EuclidianDistance(position);
@@ -715,9 +718,9 @@ var GAME = {
         GAME.completed = false;
         GAME.won = false;
         //GAME.level = 1;
-        //GAME.level = 6;
+        GAME.level = 6;
         //GAME.level = 2;
-        GAME.level = 5;
+        //GAME.level = 5;
         GAME.score = 0;
         GAME.lives = 3;
         HERO.startInit();

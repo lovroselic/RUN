@@ -1186,7 +1186,7 @@ class NodeArray {
           console.error("NodeArray type error!");
       }
       if (carve) {
-        this.map[index] = new CLASS(index);
+        this.map[index] = new CLASS(index, this.indexToGrid(index));
       }
     }
   }
