@@ -31,7 +31,6 @@ var INI = {
     A: 20,
     G: 12,
     EXPLOSION_TIMEOUT: 1000,
-    //EXPLOSION_RADIUS: 0.75,
     EXPLOSION_RADIUS: 0.999,
     LASER_RANGE: 80,
     LASER_DELTA: 4,
@@ -47,7 +46,7 @@ var INI = {
     AIR_COST: 1,
 };
 var PRG = {
-    VERSION: "0.15.01",
+    VERSION: "0.15.02",
     NAME: "R.U.N.",
     YEAR: "2022",
     CSS: "color: #239AFF;",

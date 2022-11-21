@@ -45,7 +45,7 @@ class Boundaries {
     }
 }
 var FLOW = {
-    VERSION: "III.1.1",
+    VERSION: "III.1.2",
     CSS: "color: #F3A",
     DEBUG: true,
     PAINT_DISTANCES: true,
@@ -159,14 +159,12 @@ var FLOW = {
             flow += drain_on_path;
 
             if (line_below) {
-                //line_below = this.extend_line(line_below, marks);
-                //if (FLOW.DEBUG) console.log("line_below after extension:", line_below);
                 if (FLOW.DEBUG) console.log("# Flow goes on: ", line_below);
                 STACK.push(line_below);
                 if (FLOW.DEBUG) console.log("\n-------------------");
                 continue;
             }
-            
+
 
             /*
                 * (implicit no);
@@ -266,6 +264,47 @@ var FLOW = {
 
     },
     line_below(drain_update, line, DRAIN_DEBT, PATH, marks) {
+        /**
+         * missing extensions of intermediate rows: missing their drains!!
+         */
+
+        const DY = this.map.width;
+        let drain = 0;
+        let below_line = this.scan_line_downwards(line, PATH);
+        if (below_line.length === 0) return [null, drain];
+        let bottom_line = [];
+
+        if (FLOW.DEBUG) console.log(".. line below exist", below_line);
+        let count = 0;
+
+        while (below_line.length > 0) {
+            count++; // debug
+            if (FLOW.DEBUG) console.log("... below line", below_line, "iteration", count);
+
+            for (let i = below_line.length - 1; i >= 0; i--) {
+                let node = below_line[i];
+                let extended_line = this.next_line(node, marks);
+                if (FLOW.DEBUG) console.log("... for node", node, "-> extended_line", extended_line);
+                for (let node of extended_line) {
+                    PATH[node] = 1;
+                    drain += this.drain_node(drain_update, DRAIN_DEBT, node);
+                }
+                if (!(this.NA.map[node + DY] && PATH[node + DY] === 0)) {
+                    below_line.remove(node);
+                    bottom_line = bottom_line.concat(extended_line);
+                    if (FLOW.DEBUG) {
+                        console.log(".... node", node, "reached bottom, extended line", extended_line, "added. current bottom_line:", ...bottom_line);
+                        console.log("..... sanity: below_line", ...below_line);
+                    }
+                }
+            }
+
+            below_line = this.scan_line_downwards(below_line, PATH);
+            if (FLOW.DEBUG) console.log("... end while, line rescaned, below_line:", below_line);
+        }
+        return [bottom_line, drain];
+    },
+    scan_line_downwards(line, PATH) {
         const DY = this.map.width;
         let below_line = [];
         for (let node of line) {
@@ -274,37 +313,56 @@ var FLOW = {
                 below_line.push(BELOW.index);
             }
         }
-        if (below_line.length === 0) return [null, 0];
-
-        let drain = 0;
-        let dug = [];
-
-        for (let d of below_line) {
-            let add = true;
-            let p = d;
-            while (this.NA.map[d]) {
-                if (PATH[d]) {
-                    add = false;
-                    break;
-                }
-                PATH[d] = 1;
-                drain += this.drain_node(drain_update, DRAIN_DEBT, d);
-                p = d;
-                d += DY;
-            }
-            if (add) dug.push(p);
-        }
-        dug = this.extend_line(dug, marks);
-        if (FLOW.DEBUG) console.log("...dug before extension", ...dug);
-        for (let d of dug) {
-            if (!PATH[d]) {
-                PATH[d] = 1;
-                drain += this.drain_node(drain_update, DRAIN_DEBT, d);
-            }
-        }
-        if (FLOW.DEBUG) console.log("...dug after extension", ...dug);
-        return [dug, drain];
+        return below_line;
     },
+    /*
+    line_below(drain_update, line, DRAIN_DEBT, PATH, marks) {
+        
+            const DY = this.map.width;
+            let below_line = [];
+            for (let node of line) {
+                let BELOW = this.NA.map[node + DY];
+                if (BELOW && PATH[node + DY] === 0) {
+                    below_line.push(BELOW.index);
+                }
+            }
+            if (below_line.length === 0) return [null, 0];
+    
+            let drain = 0;
+            let dug = [];
+    
+            for (let d of below_line) {
+                let add = true;
+                let p = d;
+                while (this.NA.map[d]) {
+                    if (PATH[d]) {
+                        add = false;
+                        break;
+                    }
+                    PATH[d] = 1;
+                    drain += this.drain_node(drain_update, DRAIN_DEBT, d);
+                    //
+                    let left = this.find_branch(d, -1, "LEFT", PATH);
+                    let right = this.find_branch(d, 1, "RIGHT", PATH);
+    
+                    //
+                    p = d;
+                    d += DY;
+                }
+                if (add) dug.push(p);
+            }
+            dug = this.extend_line(dug, marks);
+            if (FLOW.DEBUG) console.log("...dug before extension", ...dug);
+            for (let d of dug) {
+                if (!PATH[d]) {
+                    PATH[d] = 1;
+                    drain += this.drain_node(drain_update, DRAIN_DEBT, d);
+                }
+            }
+            if (FLOW.DEBUG) console.log("...dug after extension", ...dug);
+            return [dug, drain];
+        },
+    */
     analyze(node_list, property) {
         let min = Infinity;
         let max = -Infinity;
@@ -342,6 +400,7 @@ var FLOW = {
         }
         return line_above;
     },
+    /*
     extend_line(line, marks) {
         let extended_line = [];
         for (let node of line) {
@@ -349,6 +408,7 @@ var FLOW = {
         }
         return extended_line;
     },
+    */
     next_line(node, marks) {
         marks[node] = 1;
         return [node, ...this.find_branch(node, -1, "LEFT", marks), ...this.find_branch(node, 1, "RIGHT", marks)];
