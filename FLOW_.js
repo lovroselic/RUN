@@ -10,6 +10,7 @@
 
     known issues, TODO:
         * all
+        * losing fork if one fork flowing down
 */
 class FlowNode {
     constructor(index, grid) {
@@ -45,7 +46,7 @@ class Boundaries {
     }
 }
 var FLOW = {
-    VERSION: "III.1.2",
+    VERSION: "III.1.3",
     CSS: "color: #F3A",
     DEBUG: true,
     PAINT_DISTANCES: true,
@@ -132,8 +133,8 @@ var FLOW = {
             let LINE = STACK.pop();
             if (FLOW.DEBUG) console.log("LINE:", LINE);
 
-            //if (count >= Infinity) {
-            if (count >= 7) {
+            if (count >= Infinity) {
+                //if (count >= 7) {
                 console.warn("terminated for safety & debug");
                 throw "DEBUG";
                 //break;
@@ -145,6 +146,9 @@ var FLOW = {
             let marks = new Int8Array(this.map.width * this.map.height);
             let line_above = this.get_line_above(LINE, marks);
             if (FLOW.DEBUG) console.log("line_above:", line_above);
+            //line above must be filtered to lower level
+            line_above = this.filter_line(line_above);
+            if (FLOW.DEBUG) console.log("line_above filtered:", line_above);
 
             if (line_above.length > 0) {
                 let borrowed_drain = this.borrow_drain(drain_update, line_above, DRAIN_DEBT);
@@ -214,6 +218,30 @@ var FLOW = {
         }
         console.timeEnd("Flow");
     },
+    double_line_test(line) {
+        const DY = this.map.width;
+        for (let node of line) {
+            if (line.includes(node - DY)) return true;
+        }
+        return false;
+    },
+    filter_line(line) {
+        let filtered = [];
+        let terminal_level = new Set([...line].map(x => Math.floor(x / this.map.width)));
+        
+        if (terminal_level.size === 1 || !this.double_line_test(line)) {
+            //if (FLOW.DEBUG) console.log(".. filtering line not required", terminal_level.size === 1, !this.double_line_test(line));
+            return line;
+        } else {
+            let MIN = Math.max(...terminal_level);
+            for (let node of line) {
+                if (Math.floor(node / this.map.width) === MIN) {
+                    filtered.push(node);
+                }
+            }
+            return filtered;
+        }
+    },
     overflow(line) {
         let excess_flow = 0;
         for (let node of line) {
@@ -229,7 +257,6 @@ var FLOW = {
         return excess_flow;
     },
     apply_flow(line, distance, PATH, flow) {
-        //const flow_update = (lapsedTime / 1000 * (flow / ENGINE.INI.GRIDPIX ** 2));
         let F = flow / line.length;
         if (FLOW.DEBUG) console.log("..Applying flow ", flow, "per node:", F);
         for (let node of line) {
@@ -264,10 +291,6 @@ var FLOW = {
 
     },
     line_below(drain_update, line, DRAIN_DEBT, PATH, marks) {
-        /**
-         * missing extensions of intermediate rows: missing their drains!!
-         */
-
         const DY = this.map.width;
         let drain = 0;
         let below_line = this.scan_line_downwards(line, PATH);
@@ -315,54 +338,6 @@ var FLOW = {
         }
         return below_line;
     },
-    /*
-    line_below(drain_update, line, DRAIN_DEBT, PATH, marks) {
-        
-            const DY = this.map.width;
-            let below_line = [];
-            for (let node of line) {
-                let BELOW = this.NA.map[node + DY];
-                if (BELOW && PATH[node + DY] === 0) {
-                    below_line.push(BELOW.index);
-                }
-            }
-            if (below_line.length === 0) return [null, 0];
-    
-            let drain = 0;
-            let dug = [];
-    
-            for (let d of below_line) {
-                let add = true;
-                let p = d;
-                while (this.NA.map[d]) {
-                    if (PATH[d]) {
-                        add = false;
-                        break;
-                    }
-                    PATH[d] = 1;
-                    drain += this.drain_node(drain_update, DRAIN_DEBT, d);
-                    //
-                    let left = this.find_branch(d, -1, "LEFT", PATH);
-                    let right = this.find_branch(d, 1, "RIGHT", PATH);
-    
-                    //
-                    p = d;
-                    d += DY;
-                }
-                if (add) dug.push(p);
-            }
-            dug = this.extend_line(dug, marks);
-            if (FLOW.DEBUG) console.log("...dug before extension", ...dug);
-            for (let d of dug) {
-                if (!PATH[d]) {
-                    PATH[d] = 1;
-                    drain += this.drain_node(drain_update, DRAIN_DEBT, d);
-                }
-            }
-            if (FLOW.DEBUG) console.log("...dug after extension", ...dug);
-            return [dug, drain];
-        },
-    */
     analyze(node_list, property) {
         let min = Infinity;
         let max = -Infinity;
@@ -400,15 +375,6 @@ var FLOW = {
         }
         return line_above;
     },
-    /*
-    extend_line(line, marks) {
-        let extended_line = [];
-        for (let node of line) {
-            extended_line = extended_line.concat(this.next_line(node, marks));
-        }
-        return extended_line;
-    },
-    */
     next_line(node, marks) {
         marks[node] = 1;
         return [node, ...this.find_branch(node, -1, "LEFT", marks), ...this.find_branch(node, 1, "RIGHT", marks)];
