@@ -11,6 +11,8 @@
     known issues, TODO:
         * all
         * losing fork if one fork flowing down
+            *  extend line in the same level if water below 
+            * or find wet nodes one level below - which does not have canidate in current line above, and repeat get line above 
 */
 class FlowNode {
     constructor(index, grid) {
@@ -46,7 +48,7 @@ class Boundaries {
     }
 }
 var FLOW = {
-    VERSION: "III.1.3",
+    VERSION: "III.1.4",
     CSS: "color: #F3A",
     DEBUG: true,
     PAINT_DISTANCES: true,
@@ -121,7 +123,6 @@ var FLOW = {
         let DRAIN_DEBT = [];
         let count = 0;
         let distance = 0;
-        //let flow = this.INI.ORIGIN_FLOW;
         const drain_update = (lapsedTime / 1000 * ((FLOW.INI.ORIGIN_FLOW * FLOW.INI.DRAIN_FACTOR) / ENGINE.INI.GRIDPIX ** 2));
         const initial_flow = (lapsedTime / 1000 * (this.INI.ORIGIN_FLOW / ENGINE.INI.GRIDPIX ** 2));
         let flow = initial_flow;
@@ -149,6 +150,9 @@ var FLOW = {
             //line above must be filtered to lower level
             line_above = this.filter_line(line_above);
             if (FLOW.DEBUG) console.log("line_above filtered:", line_above);
+            //line above needs to be checked for lateral reflow
+            line_above = this.reflow(line_above);
+            if (FLOW.DEBUG) console.log("line_above after reflow:", line_above);
 
             if (line_above.length > 0) {
                 let borrowed_drain = this.borrow_drain(drain_update, line_above, DRAIN_DEBT);
@@ -169,18 +173,6 @@ var FLOW = {
                 continue;
             }
 
-
-            /*
-                * (implicit no);
-                * line ready to be processed; (what if meeting of drains and terminals)
-                    * line has different levels:
-                        * calc avg,min,max of *line*: *avg_line*, *min_line*, *max_line* (of fulness!)
-                * apply total flow (flow+drain +excess) - to min levels
-                * check min/max diff < E :
-                    * set all to (min+max)/2
-
-            */
-
             let [MIN, MAX] = this.analyze(LINE, "full");
             if (FLOW.DEBUG) console.log("LINE analysis", MIN, MAX);
             let min_line = this.filter_min_line(LINE, MIN);
@@ -193,6 +185,7 @@ var FLOW = {
 
             /**
              * check min/max diff < E
+             * * set all to (min+max)/2
              * not yet implemented
              */
 
@@ -218,6 +211,23 @@ var FLOW = {
         }
         console.timeEnd("Flow");
     },
+    reflow(line) {
+        //if (FLOW.DEBUG) console.log("-- Reflow", line);
+        let local_marks = new Int8Array(this.map.width * this.map.height);
+        //find all bellow nodes
+        let below = this.scan_line_downwards(line, local_marks);
+        //if (FLOW.DEBUG) console.log("-- below", below);
+        // from those, all lateral nodes
+        let below_extended = [];
+        for (let node of below) {
+            below_extended = below_extended.concat(this.next_line(node, local_marks));
+        }
+        //if (FLOW.DEBUG) console.log("-- below extended", below_extended);
+        // from those line above
+        return this.get_line_above(below_extended, local_marks);
+
+        //return line;
+    },
     double_line_test(line) {
         const DY = this.map.width;
         for (let node of line) {
@@ -228,9 +238,8 @@ var FLOW = {
     filter_line(line) {
         let filtered = [];
         let terminal_level = new Set([...line].map(x => Math.floor(x / this.map.width)));
-        
+
         if (terminal_level.size === 1 || !this.double_line_test(line)) {
-            //if (FLOW.DEBUG) console.log(".. filtering line not required", terminal_level.size === 1, !this.double_line_test(line));
             return line;
         } else {
             let MIN = Math.max(...terminal_level);
