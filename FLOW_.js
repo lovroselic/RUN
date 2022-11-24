@@ -31,6 +31,10 @@ class FlowNode {
     fulness() {
         this.full = this.size / this.max_flow;
     }
+    setFulness(full) {
+        this.full = full;
+        this.size = this.full * this.max_flow;
+    }
     refresh() {
         this.fulness();
     }
@@ -48,7 +52,7 @@ class Boundaries {
     }
 }
 var FLOW = {
-    VERSION: "III.1.4",
+    VERSION: "III.2.0",
     CSS: "color: #F3A",
     DEBUG: true,
     PAINT_DISTANCES: true,
@@ -81,6 +85,7 @@ var FLOW = {
 
     set_node(node, type = 'UP') {
         let NODE = this.NA.map[node];
+        if (!NODE) return;
         if (FLOW.DEBUG) console.log("setting node", node, NODE);
         NODE.type = type;
         let ga_value = this.GA.iget_and_mask(node, MAPDICT.WATER);
@@ -127,6 +132,7 @@ var FLOW = {
         const initial_flow = (lapsedTime / 1000 * (this.INI.ORIGIN_FLOW / ENGINE.INI.GRIDPIX ** 2));
         let flow = initial_flow;
         let PATH = new Int8Array(this.map.width * this.map.height);
+
         while (STACK.length > 0) {
             count++; // DEBUG
 
@@ -141,15 +147,15 @@ var FLOW = {
                 //break;
             }
 
-            DRAIN_DEBT.removeIfInArray(LINE);
-            if (FLOW.DEBUG) console.log("DRAIN_DEBT before:", ...DRAIN_DEBT);
+            //DRAIN_DEBT.removeIfInArray(LINE);
+            //if (FLOW.DEBUG) console.log("DRAIN_DEBT before:", ...DRAIN_DEBT);
 
             let marks = new Int8Array(this.map.width * this.map.height);
             let line_above = this.get_line_above(LINE, marks);
-            if (FLOW.DEBUG) console.log("line_above:", line_above);
+            //if (FLOW.DEBUG) console.log("line_above:", line_above);
             //line above must be filtered to lower level
             line_above = this.filter_line(line_above);
-            if (FLOW.DEBUG) console.log("line_above filtered:", line_above);
+            //if (FLOW.DEBUG) console.log("line_above filtered:", line_above);
             //line above needs to be checked for lateral reflow
             line_above = this.reflow(line_above);
             if (FLOW.DEBUG) console.log("line_above after reflow:", line_above);
@@ -157,13 +163,13 @@ var FLOW = {
             if (line_above.length > 0) {
                 let borrowed_drain = this.borrow_drain(drain_update, line_above, DRAIN_DEBT);
                 flow += borrowed_drain;
-                if (FLOW.DEBUG) console.log("borrowed_drain:", borrowed_drain, "flow:", flow);
-                if (FLOW.DEBUG) console.log("DRAIN_DEBT after:", ...DRAIN_DEBT);
+                //if (FLOW.DEBUG) console.log("borrowed_drain:", borrowed_drain, "flow:", flow);
+                //if (FLOW.DEBUG) console.log("DRAIN_DEBT after:", ...DRAIN_DEBT);
             }
 
             let [line_below, drain_on_path] = this.line_below(drain_update, LINE, DRAIN_DEBT, PATH, marks);
             if (FLOW.DEBUG) console.log("line_below:", line_below, "drain_on_path:", drain_on_path);
-            if (FLOW.DEBUG) console.log("DRAIN_DEBT after flowing down:", ...DRAIN_DEBT);
+
             flow += drain_on_path;
 
             if (line_below) {
@@ -174,23 +180,28 @@ var FLOW = {
             }
 
             let [MIN, MAX] = this.analyze(LINE, "full");
-            if (FLOW.DEBUG) console.log("LINE analysis", MIN, MAX);
+            //if (FLOW.DEBUG) console.log("LINE analysis", MIN, MAX);
             let min_line = this.filter_min_line(LINE, MIN);
-            if (FLOW.DEBUG) console.log("min_line", min_line);
-            if (FLOW.DEBUG) console.log("current FLOW", flow);
+            //if (FLOW.DEBUG) console.log("min_line", min_line);
+            //if (FLOW.DEBUG) console.log("current FLOW", flow);
 
 
             this.apply_flow(min_line, distance, PATH, flow);
+            DRAIN_DEBT.removeIfInArray(min_line); //this is correct
+            //if (FLOW.DEBUG) console.log("DRAIN_DEBT after applying flow:", ...DRAIN_DEBT);
             distance++;
 
-            /**
-             * check min/max diff < E
-             * * set all to (min+max)/2
-             * not yet implemented
-             */
+            [MIN, MAX] = this.analyze(LINE, "full");
+            //if (FLOW.DEBUG) console.log("LINE analysis after applying flow", MIN, MAX);
+            if ((MAX !== MIN) && Math.abs(MAX - MIN) <= this.INI.EPSILON) {
+                let fullness = (MAX + MIN) / 2;
+                if (FLOW.DEBUG) console.log("Adjusting fullnes to same line:", fullness);
+                for (let node of LINE) {
+                    let NODE = this.NA.map[node];
+                    NODE.setFulness(fullness);
+                }
 
-
-            //
+            }
 
             let excess_flow = this.overflow(LINE);
             flow = excess_flow;
@@ -204,6 +215,25 @@ var FLOW = {
             //end while
             if (FLOW.DEBUG) console.log("\n-------------------");
         }
+
+        if (FLOW.DEBUG) {
+            console.log("********************************");
+            console.log("residual DRAIN_DEBT:", ...DRAIN_DEBT);
+        }
+        let debt_level = new Set([...DRAIN_DEBT].map(x => Math.floor(x / this.map.width)));
+
+        if (debt_level.size <= 1) {
+            if (FLOW.DEBUG) console.log("NO DEBT. Flow ends");
+            console.timeEnd("Flow");
+            return;
+        }
+
+        let DEBT = this.filter_line(DRAIN_DEBT);
+        if (FLOW.DEBUG) console.log("DRAIN DEBT remains:", DEBT);
+
+
+        if (1 === 1) throw "DEBT!";
+
 
         if (FLOW.DEBUG) {
             console.log("********************************");
@@ -235,14 +265,14 @@ var FLOW = {
         }
         return false;
     },
-    filter_line(line) {
+    filter_line(line, f = "max") {
         let filtered = [];
         let terminal_level = new Set([...line].map(x => Math.floor(x / this.map.width)));
 
         if (terminal_level.size === 1 || !this.double_line_test(line)) {
             return line;
         } else {
-            let MIN = Math.max(...terminal_level);
+            let MIN = Math[f](...terminal_level);
             for (let node of line) {
                 if (Math.floor(node / this.map.width) === MIN) {
                     filtered.push(node);
@@ -267,14 +297,14 @@ var FLOW = {
     },
     apply_flow(line, distance, PATH, flow) {
         let F = flow / line.length;
-        if (FLOW.DEBUG) console.log("..Applying flow ", flow, "per node:", F);
+        //if (FLOW.DEBUG) console.log("..Applying flow ", flow, "per node:", F);
         for (let node of line) {
             PATH[node] = 1;
             let NODE = this.NA.map[node];
             NODE.distance = distance;
             NODE.size += F;
             NODE.refresh();
-            if (FLOW.DEBUG) console.log("... NODE", node, "size", NODE.size, "fullness", NODE.full);
+            if (FLOW.DEBUG) console.log("... NODE new flow", node, "size", NODE.size, "fullness", NODE.full);
         }
     },
     filter_min_line(line, min) {
@@ -306,17 +336,17 @@ var FLOW = {
         if (below_line.length === 0) return [null, drain];
         let bottom_line = [];
 
-        if (FLOW.DEBUG) console.log(".. line below exist", below_line);
+        //if (FLOW.DEBUG) console.log(".. line below exist", below_line);
         let count = 0;
 
         while (below_line.length > 0) {
             count++; // debug
-            if (FLOW.DEBUG) console.log("... below line", below_line, "iteration", count);
+            //if (FLOW.DEBUG) console.log("... below line", below_line, "iteration", count);
 
             for (let i = below_line.length - 1; i >= 0; i--) {
                 let node = below_line[i];
                 let extended_line = this.next_line(node, marks);
-                if (FLOW.DEBUG) console.log("... for node", node, "-> extended_line", extended_line);
+                //if (FLOW.DEBUG) console.log("... for node", node, "-> extended_line", extended_line);
                 for (let node of extended_line) {
                     PATH[node] = 1;
                     drain += this.drain_node(drain_update, DRAIN_DEBT, node);
@@ -324,15 +354,15 @@ var FLOW = {
                 if (!(this.NA.map[node + DY] && PATH[node + DY] === 0)) {
                     below_line.remove(node);
                     bottom_line = bottom_line.concat(extended_line);
-                    if (FLOW.DEBUG) {
+                    /*if (FLOW.DEBUG) {
                         console.log(".... node", node, "reached bottom, extended line", extended_line, "added. current bottom_line:", ...bottom_line);
                         console.log("..... sanity: below_line", ...below_line);
-                    }
+                    }*/
                 }
             }
 
             below_line = this.scan_line_downwards(below_line, PATH);
-            if (FLOW.DEBUG) console.log("... end while, line rescaned, below_line:", below_line);
+            //if (FLOW.DEBUG) console.log("... end while, line rescaned, below_line:", below_line);
         }
         return [bottom_line, drain];
     },
@@ -359,7 +389,7 @@ var FLOW = {
     },
     borrow_drain(drain_update, line_above, DRAIN_DEBT) {
         let [min, max] = this.analyze(line_above, 'full');
-        console.log("..Borrow: analysis", min, max);
+        //if (FLOW.DEBUG) console.log("..Borrow: analysis", min, max);
         if (max === 0) return 0;
         let drain = 0;
         if (FLOW.DEBUG) console.log("..Borrowing drain", drain_update);
