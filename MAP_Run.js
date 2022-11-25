@@ -93,10 +93,10 @@ var MAP = {
     },
     8: {
         data: `
-        {"width":"12","height":"12","map":"BB2AA5BABAA3BB2AA4BABB5ABB2ABAA2BB4AA2BABB7ABB3ABB4ABB4ABB2ABB2ABB2ABB2ABABB6ABABABB3ABB3ABB2ABB15ABB5ABB5ABB15AB$"}
+        {"width":"12","height":"12","map":"BB5ABB4AA8BAA2BB3ABB2ABB2EBABABAA3BABB3ABB4ABABB4ABB3ABB2ABB2ABABB3ABB2ABB2QABB3EBB3AA3BB5ABABB8ABB7ABB17$AIABB5AA2BB2"}
         `,
         start: `{"x":6, "y":6}`,
-        dynamite: `{"x":4, "y":6}`,
+        dynamite: `{"x":5, "y":6}`,
         flow: `{"x":5, "y":7}`,
         bat: [],
         box: [],
@@ -104,11 +104,11 @@ var MAP = {
     },
     9: {
         data: `
-        {"width":"12","height":"12","map":"BB2AEBAA2BAA5BB2AA3BEBAA2BB3EBB3AA6BB17ABB6QB$BB6ABB2ABB4ABB13IBAA2BB5IBB16AA3BB3AA3BB5ABB7AA2BB3A"}
+        {"width":"12","height":"12","map":"BB5ABB4AA8BAA2BB3ABB2ABB2QBABABAA3BABB3ABB4ABABB4ABB3ABB2ABB2ABABB3ABB2ABB2QABB3QBB3AA3BB5ABABB8ABB7ABB17$AIABB6ABA"}
         `,
-        start: `{"x":10, "y":5}`,
-        dynamite: `{"x":5, "y":5}`,
-        flow: `{"x":5, "y":6}`,
+        start: `{"x":6, "y":6}`,
+        dynamite: `{"x":5, "y":6}`,
+        flow: `{"x":5, "y":7}`,
         bat: [],
         box: [],
         snake: [],

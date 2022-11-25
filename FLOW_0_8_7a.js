@@ -33,7 +33,7 @@ class Boundaries {
     }
 }
 var FLOW = {
-    VERSION: "0.8.7a",
+    VERSION: "I.8.7a",
     CSS: "color: #F3A",
     DEBUG: true,
     INI: {

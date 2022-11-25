@@ -97,6 +97,10 @@ Math.radians = function (degrees) {
 Math.degrees = function (radians) {
   return (radians * 180) / Math.PI;
 };
+Math.roundFloat = function (number, precision) {
+  number = (number * 10 ** precision) * (1 + Number.EPSILON);
+  return Math.round(number) / 10 ** precision;
+};
 
 CanvasRenderingContext2D.prototype.pixelAt = function (x, y, size = 1) {
   this.fillRect(x, y, size, size);

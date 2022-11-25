@@ -46,7 +46,7 @@ var INI = {
     AIR_COST: 1,
 };
 var PRG = {
-    VERSION: "0.15.05",
+    VERSION: "0.15.06",
     NAME: "R.U.N.",
     YEAR: "2022",
     CSS: "color: #239AFF;",
@@ -192,6 +192,7 @@ class Dynamite {
                 enemy.die();
             }
         }
+        console.warn("EXPLOSION happened!");
     }
 }
 class Explosion {
@@ -712,7 +713,7 @@ var GAME = {
         GAME.completed = false;
         GAME.won = false;
         //GAME.level = 1;
-        GAME.level = 7;
+        GAME.level = 8;
         //GAME.level = 2;
         //GAME.level = 5;
         GAME.score = 0;
