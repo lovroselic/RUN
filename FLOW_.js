@@ -51,7 +51,7 @@ class Boundaries {
     }
 }
 var FLOW = {
-    VERSION: "III.30.0",
+    VERSION: "III.30.1",
     CSS: "color: #F3A",
     DEBUG: true,
     PAINT_DISTANCES: true,
@@ -237,11 +237,6 @@ var FLOW = {
         //let DRAIN_PATH = new Int8Array(this.map.width * this.map.height);
 
         while (DEBT.length > 0) {
-
-            // how much is required to fill lower line
-            let lower_required = this.sum_line(DEBT, 'max_flow') - this.sum_line(DEBT, 'size');
-            if (FLOW.DEBUG) console.log("lower:", lower_required);
-
             //get upper line
             //get upper fullnes: avail
 
@@ -251,38 +246,47 @@ var FLOW = {
             let available = this.sum_line(line_above, 'size');
             if (FLOW.DEBUG) console.log("available", available);
 
-            //assumption; taking same amount of drain from each node
+            //can't go on if we reached dry nodes
+            if (available === 0) break;
 
+            // how much is required to fill lower line
+            //let lower_required = Math.roundFloat(this.sum_line(DEBT, 'max_flow') - this.sum_line(DEBT, 'size'), this.INI.PRECISION);
+            //if (FLOW.DEBUG) console.log("lower:", lower_required);
 
+            //alt, how much is required to fill nodes of lower line that are almost full
+            let min_required = Math.roundFloat((1 - this.max_line(DEBT, 'size')) * DEBT.length, this.INI.PRECISION);
+            if (FLOW.DEBUG) console.log("min_required:", min_required);
 
-            //calc how much required:req to fill much
-            //if avail > req
-            // lower line to full
-            // update uper fullnes
-            // set upper as debt
-            // else 
-            //lower line to possible
-            //break
+            if (available < min_required) {
+                min_required = available;
+                if (FLOW.DEBUG) console.log("not enough available, taking what is there", min_required);
+            }
 
-
+            //add flow
+            this.change_flow(DEBT, min_required);
+            //remove drain
+            this.change_flow(line_above, -min_required);
+            DEBT = line_above;
 
             //end while
-            if (1 === 1) break; //debug
+            //if (1 === 1) break; //debug
             if (FLOW.DEBUG) console.log("\n....................");
         }
 
-
-
-
-
-        if (1 === 1) throw "DEBT!"; //debug
-
+        //if (1 === 1) throw "DEBT!"; //debug
 
         if (FLOW.DEBUG) {
             console.log("********************************");
             console.log("\n");
         }
         console.timeEnd("Flow");
+    },
+    max_line(line, prop) {
+        let agg = -Infinity;
+        for (let node of line) {
+            if (this.NA.map[node][prop] > agg) agg = this.NA.map[node][prop];
+        }
+        return agg;
     },
     sum_line(line, prop) {
         let agg = 0;
@@ -344,6 +348,18 @@ var FLOW = {
         }
 
         return excess_flow;
+    },
+    change_flow(line, flow) {
+        let sumMF = this.sum_line(line, 'max_flow');
+        if (FLOW.DEBUG) console.log("..changing flow ", flow, "sum max flow", sumMF);
+        for (let node of line) {
+            let NODE = this.NA.map[node];
+            let flow_change = Math.roundFloat(flow / sumMF * NODE.max_flow, this.INI.PRECISION);
+            console.log(node, ".. changed by", flow_change);
+            NODE.size += flow_change;
+            NODE.refresh();
+            if (FLOW.DEBUG) console.log("... NODE new flow", node, "size", NODE.size, "fullness", NODE.full);
+        }
     },
     apply_flow(line, distance, PATH, flow) {
         let sumMF = this.sum_line(line, 'max_flow');
