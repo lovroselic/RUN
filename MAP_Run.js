@@ -159,11 +159,11 @@ var MAP = {
     },
     14: {
         data: `
-        {"width":"12","height":"12","map":"BB2AA2BABB2AA2BEBAA2BB2ABB3AA3BB3ABB17Q$BB4ABB3ABB2ABABABB5AA2BB10ABB54IABB5ABA"}
+        {"width":"16","height":"16","map":"BB2AA3BB2AA8BB3EBAA2QBAA9BB6AA3BABAEBAA6BB12IBB6ABB2ABB3ABB18ABB83ABB17AA2BB2$BB11AA4BB2ABB6AA2BB5ABB4AA2BB9AA2BA"}
         `,
-        start: `{"x":2, "y":3}`,
-        dynamite: `{"x":5, "y":5}`,
-        flow: `{"x":5, "y":6}`,
+        start: `{"x":2, "y":10}`,
+        dynamite: `{"x":1, "y":10}`,
+        flow: `{"x":1, "y":11}`,
         bat: [],
         box: [],
         snake: [],
