@@ -9,7 +9,7 @@
     FLOW algorithm
 
     known issues, TODO:
-        * 
+        * cleaning outdated distances
 */
 class FlowNode {
     constructor(index, grid) {
@@ -51,7 +51,7 @@ class Boundaries {
     }
 }
 var FLOW = {
-    VERSION: "III.30.3",
+    VERSION: "III.30.5",
     CSS: "color: #F3A",
     DEBUG: true,
     PAINT_DISTANCES: true,
@@ -59,9 +59,9 @@ var FLOW = {
         ORIGIN_SIZE: 0.2,
         ORIGIN_FLOW: 4096,
         DRAIN_FACTOR: 2,
-        EPSILON: 0.05,
+        //EPSILON: 0.05,
+        EPSILON: 0.099,
         PRECISION: 6,
-        //EPS_DIFF: 2 * 10 ** -(6 - 1),
     },
     layer: 'flood',
     map: null,
@@ -163,6 +163,9 @@ var FLOW = {
 
             if (line_below) {
                 if (FLOW.DEBUG) console.log("# Flow goes on: ", line_below);
+                for (let node of LINE) {
+                    this.NA.map[node].distance = -1;
+                }
                 STACK.push(line_below);
                 if (FLOW.DEBUG) console.log("\n-------------------");
                 continue;
@@ -171,7 +174,7 @@ var FLOW = {
             let [MIN, MAX, Analysis] = this.analyze(LINE, "full");
 
             if (FLOW.DEBUG) {
-                console.log("LINE analysis", MIN, MAX, Math.abs(MIN - MAX), Math.abs(MIN - MAX) > this.INI.EPS_DIFF);
+                console.log("LINE analysis", MIN, MAX, Math.abs(MIN - MAX), Math.abs(MIN - MAX) > this.INI.EPSILON);
             }
 
             if (Analysis.size > 2) {
@@ -192,7 +195,7 @@ var FLOW = {
             distance++;
 
             [MIN, MAX, Analysis] = this.analyze(LINE, "full");
-            if (FLOW.DEBUG) console.log("LINE analysis after applying flow", MIN, MAX, Math.abs(MIN - MAX), Math.abs(MIN - MAX) > this.INI.EPS_DIFF);
+            if (FLOW.DEBUG) console.log("LINE analysis after applying flow", MIN, MAX, Math.abs(MIN - MAX), Math.abs(MIN - MAX) > this.INI.EPSILON);
             if ((MAX !== MIN) && Math.abs(MAX - MIN) <= this.INI.EPSILON) {
                 let fullness = Math.roundFloat(this.sum_line(LINE, 'full') / LINE.length, this.INI.PRECISION);
                 if (FLOW.DEBUG) console.warn("Adjusting fullnes to same line:", fullness);
@@ -440,6 +443,7 @@ var FLOW = {
             below_line = this.scan_line_downwards(below_line, PATH);
             if (FLOW.DEBUG) console.log("... end while, line rescaned, below_line:", below_line);
         }
+        bottom_line = bottom_line.unique();
         return [bottom_line, drain];
     },
     scan_line_downwards(line, PATH) {
