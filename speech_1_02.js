@@ -27,7 +27,7 @@ var SPEECH = {
       setTimeout(SPEECH.wait, SPEECH.inteval);
     }
   },
-  init() {
+  init(rate = 0.5, pitch = 0.9, volume = 1) {
     if (!("speechSynthesis" in window)) {
       SPEECH.browserSupport = false;
       console.log(`%cInitializing SPEECH failed. Browser not supported!`, "color: #F00");
@@ -39,7 +39,7 @@ var SPEECH = {
       SPEECH.voice = SPEECH.voices[1];
     });
 
-    let def = new VoiceSetting(0.5, 0.9, 1);
+    let def = new VoiceSetting(rate, pitch, volume);
     SPEECH.settings = def;
     SPEECH.wait();
   },

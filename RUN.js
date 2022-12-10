@@ -49,7 +49,7 @@ var INI = {
     MAX_LEVEL: 7,
 };
 var PRG = {
-    VERSION: "0.16.01",
+    VERSION: "0.17.00",
     NAME: "R.U.N.",
     YEAR: "2022",
     CSS: "color: #239AFF;",
@@ -218,13 +218,6 @@ class Explosion {
 }
 var HERO = {
     startInit() {
-        this.assetMap = {
-            walking: "Hero_walking",
-            flying: "Hero_flying",
-            idle: "Hero_idle",
-            falling: "Hero_idle"
-        };
-        this.dead = false;
         this.idle = true;
         this.verticalSpeed = 0;
         this.thrust = 0;
@@ -237,12 +230,13 @@ var HERO = {
             dirX: LEFT.x
         };
     },
-    setMode(mode) {
+    setMode(mode, base = 'Hero_') {
         this.mode = mode;
-        this.actor.class = `Hero_${this.mode}`;
+        this.actor.class = `${base}${this.mode}`;
         this.actor.asset = ASSET[this.actor.class];
     },
     init() {
+        this.dead = false;
         this.mode = 'idle';
         this.moveState = new _2D_MoveState(new FP_Grid(MAP[GAME.level].start.x + 0.5, MAP[GAME.level].start.y + 1), LEFT, this);
         this.actor = new Gravity_ACTOR(`Hero_${this.mode}`, this.x, this.y, 12);
@@ -338,13 +332,11 @@ var HERO = {
         return false;
     },
     manageFlight(lapsedTime) {
-        //let Hd = this.actor.sprite().height / ENGINE.INI.GRIDPIX;
-        if (this.mode === 'idle') {
+        if (this.mode === 'idle' || this.mode === '') {
             this.actor.resetIndexes();
             this.actor.refresh();
         }
 
-        //gravity test
         this.floats = this.gravityTest();
         if (this.floats) {
             this.thrust -= INI.G;
@@ -380,13 +372,14 @@ var HERO = {
         }
     },
     concludeAction() {
-        this.setMode('idle');
+        if (this.mode !== "") {
+            this.setMode('idle');
+        }
         this.thrust = 0;
         if (!this.laser) {
             this.L.distance = 0;
         }
         this.laser = false;
-        //AUDIO.Laser.pause();
     },
     draw() {
         ENGINE.drawBottomCenter('actors', this.actor.vx, this.actor.vy, this.actor.sprite());
@@ -444,7 +437,6 @@ var HERO = {
         while (x != this.L.end.x) {
             CTX.pixelAt(x, this.L.start.y);
             x += this.moveState.dir.x;
-            if (x < 0 || x > 8192) throw "LASER: x overflow"; //debug
             CTX.fillStyle = `rgb(${colors})`;
             colors = [RND(20, 255), RND(0, 20), RND(0, 20)];
         }
@@ -521,7 +513,27 @@ var HERO = {
         }
     },
     die() {
-        console.warn("HERO died - not yet implemented");
+        this.dead = true;
+        this.setMode("", "Skeleton");
+        AUDIO.Scream.play();
+    },
+    death() {
+        let texts = [
+            "You died because you are hopeless.",
+            "You are just bad. Perhaps you should stop playing.",
+            "You died. Can't you be more careful?. You suck.",
+            "Oh how clumsy you were.",
+            "You asuck at this game. Maybe you should do something else."
+        ];
+        SPEECH.speak(texts.chooseRandom());
+        this.draw();
+        GAME.lives--;
+        TITLE.lives();
+        if (GAME.lives === 0) {
+            return GAME.over();
+        }
+        ENGINE.TEXT.centeredText("Press <ENTER> to try again", ENGINE.gameWIDTH, ENGINE.gameHEIGHT / 2);
+        ENGINE.GAME.ANIMATION.next(ENGINE.KEY.waitFor.bind(null, GAME.levelStart, "enter"));
     },
     laserCollision() {
         let lineStart = this.L.start;
@@ -679,7 +691,6 @@ class Box {
     draw() {
         this.alignToViewport();
         ENGINE.drawBottomCenter("actors", this.actor.vx, this.actor.vy, this.actor.sprite());
-        //ENGINE.spriteDraw("actors", this.actor.vx, this.actor.vy, this.actor.sprite());
     }
     open() {
         AUDIO.PickBox.play();
@@ -689,7 +700,6 @@ class Box {
         GAME.energy = INI.ENERGY;
         TITLE.energy();
         TITLE.dinamite();
-        //throw "OPEN";
     }
 }
 var GAME = {
@@ -715,14 +725,11 @@ var GAME = {
         ENGINE.GAME.start(16);
         GAME.completed = false;
         GAME.won = false;
-        //GAME.level = 1;
-        GAME.level = 7;
-        //GAME.level = 2;
-        //GAME.level = 5;
+        GAME.level = 1;
+        //GAME.level = 7;
         GAME.score = 0;
         GAME.lives = 3;
         HERO.startInit();
-        //GAME.fps = new FPS_measurement();
         GAME.fps = new FPS_short_term_measurement(300);
         GAME.levelStart();
     },
@@ -842,6 +849,13 @@ var GAME = {
         FLOW.flow(lapsedTime);
         GAME.frameDraw(lapsedTime);
         HERO.concludeAction();
+        if (HERO.dead) GAME.checkIfProcessesComplete();
+    },
+    checkIfProcessesComplete() {
+        if (DESTRUCTION_ANIMATION.POOL.length !== 0) return;
+        if (VANISHING.POOL.length !== 0) return;
+        if (HERO.floats) return;
+        HERO.death();
     },
     updateVieport() {
         if (!ENGINE.VIEWPORT.changed) return;
@@ -852,9 +866,6 @@ var GAME = {
     deadRun(lapsedTime) {
         DESTRUCTION_ANIMATION.manage(lapsedTime);
         GAME.deadFrameDraw(lapsedTime);
-    },
-    deadFrameDraw(lapsedTime) {
-        ENGINE.clearLayerStack();
     },
     frameDraw(lapsedTime) {
         ENGINE.clearLayerStack();
@@ -870,81 +881,6 @@ var GAME = {
             GAME.FPS(lapsedTime);
         }
     },
-    drawDebugLines() {
-        ENGINE.clearLayer("debug");
-        let CTX = LAYER.debug;
-        //flood level
-        CTX.strokeStyle = "white";
-        CTX.lineWidth = 1;
-        CTX.setLineDash([1, 5]);
-        let y = FLOW.flood_level * ENGINE.INI.GRIDPIX - ENGINE.VIEWPORT.vy;
-        CTX.beginPath();
-        CTX.moveTo(0, y);
-        CTX.lineTo(FLOW.map.width * ENGINE.INI.GRIDPIX - 1, y);
-        CTX.closePath();
-        CTX.stroke();
-        //min terminal level
-        if (FLOW.min_terminal_level) {
-            CTX.strokeStyle = "#10D";
-            CTX.lineDashOffset = 2;
-            CTX.setLineDash([2, 4]);
-            y = FLOW.min_terminal_level * ENGINE.INI.GRIDPIX + 1 - ENGINE.VIEWPORT.vy;
-            CTX.beginPath();
-            CTX.moveTo(0, y);
-            CTX.lineTo(FLOW.map.width * ENGINE.INI.GRIDPIX - 1, y);
-            CTX.closePath();
-            CTX.stroke();
-        }
-        //max terminal level
-        if (FLOW.max_terminal_level) {
-            CTX.strokeStyle = "#00F";
-            CTX.lineDashOffset = 1;
-            CTX.setLineDash([1, 4]);
-            y = FLOW.max_terminal_level * ENGINE.INI.GRIDPIX + 2 - ENGINE.VIEWPORT.vy;
-            CTX.beginPath();
-            CTX.moveTo(0, y);
-            CTX.lineTo(FLOW.map.width * ENGINE.INI.GRIDPIX - 1, y);
-            CTX.closePath();
-            CTX.stroke();
-        }
-        //action level
-        if (FLOW.actionLevel) {
-            CTX.strokeStyle = "#F0F";
-            CTX.lineDashOffset = 0;
-            CTX.setLineDash([2, 5]);
-            y = FLOW.actionLevel * ENGINE.INI.GRIDPIX + 3 - ENGINE.VIEWPORT.vy;
-            CTX.beginPath();
-            CTX.moveTo(0, y);
-            CTX.lineTo(FLOW.map.width * ENGINE.INI.GRIDPIX - 1, y);
-            CTX.closePath();
-            CTX.stroke();
-        }
-        //min drain level
-        if (FLOW.min_drain_level) {
-            CTX.strokeStyle = "#FF0";
-            CTX.lineDashOffset = 2;
-            CTX.setLineDash([2, 4]);
-            y = FLOW.min_drain_level * ENGINE.INI.GRIDPIX + 1 - ENGINE.VIEWPORT.vy;
-            CTX.beginPath();
-            CTX.moveTo(0, y);
-            CTX.lineTo(FLOW.map.width * ENGINE.INI.GRIDPIX - 1, y);
-            CTX.closePath();
-            CTX.stroke();
-        }
-        //max drain level
-        if (FLOW.max_drain_level) {
-            CTX.strokeStyle = "#DD0";
-            CTX.lineDashOffset = 1;
-            CTX.setLineDash([1, 4]);
-            y = FLOW.max_drain_level * ENGINE.INI.GRIDPIX + 2 - ENGINE.VIEWPORT.vy;
-            CTX.beginPath();
-            CTX.moveTo(0, y);
-            CTX.lineTo(FLOW.map.width * ENGINE.INI.GRIDPIX - 1, y);
-            CTX.closePath();
-            CTX.stroke();
-        }
-
-    },
     repaintLevel(level) {
         ENGINE.clearLayer("wall");
         ENGINE.clearLayer("floor");
@@ -955,14 +891,9 @@ var GAME = {
         TITLE.firstFrame();
         ENGINE.resizeBOX("LEVEL", MAP[level].pw, MAP[level].ph);
         ENGINE.TEXTUREGRID.configure("floor", "wall", 'BackgroundTile', 'WallTile');
-        //ENGINE.TEXTUREGRID.dynamicAssets = { door: "VerticalWall", trapdoor: "HorizontalWall" };
         ENGINE.TEXTUREGRID.dynamicAssets = { door: "VerticalWall", trapdoor: "HorizontalWall", blockwall: "BlockWall" };
         ENGINE.TEXTUREGRID.set3D('D3');
         GAME.repaintLevel(level);
-        /*ENGINE.clearLayer("wall");
-        ENGINE.clearLayer("floor");
-        ENGINE.TEXTUREGRID.drawTiles(MAP[level].map);
-        ENGINE.VIEWPORT.changed = true;*/
         GAME.updateVieport();
         HERO.draw(0);
 
@@ -1018,14 +949,14 @@ var GAME = {
         GAME.clickPause();
     },
     clickPause() {
-        if (false || GAME.levelCompleted) return;
+        if (HERO.dead || GAME.levelCompleted) return;
         $("#pause").trigger("click");
         ENGINE.GAME.keymap[ENGINE.KEY.map.F4] = false;
     },
     pause() {
         if (GAME.paused) return;
-        //if (GAME.levelFinished) return;
-        //if (HERO.dead) return;
+        if (GAME.levelCompleted) return;
+        if (HERO.dead) return;
         console.log("%cGAME paused.", PRG.CSS);
         $("#pause").prop("value", "Resume Game [F4]");
         $("#pause").off("click", GAME.pause);
@@ -1047,7 +978,7 @@ var GAME = {
         GAME.paused = false;
     },
     respond(lapsedTime) {
-        if (false) return;
+        if (HERO.dead) return;
         var map = ENGINE.GAME.keymap;
 
         if (map[ENGINE.KEY.map.F4]) {
@@ -1061,12 +992,11 @@ var GAME = {
         if (map[ENGINE.KEY.map.left]) {
             HERO.resetLaser();
             HERO.lateralMove(LEFT, lapsedTime);
-            //return;
+
         }
         if (map[ENGINE.KEY.map.right]) {
             HERO.resetLaser();
             HERO.lateralMove(RIGHT, lapsedTime);
-            //return;
         }
         if (map[ENGINE.KEY.map.ctrl]) {
             if (GAME.energy - INI.LASER_COST > 0) {
@@ -1083,7 +1013,6 @@ var GAME = {
                 TITLE.energy();
                 HERO.verticalMove(lapsedTime);
             }
-            //return;
         }
         if (map[ENGINE.KEY.map.down]) {
             HERO.dynamite();
@@ -1108,11 +1037,17 @@ var GAME = {
     checkScore() {
         SCORE.checkScore(GAME.score);
         SCORE.hiScore();
-        TITLE.startTitle();
     },
     addScore(score) {
         GAME.score += score;
         TITLE.score();
+    },
+    over() {
+        TITLE.gameOver();
+        ENGINE.showMouse();
+        GAME.checkScore();
+        TITLE.hiScore();
+        ENGINE.GAME.ANIMATION.next(ENGINE.KEY.waitFor.bind(null, TITLE.startTitle, "enter"));
     }
 };
 var TITLE = {
@@ -1145,7 +1080,7 @@ var TITLE = {
         ENGINE.GAME.ANIMATION.next(GAME.runTitle);
     },
     clearAllLayers() {
-        ENGINE.layersToClear = new Set(["text", "sideback", "button", "title"]);
+        ENGINE.layersToClear = new Set(["text", "sideback", "button", "title", "actors", "FPS"]);
         ENGINE.clearLayerStack();
     },
     blackBackgrounds() {
@@ -1350,14 +1285,14 @@ var TITLE = {
         this._percentBar("air", "AIR", 420, "air", "blue");
     },
 
-    /*gameOver() {
+    gameOver() {
         ENGINE.clearLayer("text");
         var CTX = LAYER.text;
         CTX.textAlign = "center";
         var x = ENGINE.gameWIDTH / 2;
         var y = ENGINE.gameHEIGHT / 2;
         var fs = 64;
-        CTX.font = fs + "px Arcade";
+        CTX.font = fs + "px Annie";
         var txt = CTX.measureText("GAME OVER");
         var gx = x - txt.width / 2;
         var gy = y - fs;
@@ -1379,16 +1314,13 @@ var TITLE = {
         CTX.shadowOffsetY = 2;
         CTX.shadowBlur = 3;
         CTX.fillText("GAME OVER", x, y);
-    },*/
-    endLevel() {
-
     },
 };
 
 // -- main --
 $(function () {
     PRG.INIT();
-    SPEECH.init();
+    SPEECH.init(0.6);
     PRG.setup();
     ENGINE.LOAD.preload();
     SCORE.init("SC", "RUN", 10, 2500);

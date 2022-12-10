@@ -8,7 +8,6 @@ console.log("%cAssets for RUN ready.", "color: orange");
 
 var LoadTextures = ["BrickWall4.jpg", "RockFloor.jpg"];
 var LoadSprites = [
-    //{ srcName: "BigBox.png", name: "Box" },
     { srcName: "Run480.jpg", name: "Title" },
 ];
 var LoadSequences = [];
@@ -20,17 +19,18 @@ var LoadPacks = [
     { srcName: "hero idle 64.png", count: 1, name: "Hero_idle", dimension: 2 },
     { srcName: "Bat64.png", count: 3, name: "Bat" },
     { srcName: "RedBat.png", count: 3, name: "RedBat" },
+    { srcName: "Skeleton64.png", count: 9, name: "Skeleton" },
 ];
 var LoadRotated = [];
 var LoadExtWasm = [];
 var LoadAudio = [
     { srcName: "Explosion1.mp3", name: "Explosion" },
-    //{ srcName: "laserFast.mp3", name: "Laser" },
     { srcName: "laser.mp3", name: "Laser" },
     { srcName: "jetpac.mp3", name: "Jetpac" },
     { srcName: "Which Way Is Away - LaughingSkull.mp3", name: "Title" },
     { srcName: "Fuse.mp3", name: "Fuse" },
     { srcName: "UseScroll.mp3", name: "PickBox" },
+    { srcName: "Scream.mp3", name: "Scream" },
 ];
 var LoadFonts = [];
 var LoadRotatedSheetSequences = [];
