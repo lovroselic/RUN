@@ -30,7 +30,7 @@ const DownRight = new Vector(1, 1);
 const DownLeft = new Vector(-1, 1);
 
 const ENGINE = {
-  VERSION: "3.13.DEV",
+  VERSION: "3.13",
   CSS: "color: #0FA",
   INI: {
     ANIMATION_INTERVAL: 16,

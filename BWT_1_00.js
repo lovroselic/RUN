@@ -9,7 +9,7 @@ Burrows-Wheeler, RLE text compression
 */
 
 const BWT = {
-    VERSION: "0.03",
+    VERSION: "1.00",
     CSS: "color: #47A",
     bwt(text) {
         text += "$";

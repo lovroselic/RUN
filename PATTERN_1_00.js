@@ -9,7 +9,7 @@
 */
 
 var PATTERN = {
-    VERSION: "0.01",
+    VERSION: "1.00",
     CSS: "color: #ff6347",
     INI: {
         SIZE_X: 64,
@@ -22,7 +22,6 @@ var PATTERN = {
     },
     create(name, r = [0, 255], g = [0, 255], b = [0, 255], a = 1) {
         let append = '<div id="div_' + name + '" class="hidden"></div>';
-        //let append = '<div id="div_' + name + '" ></div>';
         $("body").append(append);
         let canvas = `<canvas id='${name}_canvas' width='${PATTERN.INI.SIZE_X}' height='${PATTERN.INI.SIZE_Y}'></canvas>`;
         $("#div_" + name).append(canvas);
@@ -41,7 +40,6 @@ var PATTERN = {
         console.log(`%cCreated pattern: ${name}`, PATTERN.CSS, PATTERN);
 
         function setPixel(x, y) {
-
             let A;
             let RGB = [0, 0, 0];
 

@@ -8,6 +8,8 @@
 /*
       
 TODO:
+    hero death
+    infinite level management
 
 known bugs: 
     frame rate & time discrepancy
@@ -44,9 +46,10 @@ var INI = {
     LASER_COST: 1,
     JET_COST: 2,
     AIR_COST: 1,
+    MAX_LEVEL: 7,
 };
 var PRG = {
-    VERSION: "0.16.00",
+    VERSION: "0.16.01",
     NAME: "R.U.N.",
     YEAR: "2022",
     CSS: "color: #239AFF;",
@@ -76,6 +79,7 @@ var PRG = {
         $("#maze_version").html(DUNGEON.VERSION);
         $("#iam_version").html(IndexArrayManagers.VERSION);
         $("#lib_version").html(LIB.VERSION);
+        $("#flow_version").html(FLOW.VERSION);
 
         $("#toggleHelp").click(function () {
             $("#help").toggle(400);
@@ -734,6 +738,11 @@ var GAME = {
     },
     initLevel(level) {
         console.log("...level", level, 'initialization');
+        if (!MAP[level]) {
+            let adj_level = ((level - 1) % INI.MAX_LEVEL) + 1;
+            MAP[level] = Object.clone(MAP[adj_level]);
+
+        }
         if (!MAP[level].unpacked) {
             MAP[level].map = FREE_MAP.import(JSON.parse(MAP[level].data));
             MAP[level].start = Grid.toClass(JSON.parse(MAP[level].start));
@@ -741,7 +750,7 @@ var GAME = {
             MAP[level].flow = Grid.toClass(JSON.parse(MAP[level].flow));
             MAP[level].unpacked = true;
         }
-        console.log("MAP:", MAP[level]);
+
         MAP[level].pw = MAP[level].map.width * ENGINE.INI.GRIDPIX;
         MAP[level].ph = MAP[level].map.height * ENGINE.INI.GRIDPIX;
         ENGINE.VIEWPORT.setMax({ x: MAP[level].pw, y: MAP[level].ph });

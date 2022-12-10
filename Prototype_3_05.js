@@ -20,7 +20,7 @@ as used by LS
 changelog:
 3.00: new fresh version
 3.04: updates for Invasion
-3.05: RNDF, updates for RUN, Set prototypes, substr -> substring updates
+3.05: RNDF, updates for RUN, Set prototypes, substr -> substring updates; Object.clone
 */
 
 (function () {
@@ -351,6 +351,10 @@ Set.prototype.removeArray = function (arr) {
 };
 Set.prototype.intersect = function (x) {
   return new Set([...this].filter(el => x.has(el)));
+};
+
+Object.prototype.clone = function (obj) {
+  return $.extend(true, {}, obj);
 };
 
 class Grid {
