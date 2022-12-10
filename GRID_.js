@@ -402,14 +402,14 @@ class BinHeap {
     let maxIndex = i;
     let L = this.leftChild(i);
     if (
-      L <= this.size() - 1 &&
+      L < this.size() &&
       this.HEAP[L][this.sort] < this.HEAP[maxIndex][this.sort]
     ) {
       maxIndex = L;
     }
     let R = this.rightChild(i);
     if (
-      R <= this.size() - 1 &&
+      R < this.size() &&
       this.HEAP[R][this.sort] < this.HEAP[maxIndex][this.sort]
     ) {
       maxIndex = R;

@@ -19,7 +19,7 @@ var DEBUG = {
     FPS: true,
     BUTTONS: false,
     SETTING: true,
-    VERBOSE: true,
+    VERBOSE: false,
     invincible: false,
     INF_LIVES: false,
     GRID: true,
@@ -46,7 +46,7 @@ var INI = {
     AIR_COST: 1,
 };
 var PRG = {
-    VERSION: "0.15.10",
+    VERSION: "0.16.00",
     NAME: "R.U.N.",
     YEAR: "2022",
     CSS: "color: #239AFF;",
@@ -192,7 +192,6 @@ class Dynamite {
                 enemy.die();
             }
         }
-        console.warn("EXPLOSION happened!");
     }
 }
 class Explosion {
@@ -713,7 +712,7 @@ var GAME = {
         GAME.completed = false;
         GAME.won = false;
         //GAME.level = 1;
-        GAME.level = 5;
+        GAME.level = 7;
         //GAME.level = 2;
         //GAME.level = 5;
         GAME.score = 0;
