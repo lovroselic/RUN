@@ -18,13 +18,13 @@ known bugs:
 ////////////////////////////////////////////////////
 
 var DEBUG = {
-    FPS: true,
+    FPS: false,
     BUTTONS: false,
-    SETTING: true,
+    SETTING: false,
     VERBOSE: false,
     invincible: false,
     INF_LIVES: false,
-    GRID: true,
+    GRID: false,
     LINES: false,
 };
 var INI = {
@@ -33,7 +33,7 @@ var INI = {
     A: 20,
     G: 12,
     EXPLOSION_TIMEOUT: 1000,
-    EXPLOSION_RADIUS: 0.999,
+    EXPLOSION_RADIUS: 0.899,
     LASER_RANGE: 80,
     LASER_DELTA: 4,
     LASER_OFFSET_Y: 32,
@@ -49,7 +49,7 @@ var INI = {
     MAX_LEVEL: 7,
 };
 var PRG = {
-    VERSION: "0.17.00",
+    VERSION: "0.80.0.A",
     NAME: "R.U.N.",
     YEAR: "2022",
     CSS: "color: #239AFF;",
@@ -73,13 +73,13 @@ var PRG = {
         console.log("PRG.setup");
         if (DEBUG.SETTING) {
             $('#debug').show();
+            $("#engine_version").html(ENGINE.VERSION);
+            $("#grid_version").html(GRID.VERSION);
+            $("#maze_version").html(DUNGEON.VERSION);
+            $("#iam_version").html(IndexArrayManagers.VERSION);
+            $("#lib_version").html(LIB.VERSION);
+            $("#flow_version").html(FLOW.VERSION);
         } else $('#debug').hide();
-        $("#engine_version").html(ENGINE.VERSION);
-        $("#grid_version").html(GRID.VERSION);
-        $("#maze_version").html(DUNGEON.VERSION);
-        $("#iam_version").html(IndexArrayManagers.VERSION);
-        $("#lib_version").html(LIB.VERSION);
-        $("#flow_version").html(FLOW.VERSION);
 
         $("#toggleHelp").click(function () {
             $("#help").toggle(400);
@@ -108,6 +108,7 @@ var PRG = {
             "fside");
         ENGINE.addBOX("DOWN", ENGINE.bottomWIDTH, ENGINE.bottomHEIGHT, ["bottom", "bottomText"], null);
         ENGINE.addBOX("LEVEL", ENGINE.gameWIDTH, ENGINE.gameHEIGHT, ["floor", "wall", "grid", "coord"], null);
+        $("#LEVEL").hide();
     },
     start() {
         console.log(PRG.NAME + " started.");
@@ -471,7 +472,7 @@ var HERO = {
                 TITLE.air();
                 if (GAME.air <= 0) {
                     GAME.air = Math.max(GAME.air, 0);
-                    HERO.die();
+                    return HERO.die();
                 }
             } else {
                 breathe();
@@ -515,6 +516,7 @@ var HERO = {
     die() {
         this.dead = true;
         this.setMode("", "Skeleton");
+        this.actor.refresh();
         AUDIO.Scream.play();
     },
     death() {
@@ -529,7 +531,7 @@ var HERO = {
         this.draw();
         GAME.lives--;
         TITLE.lives();
-        if (GAME.lives === 0) {
+        if (GAME.lives < 0) {
             return GAME.over();
         }
         ENGINE.TEXT.centeredText("Press <ENTER> to try again", ENGINE.gameWIDTH, ENGINE.gameHEIGHT / 2);
@@ -726,7 +728,7 @@ var GAME = {
         GAME.completed = false;
         GAME.won = false;
         GAME.level = 1;
-        //GAME.level = 7;
+        //GAME.level = 6;
         GAME.score = 0;
         GAME.lives = 3;
         HERO.startInit();
@@ -751,13 +753,12 @@ var GAME = {
 
         }
         if (!MAP[level].unpacked) {
-            MAP[level].map = FREE_MAP.import(JSON.parse(MAP[level].data));
             MAP[level].start = Grid.toClass(JSON.parse(MAP[level].start));
             MAP[level].dynamite = Grid.toClass(JSON.parse(MAP[level].dynamite));
             MAP[level].flow = Grid.toClass(JSON.parse(MAP[level].flow));
             MAP[level].unpacked = true;
         }
-
+        MAP[level].map = FREE_MAP.import(JSON.parse(MAP[level].data));
         MAP[level].pw = MAP[level].map.width * ENGINE.INI.GRIDPIX;
         MAP[level].ph = MAP[level].map.height * ENGINE.INI.GRIDPIX;
         ENGINE.VIEWPORT.setMax({ x: MAP[level].pw, y: MAP[level].ph });
@@ -779,7 +780,7 @@ var GAME = {
         GAME.initiateStart();
         GAME.drawFirstFrame(GAME.level);
         GAME.resume();
-        SPEECH.speak("Run, you fool!");
+        SPEECH.speak("Run upward nerd");
     },
     initiateStart() {
         AUDIO.Fuse.loop = true;
@@ -926,13 +927,13 @@ var GAME = {
         GAME.movingText = new MovingText(text, 4, RD, SQ);
     },
     generateTitleText() {
-        let text = `${PRG.NAME} ${PRG.VERSION
-            }, a game by Lovro Selic, ${"\u00A9"} C00LSch00L ${PRG.YEAR
+        let text = `${PRG.NAME} (Run Upward Nerd) ${PRG.VERSION
+            }, a game by Lovro Selič, ${"\u00A9"} C00LSch00L ${PRG.YEAR
             }. 
             Title graphics by Trina Selič. 
             Music: 'Which Way Is Away' written and performed by LaughingSkull, ${"\u00A9"
-            } 2011 Lovro Selic. `;
-        text += "     ENGINE, SPEECH, GRID, MAZE, Burrows-Wheeler RLE Compression and GAME code by Lovro Selic using JavaScript. ";
+            } 2011 Lovro Selič. `;
+        text += "     ENGINE, SPEECH, GRID, MAZE, FLOW, Burrows-Wheeler RLE Compression and GAME code by Lovro Selič using JavaScript. ";
         text = text.split("").join(String.fromCharCode(8202));
         return text;
     },
@@ -1080,7 +1081,7 @@ var TITLE = {
         ENGINE.GAME.ANIMATION.next(GAME.runTitle);
     },
     clearAllLayers() {
-        ENGINE.layersToClear = new Set(["text", "sideback", "button", "title", "actors", "FPS"]);
+        ENGINE.layersToClear = new Set(["text", "sideback", "button", "title", "actors", "FPS", "flood"]);
         ENGINE.clearLayerStack();
     },
     blackBackgrounds() {
