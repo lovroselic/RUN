@@ -15,7 +15,7 @@ known bugs:
  */
 ////////////////////////////////////////////////////
 
-const DEBUG = {
+var DEBUG = {
     FPS: false,
     BUTTONS: false,
     SETTING: false,
@@ -25,7 +25,7 @@ const DEBUG = {
     GRID: false,
     LINES: false,
 };
-const INI = {
+var INI = {
     HERO_LATERAL_SPEED: 150,
     MAX_VERTICAL_SPEED: 7,
     A: 20,
@@ -46,7 +46,7 @@ const INI = {
     AIR_COST: 1,
     MAX_LEVEL: 7,
 };
-const PRG = {
+var PRG = {
     VERSION: "1.00",
     NAME: "R.U.N.",
     YEAR: "2022",
@@ -77,14 +77,18 @@ const PRG = {
             $("#iam_version").html(IndexArrayManagers.VERSION);
             $("#lib_version").html(LIB.VERSION);
             $("#flow_version").html(FLOW.VERSION);
-        } else $('#debug').hide();
+        } else {
+            $('#debug').hide();
+        }
 
         $("#toggleHelp").click(function () {
             $("#help").toggle(400);
         });
+        
         $("#toggleAbout").click(function () {
             $("#about").toggle(400);
         });
+        
 
         //boxes
         ENGINE.gameWIDTH = 768;
@@ -215,7 +219,7 @@ class Explosion {
         ENGINE.layersToClear.add(this.layer);
     }
 }
-const HERO = {
+var HERO = {
     startInit() {
         this.idle = true;
         this.verticalSpeed = 0;
@@ -702,7 +706,7 @@ class Box {
         TITLE.dinamite();
     }
 }
-const GAME = {
+var GAME = {
     start() {
         console.log("GAME started");
         if (AUDIO.Title) {
@@ -726,7 +730,7 @@ const GAME = {
         GAME.completed = false;
         GAME.won = false;
         GAME.level = 1;
-        //GAME.level = 6;
+        //GAME.level = 7;
         GAME.score = 0;
         GAME.lives = 3;
         HERO.startInit();
@@ -747,8 +751,7 @@ const GAME = {
         console.log("...level", level, 'initialization');
         if (!MAP[level]) {
             let adj_level = ((level - 1) % INI.MAX_LEVEL) + 1;
-            MAP[level] = Object.clone(MAP[adj_level]);
-
+            MAP[level] = $.extend(true, {}, MAP[adj_level]);
         }
         if (!MAP[level].unpacked) {
             MAP[level].start = Grid.toClass(JSON.parse(MAP[level].start));
@@ -1049,7 +1052,7 @@ const GAME = {
         ENGINE.GAME.ANIMATION.next(ENGINE.KEY.waitFor.bind(null, TITLE.startTitle, "enter"));
     }
 };
-const TITLE = {
+var TITLE = {
     firstFrame() {
         TITLE.clearAllLayers();
         TITLE.sideBackground();
