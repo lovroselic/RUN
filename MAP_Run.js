@@ -2,7 +2,7 @@
 /*jshint -W097 */
 /*jshint -W117 */
 /*jshint -W061 */
-//Assets for MazEditor
+
 "use strict";
 
 console.log("%cMAP for RUN loaded.", "color: #888");
@@ -75,7 +75,6 @@ var MAP = {
         {"width":"24","height":"24","map":"BB4AA2EABABB3AA3BB2AA2BB4ABB2AA4QAA16BB2ABABAA2BB9ABB20ABB2EBABB4AA2BB2ABB6AA5BB2ABB4AA2BB8AA2BAA3BB2QBB15ABB3ABB13QBB31ABB4QAA2BB3AA6QBABB4AA4BB3AA4BAA6BB3QBB6ABB2AA2QAA3BB2QQ2BB14ABB5ABB3ABAA2BB5AA2BABB4ABABB11ABB69$BB12ABB6ABB19ABB53ABB6AQQ2AA2BAA2BB5ABB2IABB19AA2BB2ABAA2BB3AA3BB2AA2BB2QBB10AA2BB4ABB8"}
         `,
         start: `{"x":22, "y":1}`,
-        //start: `{"x":10, "y":3}`,
         dynamite: `{"x":21, "y":21}`,
         flow: `{"x":21, "y":22}`,
         bat: [[`{"x":20, "y":10}`, RIGHT, 2], [`{"x":22, "y":16}`, LEFT, 2], [`{"x":14, "y":1}`, RIGHT, 4], [`{"x":16, "y":6}`, LEFT, 2], [`{"x":14, "y":11}`, RIGHT, 2],

@@ -8,8 +8,6 @@
 /*
       
 TODO:
-    hero death
-    infinite level management
 
 known bugs: 
     frame rate & time discrepancy
@@ -17,7 +15,7 @@ known bugs:
  */
 ////////////////////////////////////////////////////
 
-var DEBUG = {
+const DEBUG = {
     FPS: false,
     BUTTONS: false,
     SETTING: false,
@@ -27,7 +25,7 @@ var DEBUG = {
     GRID: false,
     LINES: false,
 };
-var INI = {
+const INI = {
     HERO_LATERAL_SPEED: 150,
     MAX_VERTICAL_SPEED: 7,
     A: 20,
@@ -48,8 +46,8 @@ var INI = {
     AIR_COST: 1,
     MAX_LEVEL: 7,
 };
-var PRG = {
-    VERSION: "0.80.0.A",
+const PRG = {
+    VERSION: "1.00",
     NAME: "R.U.N.",
     YEAR: "2022",
     CSS: "color: #239AFF;",
@@ -217,7 +215,7 @@ class Explosion {
         ENGINE.layersToClear.add(this.layer);
     }
 }
-var HERO = {
+const HERO = {
     startInit() {
         this.idle = true;
         this.verticalSpeed = 0;
@@ -704,7 +702,7 @@ class Box {
         TITLE.dinamite();
     }
 }
-var GAME = {
+const GAME = {
     start() {
         console.log("GAME started");
         if (AUDIO.Title) {
@@ -1051,7 +1049,7 @@ var GAME = {
         ENGINE.GAME.ANIMATION.next(ENGINE.KEY.waitFor.bind(null, TITLE.startTitle, "enter"));
     }
 };
-var TITLE = {
+const TITLE = {
     firstFrame() {
         TITLE.clearAllLayers();
         TITLE.sideBackground();

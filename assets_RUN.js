@@ -6,14 +6,14 @@
 "use strict";
 console.log("%cAssets for RUN ready.", "color: orange");
 
-var LoadTextures = ["BrickWall4.jpg", "RockFloor.jpg"];
-var LoadSprites = [
+const LoadTextures = ["BrickWall4.jpg", "RockFloor.jpg"];
+const LoadSprites = [
     { srcName: "Run480.jpg", name: "Title" },
 ];
-var LoadSequences = [];
-var LoadSheets = [];
-var ExtendSheetTag = [];
-var LoadPacks = [
+const LoadSequences = [];
+const LoadSheets = [];
+const ExtendSheetTag = [];
+const LoadPacks = [
     { srcName: "hero walking 64.png", count: 6, name: "Hero_walking", dimension: 2 },
     { srcName: "hero fly 64.png", count: 6, name: "Hero_flying", dimension: 2 },
     { srcName: "hero idle 64.png", count: 1, name: "Hero_idle", dimension: 2 },
@@ -21,9 +21,9 @@ var LoadPacks = [
     { srcName: "RedBat.png", count: 3, name: "RedBat" },
     { srcName: "Skeleton64.png", count: 9, name: "Skeleton" },
 ];
-var LoadRotated = [];
-var LoadExtWasm = [];
-var LoadAudio = [
+const LoadRotated = [];
+const LoadExtWasm = [];
+const LoadAudio = [
     { srcName: "Explosion1.mp3", name: "Explosion" },
     { srcName: "laser.mp3", name: "Laser" },
     { srcName: "jetpac.mp3", name: "Jetpac" },
@@ -32,9 +32,9 @@ var LoadAudio = [
     { srcName: "UseScroll.mp3", name: "PickBox" },
     { srcName: "Scream.mp3", name: "Scream" },
 ];
-var LoadFonts = [];
-var LoadRotatedSheetSequences = [];
-var LoadSheetSequences = [
+const LoadFonts = [];
+const LoadRotatedSheetSequences = [];
+const LoadSheetSequences = [
     { srcName: "Explosion64.png", count: 24, name: "Explosion" },
     { srcName: "SmokeExp64.png", count: 27, name: "SmokeExp" },
     { srcName: "Dynamite.png", count: 2, name: "Dynamite" },
