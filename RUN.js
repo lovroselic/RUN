@@ -47,7 +47,7 @@ var INI = {
     MAX_LEVEL: 7,
 };
 var PRG = {
-    VERSION: "1.00",
+    VERSION: "1.01",
     NAME: "R.U.N.",
     YEAR: "2022",
     CSS: "color: #239AFF;",
@@ -492,7 +492,7 @@ var HERO = {
     },
     collisionBox() {
         let grid = Grid.toClass(this.moveState.pos.add(UP, 0.01));
-        let IA = MAP[GAME.level].map.floor_object_IA;
+        let IA = MAP[GAME.level].map.floor_object_IA_1_1;
         let box = IA.unroll(grid);
         if (box.length === 1) {
             FLOOR_OBJECT.POOL[box[0] - 1].open();

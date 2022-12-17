@@ -2,17 +2,17 @@
 /*jshint -W097 */
 /*jshint -W117 */
 /*jshint -W061 */
+/*jshint esversion: 11 */
 "use strict";
 
 /*  
 
 TODO:
-    * some names were changed: it's not compatible with CrawlMaster whitout changing variables in CrawlMaster
       
 */
 
 const IndexArrayManagers = {
-    VERSION: "2.00",
+    VERSION: "2.03",
 };
 
 class IAM {
@@ -42,7 +42,11 @@ class IAM {
     }
     poolToIA(IA) {
         for (const obj of this.POOL) {
-            let grid = Grid.toClass(obj.moveState.pos);
+            let grid = null;
+            if (obj.moveState) {
+                grid = Grid.toClass(obj.moveState.pos);
+            } else grid = obj.grid;
+
             if (!IA.has(grid, obj.id)) {
                 IA.next(grid, obj.id);
             }
@@ -185,20 +189,16 @@ class Vanishing extends IAM {
 
 class Floor_Object extends IAM {
     /*
-    expects simple static objects without moveState 
+    can work with objects that has moveState or just grid
     */
     constructor(byte = 1, banks = 1) {
         super();
-        this.IA = "floor_object_IA";
+        this.IA = `floor_object_IA_${byte}_${banks}`;
         this.reIndexRequired = false;
         this.byte = byte;
         this.banks = banks;
     }
-    poolToIA(IA) {
-        for (const obj of this.POOL) {
-            IA.next(obj.grid, obj.id);
-        }
-    }
+
     requestReIndex() {
         this.reIndexRequired = true;
     }
@@ -211,7 +211,7 @@ class Floor_Object extends IAM {
         this.reIndexRequired = false;
     }
     init(map) {
-        this.POOL = [];
+        if (!this.POOL) this.POOL = [];
         this.linkMap(map);
         this.manage();
     }
@@ -254,7 +254,6 @@ class Changing_Animation extends IAM {
         this.reIndex();
         this.poolToIA(map[this.IA]);
         for (const anim of this.POOL) {
-            //anim.lift(lapsedTime);
             anim.change(lapsedTime);
             if (anim.complete()) {
                 CHANGING_ANIMATION.remove(anim.id);
@@ -274,22 +273,10 @@ class Missile_RC extends IAM {
         this.poolToIA(map[this.IA]);
         for (const missile of this.POOL) {
             GRID.contTranslatePosition(missile, lapsedTime);
-            let wallHit = !this.map.GA.entityNotInWall(
-                missile.moveState.pos,
-                missile.moveState.dir,
-                missile.r,
-                8
-            );
+            let wallHit = !this.map.GA.entityNotInWall(missile.moveState.pos, missile.moveState.dir, missile.r, 8);
             if (wallHit) {
-                let position = missile.moveState.pos.translate(
-                    missile.moveState.dir.reverse(),
-                    RAYCAST.INI.EXPLOSION_OFFWALL
-                );
-                let explosion = new Destruction(
-                    position,
-                    missile.base,
-                    DESTRUCTION_TYPE.SmallShortExplosion
-                );
+                let position = missile.moveState.pos.translate(missile.moveState.dir.reverse(), RAYCAST.INI.EXPLOSION_OFFWALL);
+                let explosion = new Destruction(position, missile.base, DESTRUCTION_TYPE.SmallShortExplosion);
                 DESTRUCTION_ANIMATION.add(explosion);
                 MISSILE.remove(missile.id);
                 AUDIO.Explosion.volume = RAYCAST.volume(missile.distance);
@@ -298,12 +285,12 @@ class Missile_RC extends IAM {
             }
 
             //check entity collision
-            let IA = RAYCAST.MAP[ENEMY.IA];
+            let IA = RAYCAST.MAP[ENEMY_RC.IA];
             let grid = Grid.toClass(missile.moveState.pos);
             if (!IA.empty(grid)) {
                 let possibleEnemies = IA.unroll(grid);
                 for (let P of possibleEnemies) {
-                    let monster = ENEMY.POOL[P - 1];
+                    let monster = ENEMY_RC.POOL[P - 1];
                     if (monster === null) continue;
                     if (monster.id === missile.casterId) continue;
                     let monsterHit = GRID.circleCollision(monster, missile);
@@ -332,9 +319,10 @@ class Decal_IA extends IAM {
     }
     init(map) {
         this.linkMap(map);
-        this.manage(map);
+        this.manage();
     }
-    manage(map) {
+    manage() {
+        let map = this.map;
         map[this.IA] = new IndexArray(map.width, map.height, 4, 4); // = IA
         this.poolToIA(map[this.IA]);
     }
@@ -448,7 +436,7 @@ class Enemy_RC extends IAM {
         for (const enemy of this.POOL) {
             if (enemy === null) continue;
             //check distance
-            enemy.setDistanceFromNodeMap(map.nodeMap);
+            enemy.setDistanceFromNodeMap(map.GA.nodeMap);
             if (enemy.distance === null) continue;
             if (enemy.petrified) continue;
             //enemy/enemy collision resolution
@@ -468,7 +456,7 @@ class Enemy_RC extends IAM {
                 let FilteredIndices = [];
                 if (setIndices.size > 0) {
                     for (let id of setIndices) {
-                        if (ENEMY.POOL[id - 1].base < 1) {
+                        if (this.POOL[id - 1].base < 1) {
                             setIndices.delete(id);
                         }
                     }
@@ -480,7 +468,7 @@ class Enemy_RC extends IAM {
                 let wait = false;
                 if (FilteredIndices.length > 0) {
                     for (let e of FilteredIndices) {
-                        let EE_hit = GRID.circleCollision(enemy, ENEMY.POOL[e - 1]);
+                        let EE_hit = GRID.circleCollision(enemy, this.POOL[e - 1]);
                         if (EE_hit) {
                             wait = true;
                             break;
@@ -538,7 +526,7 @@ var ENEMY_TG = new Enemy_TG();
 var ENEMY_RC = new Enemy_RC();
 var VANISHING = new Vanishing();
 var FLOOR_OBJECT = new Floor_Object();
-var FLOOR_OBJECT4 = new Floor_Object(4, 4);
+var FLOOR_OBJECT_WIDE = new Floor_Object(4, 4);
 var DESTRUCTION_ANIMATION = new Destruction_Animation();
 var CHANGING_ANIMATION = new Changing_Animation();
 var MISSILE = new Missile_RC();

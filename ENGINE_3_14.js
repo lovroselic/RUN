@@ -30,7 +30,7 @@ const DownRight = new Vector(1, 1);
 const DownLeft = new Vector(-1, 1);
 
 const ENGINE = {
-  VERSION: "3.13",
+  VERSION: "3.14",
   CSS: "color: #0FA",
   INI: {
     ANIMATION_INTERVAL: 16,
@@ -957,7 +957,7 @@ const ENGINE = {
         return;
       }
     },
-    start(interval) {
+    start(interval = 16) {
       $(window).scrollTop($("#game").offset().top);
       ENGINE.GAME.stopAnimation = false;
       ENGINE.GAME.started = Date.now();
@@ -1988,21 +1988,21 @@ var PATTERN = {
   }
 };
 class LiveSPRITE {
-  constructor(type) {
+  constructor(type, left, right, front, back) {
     this.type = type || null;
     switch (type) {
       case "1D":
-        this.linear = [];
+        this.linear = left || [];
         break;
       case "2D":
-        this.left = [];
-        this.right = [];
+        this.left = left || [];
+        this.right = right || [];
         break;
       case "4D":
-        this.left = [];
-        this.right = [];
-        this.front = [];
-        this.back = [];
+        this.left = left || [];
+        this.right = right || [];
+        this.front = front || [];
+        this.back = back || [];
         break;
       default:
         throw "LiveSPRITE type ERROR";
