@@ -8,7 +8,7 @@
     random PATTERN generation
 */
 
-var PATTERN = {
+const PATTERN = {
     VERSION: "1.00",
     CSS: "color: #ff6347",
     INI: {

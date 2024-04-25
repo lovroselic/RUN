@@ -24,8 +24,15 @@
             <div class="row win" style="font-family: 'Annie'; font-size: 22px">
                 <div class="col-12 col-lg-8 my-2 ">
                     <h1 id="title" style="font-weight: bold; text-shadow: 1px #ccc;"></h1>
-                    <p> Run upward nerd, and save yourself from the imminent flood. Blast your
-                        way through the dungeon and escape to the surface.</p>
+                    <p>
+                        Gear up for a quirky quest in R.U.N. - the only game where "Run upward, nerd!" isn't an insult,
+                        it's survival! Don your jetpack and ascend like your geeky life depends on it because, well, it
+                        does. The flood's nipping at your nerdy heels, and it's either rise up or swim down! Use your
+                        smarts to blast through the rubble, sidestep sinister snakes, and flap away from those flappy
+                        bats. Will you be the brainy hero that outpaces the watery doom, or will you just get soggy
+                        trying? Jet up, blow it up, and keep those glasses dry - remember, it*s Run upward, nerd, or
+                        it's game over!
+                    </p>
                 </div>
                 <div class="col-12 col-lg-4 my-2 white_text d-flex justify-content-center" id="SC">
                 </div>
@@ -52,6 +59,7 @@
                     <input type='button' id='pause' value='Pause Game [F4]' disabled="disabled">
                     <input type='button' id='toggleHelp' value='Show/Hide Instructions'>
                     <input type='button' id='toggleAbout' value='About'>
+                    <input type='button' id='toggleVersion' value='Version'>
                 </p>
             </div>
 
@@ -60,10 +68,10 @@
                     <legend>
                         Instructions:
                     </legend>
-                    <p>LEFFT, RIGHT: move</p>
-                    <p>UP: jet</p>
-                    <p>DOWN: set dynamite</p>
-                    <p>CTRL: shoot</p>
+                    <p><kbd>LEFFT</kbd>, <kbd>RIGHT</kbd>: move</p>
+                    <p><kbd>UP</kbd>: jet</p>
+                    <p><kbd>DOWN</kbd>: set dynamite</p>
+                    <p><kbd>CTRL</kbd>: shoot</p>
                     <p>Manage your energy and dynamite supply carefully. Your life depends on it.</p>
                 </fieldset>
             </div>
@@ -74,37 +82,46 @@
                         About:
                     </legend>
                     <div class="container">
-                        <div class='row-lg-6 clearfix'>
-                            <image src="https://www.c64-wiki.com/images/d/df/Hero_Animation.gif"
-                                class="border border-dark rounded p-1 m-2 float-start" alt="H.E.R.O." title="H.E.R.O.">
-                            </image>
-                            <p>
-                                R.U.N. (Run Upward Nerd), is heavily influenced by the legenary <a
-                                    href="https://en.wikipedia.org/wiki/H.E.R.O._(video_game)"
-                                    target="_blank">H.E.R.O.</a>
-                                (standing for Helicopter Emergency Rescue Operation) released in 1984. This remains one
-                                of my favorite games of the early 80's and I wanted to make a version of it for a long
-                                time.
-                                The main difference to H.E.R.O. is that in the R.U.N. you need to save yourself and run
-                                upwards. And you use jetpac instead
-                                of helicopter-pack (due to my drawing skill limitations).
-                            </p>
-                        </div>
-                        <div class='row-lg-6'>
-                            <image
-                                src="https://upload.wikimedia.org/wikipedia/en/thumb/3/3c/O%27Riley%27s_Mine_Atari_8-bit_PAL_screenshot.png/220px-O%27Riley%27s_Mine_Atari_8-bit_PAL_screenshot.png"
-                                class="border border-dark p-1 m-2 rounded float-end" alt="O'Riley's Mine"
-                                title="O'Riley's Mine">
-                            </image>
-                            <p>
-                                Another influence is <a href="https://en.wikipedia.org/wiki/O%27Riley%27s_Mine"
-                                    target="_blank">O'Riley's Mine</a>, released in 1983
-                                from which the idea of imminent flood is taken, to motivate you to move faster ...
-                            </p>
-                            <p>
-                                R.U.N. is written in JavaScript, using JQuery and numerous private libraries written by
-                                myself.
-                            </p>
+                        <div class='row '>
+
+                            <div class="col-12 col-lg-3 my-2 d-flex align-items-center justify-content-center">
+                                <image src="https://www.c64-wiki.com/images/d/df/Hero_Animation.gif"
+                                    class="img-fluid  border-dark rounded-2" alt="H.E.R.O." title="H.E.R.O.">
+                                </image>
+                            </div>
+
+                            <div class="col-12 col-lg-6 my-2">
+                                <p>
+                                    Embark on a nostalgic yet fresh adventure with <strong>R.U.N. (Run Upward
+                                        Nerd)</strong>, a loving nod to the classic <a
+                                        href="https://en.wikipedia.org/wiki/H.E.R.O._(video_game)"
+                                        target="_blank">H.E.R.O.</a> (Helicopter Emergency Rescue Operation) from 1984.
+                                    As an homage to one of the quintessential games of the early '80s, R.U.N. reimagines
+                                    the upward escape with a whimsical twist. Forget the helicopter-pack; here, you'll
+                                    don a jetpack - a creative liberty taken partly in jest of my own artistic prowess.
+                                </p>
+                                <p>
+                                    In a tip of the hat to <a href="https://en.wikipedia.org/wiki/O%27Riley%27s_Mine"
+                                        target="_blank">O'Riley's Mine</a>, the thrill of the chase is amplified by an
+                                    impending flood, pushing you to move with haste. The danger rises from below,
+                                    ensuring that your upward journey is both urgent and exhilarating.
+                                </p>
+                                <p>
+                                    R.U.N. is not just a game but a labor of love, crafted in JavaScript with JQuery and
+                                    an array of private libraries of my own creation. It's a programmer's playground
+                                    turned into an arcade of yesteryears, inviting you to run upward, nerd - because
+                                    it's not just about the destination, it's about the joyous, jet-fueled journey.
+                                </p>
+                            </div>
+
+
+                            <div class="col-12 col-lg-3 my-2 d-flex align-items-center justify-content-center">
+                                <image
+                                    src="https://upload.wikimedia.org/wikipedia/en/thumb/3/3c/O%27Riley%27s_Mine_Atari_8-bit_PAL_screenshot.png/220px-O%27Riley%27s_Mine_Atari_8-bit_PAL_screenshot.png"
+                                    class="img-fluid  border-dark rounded-2" alt="O'Riley's Mine"
+                                    title="O'Riley's Mine">
+                                </image>
+                            </div>
 
                         </div>
                     </div>
@@ -124,16 +141,16 @@
     <script src="/External/bootstrap.bundle.min.js"></script>
     <script src="/External/jquery-3.6.0.min.js"></script>
     <!-- JS -->
-    <script src='/Code/JS/Library/Engine/Prototype_3_05.js'></script>
+    <script src='/Code/JS/Library/Engine/Prototype_4_00.js'></script>
     <script src='/Code/JS/Library/Engine/ENGINE_4_04.js'></script>
     <script src="/Code/JS/Library/Engine//GRID_3_08.js" type="text/javascript"></script>
     <script src="/Code/JS/Library/Engine//FLOW_1_00.js" type="text/javascript"></script>
     <script src="/Code/JS/Library/Engine//PATTERN_1_00.js" type="text/javascript"></script>
-    <script src='/Code/JS/Library/Engine//IndexArrayManagers_2_03.js'></script>
-    <script src="/Code/JS/Library/Engine//MAZE_3_06.js" type="text/javascript"></script>
+    <script src='/Code/JS/Library/Engine//IndexArrayManagers_3_04.js'></script>
+    <script src="/Code/JS/Library/Engine//MAZE_4_02.js" type="text/javascript"></script>
     <script src="/Code/JS/Library/Engine//BWT_1_00.js" type="text/javascript"></script>
     <script src='/Code/JS/Library/Misc/score_1_05.js'></script>
-    <script src='/Code/JS/Library/Engine//speech_1_02.js'></script>
+    <script src='/Code/JS/Library/Engine//speech_1_04.js'></script>
     <script src="/Assets/Definitions/assets_RUN.js" type="text/javascript"></script>
     <script src="/Assets/Definitions/MAP_Run.js" type="text/javascript"></script>
     <script src="/Games/Run/RUN.js"></script>

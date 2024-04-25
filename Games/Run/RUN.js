@@ -15,17 +15,17 @@ known bugs:
  */
 ////////////////////////////////////////////////////
 
-var DEBUG = {
+const DEBUG = {
     FPS: false,
     BUTTONS: false,
-    SETTING: false,
+    SETTING: true,
     VERBOSE: false,
     invincible: false,
     INF_LIVES: false,
     GRID: false,
     LINES: false,
 };
-var INI = {
+const INI = {
     HERO_LATERAL_SPEED: 150,
     MAX_VERTICAL_SPEED: 7,
     A: 20,
@@ -46,17 +46,17 @@ var INI = {
     AIR_COST: 1,
     MAX_LEVEL: 7,
 };
-var PRG = {
-    VERSION: "1.03.00",
+const PRG = {
+    VERSION: "1.04",
     NAME: "R.U.N.",
     YEAR: "2022",
     CSS: "color: #239AFF;",
     INIT() {
         console.log("%c**************************************************************************************************************************************", PRG.CSS);
-        console.log(`${PRG.NAME} ${PRG.VERSION} by Lovro Selic, (c) C00lSch00l ${PRG.YEAR} on ${navigator.userAgent}`);
+        console.log(`${PRG.NAME} ${PRG.VERSION} by Lovro Selic, (c) LaughingSkull ${PRG.YEAR} on ${navigator.userAgent}`);
         console.log("%c**************************************************************************************************************************************", PRG.CSS);
         $("#title").html(PRG.NAME);
-        $("#version").html(`${PRG.NAME} V${PRG.VERSION} <span style='font-size:14px'>&copy</span> C00lSch00l ${PRG.YEAR}`);
+        $("#version").html(`${PRG.NAME} V${PRG.VERSION} <span style='font-size:14px'>&copy</span> LaughingSkull ${PRG.YEAR}`);
         $("input#toggleAbout").val("About " + PRG.NAME);
         $("#about fieldset legend").append(" " + PRG.NAME + " ");
 
@@ -70,7 +70,6 @@ var PRG = {
     setup() {
         console.log("PRG.setup");
         if (DEBUG.SETTING) {
-            $('#debug').show();
             $("#engine_version").html(ENGINE.VERSION);
             $("#grid_version").html(GRID.VERSION);
             $("#maze_version").html(DUNGEON.VERSION);
@@ -84,11 +83,14 @@ var PRG = {
         $("#toggleHelp").click(function () {
             $("#help").toggle(400);
         });
-        
+
         $("#toggleAbout").click(function () {
             $("#about").toggle(400);
         });
-        
+
+        $("#toggleVersion").click(function () {
+            $("#debug").toggle(400);
+        });
 
         //boxes
         ENGINE.gameWIDTH = 768;
@@ -219,7 +221,7 @@ class Explosion {
         ENGINE.layersToClear.add(this.layer);
     }
 }
-var HERO = {
+const HERO = {
     startInit() {
         this.idle = true;
         this.verticalSpeed = 0;
@@ -706,7 +708,7 @@ class Box {
         TITLE.dinamite();
     }
 }
-var GAME = {
+const GAME = {
     start() {
         console.log("GAME started");
         if (AUDIO.Title) {
@@ -735,6 +737,7 @@ var GAME = {
         GAME.lives = 3;
         HERO.startInit();
         GAME.fps = new FPS_short_term_measurement(300);
+
         GAME.levelStart();
     },
     levelStart() {
@@ -929,7 +932,7 @@ var GAME = {
     },
     generateTitleText() {
         let text = `${PRG.NAME} (Run Upward Nerd) ${PRG.VERSION
-            }, a game by Lovro Selič, ${"\u00A9"} C00LSch00L ${PRG.YEAR
+            }, a game by Lovro Selič, ${"\u00A9"} LaughingSkull ${PRG.YEAR
             }. 
             Title graphics by Trina Selič. 
             Music: 'Which Way Is Away' written and performed by LaughingSkull, ${"\u00A9"
@@ -1052,7 +1055,7 @@ var GAME = {
         ENGINE.GAME.ANIMATION.next(ENGINE.KEY.waitFor.bind(null, TITLE.startTitle, "enter"));
     }
 };
-var TITLE = {
+const TITLE = {
     firstFrame() {
         TITLE.clearAllLayers();
         TITLE.sideBackground();

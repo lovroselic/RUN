@@ -178,6 +178,7 @@ class Enemy_TG extends IAM {
     constructor() {
         super();
         this.IA = "enemy_tg_IA";
+        this.reIndexRequired = true;
     }
     poolToIA(IA) {
         for (const obj of this.POOL) {
@@ -204,6 +205,7 @@ class Vanishing extends IAM {
     constructor() {
         super();
         this.IA = "vanishing_IA";
+        this.reIndexRequired = true;
     }
     poolToIA(IA) {
         for (const obj of this.POOL) {
@@ -261,6 +263,7 @@ class Destruction_Animation extends IAM {
     constructor() {
         super();
         this.IA = "destranimIA";
+        this.reIndexRequired = true;
     }
     manage(lapsedTime, map = this.map) {
         this.reIndex();
@@ -575,7 +578,7 @@ class Decal_IA_3D extends IAM {
 }
 
 class Decal3D extends IAM {
-    constructor(len = null, IA = null, ri= false) {
+    constructor(len = null, IA = null, ri = false) {
         super();
         this.IA = IA;
         this.reIndexRequired = ri;
@@ -944,5 +947,4 @@ const ENTITY3D = new Animated_3d_entity();
 const MISSILE3D = new Missile3D("enemyIA", ENTITY3D);
 const DYNAMIC_ITEM3D = new Decal3D(256, "dynamic_item3d");
 /** *********************************************** */
-
 console.log(`%cIndexArrayManagers (IAM) ${IndexArrayManagers.VERSION} ready.`, "color: #7FFFD4");
