@@ -47,7 +47,7 @@ const INI = {
     MAX_LEVEL: 7,
 };
 const PRG = {
-    VERSION: "1.04",
+    VERSION: "1.05",
     NAME: "R.U.N.",
     YEAR: "2022",
     CSS: "color: #239AFF;",
@@ -762,7 +762,7 @@ const GAME = {
             MAP[level].flow = Grid.toClass(JSON.parse(MAP[level].flow));
             MAP[level].unpacked = true;
         }
-        MAP[level].map = FREE_MAP.import(JSON.parse(MAP[level].data));
+        MAP[level].map = FREE_MAP.import(JSON.parse(MAP[level].data), 2); //16 bit
         MAP[level].pw = MAP[level].map.width * ENGINE.INI.GRIDPIX;
         MAP[level].ph = MAP[level].map.height * ENGINE.INI.GRIDPIX;
         ENGINE.VIEWPORT.setMax({ x: MAP[level].pw, y: MAP[level].ph });
@@ -934,7 +934,6 @@ const GAME = {
         let text = `${PRG.NAME} (Run Upward Nerd) ${PRG.VERSION
             }, a game by Lovro Selič, ${"\u00A9"} LaughingSkull ${PRG.YEAR
             }. 
-            Title graphics by Trina Selič. 
             Music: 'Which Way Is Away' written and performed by LaughingSkull, ${"\u00A9"
             } 2011 Lovro Selič. `;
         text += "     ENGINE, SPEECH, GRID, MAZE, FLOW, Burrows-Wheeler RLE Compression and GAME code by Lovro Selič using JavaScript. ";
@@ -1076,7 +1075,8 @@ const TITLE = {
         TITLE.clearAllLayers();
         TITLE.blackBackgrounds();
         TITLE.titlePlot();
-        ENGINE.draw("background", (ENGINE.sideWIDTH + ENGINE.gameWIDTH - 480) / 2, (ENGINE.gameHEIGHT - 480) / 2, TEXTURE.Title);
+        const dim = 480;
+        ENGINE.draw("background", (ENGINE.sideWIDTH + ENGINE.gameWIDTH - dim) / 2, (ENGINE.gameHEIGHT - dim) / 2, TEXTURE.Title);
         $("#DOWN")[0].scrollIntoView();
         ENGINE.topCanvas = ENGINE.getCanvasName("ROOM");
         TITLE.drawButtons();

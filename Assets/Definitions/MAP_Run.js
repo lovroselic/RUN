@@ -6,7 +6,7 @@
 "use strict";
 
 console.log("%cMAP for RUN loaded.", "color: #888");
-var MAP = {
+const MAP = {
     1: {
         data: `
         {"width":"12","height":"12","map":"BB2AEAA2EAA3BAA2BABAA3BB2ABAA3BAEBB3AA3BB2ABAEBB2AA6BB5ABB13ABABABB6Q$BB5ABB2ABB5ABABB2ABB6IBB2ABB15ABB3AA2BB3AA2BB2AA4BA"}
@@ -104,7 +104,7 @@ var MAP = {
 
 };
 
-var SPAWN = {
+const SPAWN = {
     spawn(level) {
         this.spawnBats(level);
         this.spawnBox(level);

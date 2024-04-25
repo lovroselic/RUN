@@ -5,7 +5,7 @@
 "use strict";
 
 //////////////////////////////////////
-// GRID v 3.04       by LS          //
+// GRID              by LS          //
 //////////////////////////////////////
 
 /*
@@ -16,17 +16,25 @@ known bugs:
 */
 
 const GRID = {
-  VERSION: "3.08",
+  VERSION: "3.12",
   CSS: "color: #0AA",
   SETTING: {
     ALLOW_CROSS: false,
-    EPSILON: 0.05
+    EPSILON: 0.05,
   },
   circleCollision(entity1, entity2) {
-    let distance = entity1.moveState.pos.EuclidianDistance(
-      entity2.moveState.pos
-    );
+    let distance = entity1.moveState.pos.EuclidianDistance(entity2.moveState.pos);
     let touchDistance = entity1.r + entity2.r;
+    return distance < touchDistance;
+  },
+  circleCollision2D(fpgrid1, fpgrid2, touchDistance) {
+    return fpgrid1.EuclidianDistance(fpgrid2) < touchDistance;
+  },
+  circleCollision_toPos(entity1, entity2) {
+    console.log(entity1.moveState.pos, entity2.pos);
+    let distance = entity1.moveState.pos.EuclidianDistance(entity2.pos);
+    let touchDistance = entity1.r + entity2.r;
+    console.log(distance, touchDistance);
     return distance < touchDistance;
   },
   circleRectangleCollision() { },
@@ -38,8 +46,9 @@ const GRID = {
     return GRID.same(actor1.moveState.homeGrid, actor2.moveState.homeGrid);
   },
   gridToCenterPX(grid) {
-    var x = grid.x * ENGINE.INI.GRIDPIX + Math.floor(ENGINE.INI.GRIDPIX / 2);
-    var y = grid.y * ENGINE.INI.GRIDPIX + Math.floor(ENGINE.INI.GRIDPIX / 2);
+    const half = ENGINE.INI.GRIDPIX >>> 1;
+    let x = grid.x * ENGINE.INI.GRIDPIX + half;
+    let y = grid.y * ENGINE.INI.GRIDPIX + half;
     return new Point(x, y);
   },
   gridToSprite(grid, actor) {
@@ -49,21 +58,29 @@ const GRID = {
     GRID.coordToSpriteBottomCenter(GRID.gridToCoord(grid), actor);
   },
   coordToSprite(coord, actor) {
-    actor.x = coord.x + Math.floor(ENGINE.INI.GRIDPIX / 2);
-    actor.y = coord.y + Math.floor(ENGINE.INI.GRIDPIX / 2);
+    const half = ENGINE.INI.GRIDPIX >>> 1;
+    actor.x = coord.x + half;
+    actor.y = coord.y + half;
   },
   coordToSpriteBottomCenter(coord, actor) {
-    actor.x = coord.x + Math.floor(ENGINE.INI.GRIDPIX / 2);
+    const half = ENGINE.INI.GRIDPIX >>> 1;
+    actor.x = coord.x + half;
     actor.y = coord.y + ENGINE.INI.GRIDPIX;
   },
+  gridToBottomCenterPX(grid) {
+    const half = ENGINE.INI.GRIDPIX >>> 1;
+    let x = grid.x * ENGINE.INI.GRIDPIX + half;
+    let y = (grid.y + 1) * ENGINE.INI.GRIDPIX;
+    return new Point(x, y);
+  },
   gridToCoord(grid) {
-    var x = grid.x * ENGINE.INI.GRIDPIX;
-    var y = grid.y * ENGINE.INI.GRIDPIX;
+    let x = grid.x * ENGINE.INI.GRIDPIX;
+    let y = grid.y * ENGINE.INI.GRIDPIX;
     return new Point(x, y);
   },
   coordToGrid(x, y) {
-    var tx = Math.floor(x / ENGINE.INI.GRIDPIX);
-    var ty = Math.floor(y / ENGINE.INI.GRIDPIX);
+    const tx = Math.floor(x / ENGINE.INI.GRIDPIX);
+    const ty = Math.floor(y / ENGINE.INI.GRIDPIX);
     return new Grid(tx, ty);
   },
   coordToFP_Grid(x, y) {
@@ -117,39 +134,29 @@ const GRID = {
     }
   },
   paintText(point, text, layer, color = "#FFF") {
-    var CTX = LAYER[layer];
+    const CTX = LAYER[layer];
     CTX.font = "10px Consolas";
-    var y = point.y + ENGINE.INI.GRIDPIX / 2;
-    var x = point.x + ENGINE.INI.GRIDPIX / 2;
+    const half = ENGINE.INI.GRIDPIX >>> 1;
+    let y = point.y + half;
+    let x = point.x + half;
     CTX.fillStyle = color;
     CTX.textAlign = "center";
     CTX.fillText(text, x, y);
   },
   trueToGrid(actor) {
-    var TX = actor.x - Math.floor(ENGINE.INI.GRIDPIX / 2);
-    var TY = actor.y - Math.floor(ENGINE.INI.GRIDPIX / 2);
-    var GX = Math.floor(TX / ENGINE.INI.GRIDPIX);
-    var GY = Math.floor(TY / ENGINE.INI.GRIDPIX);
-    var MX = TX % ENGINE.INI.GRIDPIX;
-    var MY = TY % ENGINE.INI.GRIDPIX;
-    if (MX || MY) {
-      return null;
-    } else return { x: GX, y: GY };
+    const GRIDPIX = ENGINE.INI.GRIDPIX;
+    const TX = actor.x - (GRIDPIX >> 1);
+    const TY = actor.y - (GRIDPIX >> 1);
+    const [GX, GY] = [TX / GRIDPIX | 0, TY / GRIDPIX | 0];
+    const [MX, MY] = [TX % GRIDPIX, TY % GRIDPIX];
+    if (MX || MY) return null;
+    return { x: GX, y: GY };
   },
   same(grid1, grid2) {
-    if (grid1 === null || grid2 === null) return false;
-    if (grid1 === undefined || grid2 === undefined) return false;
-    if (grid1.x === grid2.x && grid1.y === grid2.y) {
-      return true;
-    } else return false;
+    return (grid1 && grid2 && grid1.x === grid2.x && grid1.y === grid2.y);
   },
   isGridIn(grid, gridArray) {
-    for (var q = 0; q < gridArray.length; q++) {
-      if (grid.x === gridArray[q].x && grid.y === gridArray[q].y) {
-        return q;
-      }
-    }
-    return -1;
+    return gridArray.findIndex(g => g.x === grid.x && g.y === grid.y);
   },
   contTranslatePosition(entity, lapsedTime) {
     let length = (lapsedTime / 1000) * entity.moveSpeed;
@@ -157,18 +164,22 @@ const GRID = {
     entity.actor.updateAnimation(lapsedTime);
     return;
   },
+  translatePosition3D(entity, lapsedTime) {
+    //console.info(`${entity.name} ${entity.id} lapsed time: ${lapsedTime}`);
+    const length = (lapsedTime / 1000) * entity.moveSpeed;
+    const realDir = Vector3.from_2D_dir(entity.moveState.realDir); //2D to 3D
+    entity.moveState.pos = entity.moveState.pos.translate(realDir, length);
+    const distance = Vector3.to_FP_Grid(entity.moveState.pos).EuclidianDistance(entity.moveState.endPos);
+    if (distance < GRID.SETTING.EPSILON) {
+      entity.moveState.moving = false;
+    }
+  },
   translatePosition(entity, lapsedTime) {
     let length = (lapsedTime / 1000) * entity.moveSpeed;
     entity.moveState.pos = entity.moveState.pos.translate(entity.moveState.realDir, length);
     let distance = entity.moveState.pos.EuclidianDistance(entity.moveState.endPos);
-
     let boundGrid = Grid.toClass(entity.moveState.pos);
-    if (
-      !(
-        GRID.same(boundGrid, Grid.toClass(entity.moveState.endPos)) ||
-        GRID.same(boundGrid, Grid.toClass(entity.moveState.startPos))
-      )
-    ) {
+    if (!(GRID.same(boundGrid, Grid.toClass(entity.moveState.endPos)) || GRID.same(boundGrid, Grid.toClass(entity.moveState.startPos)))) {
       entity.moveState.pos = entity.moveState.endPos;
       entity.moveState.moving = false;
       return;
@@ -283,13 +294,6 @@ const GRID = {
     } while (!GRID.same(node, endGrid));
     return path;
   },
-  pathClear(path) {
-    if (path.length === 0) return true;
-    for (let q = 0; q < path.length; q++) {
-      if (GRID.gridIsBlock(path[q])) return false;
-    }
-    return true;
-  },
   calcDistancesBFS_BH(start, dungeon) {
     dungeon.setNodeMap();
     let BH = new BinHeap("distance");
@@ -311,19 +315,19 @@ const GRID = {
       }
     }
   },
-  calcDistancesBFS_A(start, dungeon) {
-    dungeon.setNodeMap();
+  calcDistancesBFS_A(start, dungeon, mode = GROUND_MOVE_GRID_EXCLUSION, nodeMap = "nodeMap") {
+    dungeon.setNodeMap(mode, nodeMap);
     let Q = new NodeQ("distance");
-    dungeon.GA.nodeMap[start.x][start.y].distance = 0;
-    dungeon.GA.nodeMap[start.x][start.y].goto = new Vector(0, 0);
-    Q.queueSimple(dungeon.GA.nodeMap[start.x][start.y]);
+    dungeon.GA[nodeMap][start.x][start.y].distance = 0;
+    dungeon.GA[nodeMap][start.x][start.y].goto = new Vector(0, 0);
+    Q.queueSimple(dungeon.GA[nodeMap][start.x][start.y]);
     while (Q.size() > 0) {
       let node = Q.dequeue();
 
       for (let D = 0; D < ENGINE.directions.length; D++) {
         let x = (node.grid.x + ENGINE.directions[D].x + dungeon.width) % dungeon.width;
         let y = (node.grid.y + ENGINE.directions[D].y + dungeon.height) % dungeon.height;
-        let nextNode = dungeon.GA.nodeMap[x][y];
+        let nextNode = dungeon.GA[nodeMap][x][y];
 
         if (nextNode) {
           if (nextNode.distance > node.distance + 1) {
@@ -356,8 +360,44 @@ const GRID = {
       }
     }
     return directions;
+  },
+  getReboundDir(innerPoint, outerPoint, dir, GA) {
+    const inner = Grid.toClass(innerPoint);
+    const outer = Grid.toClass(outerPoint);
+    if (GA.isWall(outer)) {
+      console.error("Missile position in wall. This should never have happened! But it is handled.", outer, GA.isWall(outer));
+      console.info("innerPoint", innerPoint, "outerPoint", outerPoint);
+      return null;
+    }
+    let faceNormal = outer.sub(inner);
+    let newDir;
+    let reverseDir = dir.mirror();
+    faceNormal = Vector.toClass(faceNormal);
+
+    if (!faceNormal.isOrto()) {
+      faceNormal = GRID.resolveCornerBlock(faceNormal, inner, GA);
+    }
+
+    if (!faceNormal.isOrto()) {
+      newDir = FP_Vector.toClass(faceNormal).normalize();
+    } else if (GRID.same(faceNormal, NOWAY)) {
+      newDir = outerPoint.direction(innerPoint);
+    } else {
+      let angle = FP_Vector.toClass(faceNormal).radAngleBetweenVectorsSharp(reverseDir);
+      newDir = faceNormal.rotate(-angle);
+    }
+
+    return newDir;
+  },
+  resolveCornerBlock(faceNormal, innerGrid, GA) {
+    const clone = faceNormal.clone();
+    if (GA.isWall(innerGrid.add(new Vector(faceNormal.x, 0)))) faceNormal.x = 0;
+    if (GA.isWall(innerGrid.add(new Vector(0, faceNormal.y)))) faceNormal.y = 0;
+    if (faceNormal.isNull()) return clone;
+    return faceNormal;
   }
 };
+
 class PathNode {
   constructor(x, y) {
     this.distance = Infinity;
@@ -372,6 +412,7 @@ class PathNode {
     this.priority = this.path + this.distance;
   }
 }
+
 class BinHeap {
   constructor(prop) {
     this.HEAP = [];
@@ -436,6 +477,7 @@ class BinHeap {
     }
   }
 }
+
 class SearchNode {
   constructor(HG, goal, stack, path, history, iterations) {
     this.grid = HG;
@@ -454,6 +496,7 @@ class SearchNode {
     return new SearchNode(node.grid, goal, stack, path, history);
   }
 }
+
 class BlindNode {
   constructor(HG, stack, path, history, iterations) {
     this.grid = HG;
@@ -464,6 +507,7 @@ class BlindNode {
     this.iterations = iterations || 0;
   }
 }
+
 class NodeQ {
   constructor(prop) {
     this.list = [];
@@ -508,58 +552,97 @@ class NodeQ {
     if (!included) this.list.push(node);
   }
 }
-var MAPDICT = {
-  EMPTY: 0, //0
-  WALL: 2 ** 0, //1
-  ROOM: 2 ** 1, //2
-  DOOR: 2 ** 2, //4
-  RESERVED: 2 ** 3, //8
-  START_POSITION: 2 ** 4, //16
-  STAIR: 2 ** 5, //32
-  SHRINE: 2 ** 6, // 64
-  FOG: 2 ** 7, //128 - fog should remain largest!
-  //alternative1
-  TRAP_DOOR: 2 ** 3, //8
-  BLOCKWALL: 2 ** 4, //16
-  VACANT_PLACEHODLER: 2 ** 5, //32
-  DEAD_END: 2 ** 6, //64
-  WATER: 2 ** 7, //128 - fog,water should remain largest!
+
+const MAPDICT = {
+  EMPTY: 0,                               //0
+  WALL: 2 ** 0,                           //1
+  ROOM: 2 ** 1,                           //2
+  DOOR: 2 ** 2,                           //4 - inner door!
+
+  //original - for random maps
+  VACANT_PLACEHOLDER1: 2 ** 3,            //8
+  BLOCKWALL: 2 ** 4,                      //16 - wall that is removable
+  STAIR: 2 ** 5,                          //32
+  SHRINE: 2 ** 6,                         //64
+
+  //alternative1 - RUN scpecific
+  TRAP_DOOR: 2 ** 3,                      //8
+  VACANT_PLACEHOLDER3: 2 ** 5,            //32
+  DEAD_END: 2 ** 6,                       //64
+
+  //alternative2 - CCC generation
+  GATE: 2 ** 5,                           //32 - STAIR alias -> route to another dungeon
+  HOLE: 2 ** 7,                           //128
+
+  //16 bit extension
+
+
+  //special
+  FOG: 2 ** 15,                            //32768 - fog should remain largest
+  WATER: 2 ** 15,                          //32768 - fog,water should remain largest!
+  RESERVED: 2 ** 14,                       //16384
+  START_POSITION: 2 ** 13,                 //8192
 };
-class GridArray {
+
+const GROUND_MOVE_GRID_EXCLUSION = [MAPDICT.WALL, MAPDICT.HOLE, MAPDICT.BLOCKWALL];
+const AIR_MOVE_GRID_EXCLUSION = [MAPDICT.WALL, MAPDICT.BLOCKWALL];
+const EXPLOADABLES = [MAPDICT.BLOCKWALL, MAPDICT.DOOR];
+
+class ArrayBasedDataStructure {
+  constructor() { }
+  indexToGrid(index) {
+    return new Grid(index % this.width, index / this.width | 0);
+  }
+  assertBounds(grid) {
+    if (this.isOutOfBounds(grid)) throw new Error(`Grid is out of bounds: ${grid}`);
+  }
+  gridToIndex(grid) {
+    this.assertBounds(grid);
+    return grid.x + grid.y * this.width;
+  }
+  isOut(grid) {
+    return grid.x > this.maxX || grid.x < this.minX || grid.y > this.maxY || grid.y < this.minY;
+  }
+  isOutOfBounds(grid) {
+    return grid.x < 0 || grid.x >= this.width || grid.y < 0 || grid.y >= this.height;
+  }
+  outside(grid) {
+    return this.isOutOfBounds(grid);
+  }
+}
+
+class GridArray extends ArrayBasedDataStructure {
   constructor(sizeX, sizeY, byte = 1, fill = 0) {
-    if (byte !== 1 && byte !== 2 && byte !== 4) {
+    super();
+    if (![1, 2, 4].includes(byte)) {
       console.error("GridArray set up with wrong size. Reset to default 8 bit!");
       byte = 1;
     }
-    let buffer = new ArrayBuffer(sizeX * sizeY * byte);
-    let GM;
-    switch (byte) {
-      case 1:
-        GM = new Uint8Array(buffer);
-        break;
-      case 2:
-        GM = new Uint16Array(buffer);
-        break;
-      case 4:
-        GM = new Uint32Array(buffer);
-        break;
-    }
+    const byteToType = {
+      1: Uint8Array,
+      2: Uint16Array,
+      4: Uint32Array
+    };
+    const GM = new byteToType[byte](sizeX * sizeY);
     this.width = parseInt(sizeX, 10);
     this.height = parseInt(sizeY, 10);
-    this.maxX = sizeX - 2;
-    this.maxY = sizeY - 2;
+    this.maxX = this.width - 2;
+    this.maxY = this.height - 2;
     this.minX = 1;
     this.minY = 1;
     this.map = GM;
     this.nodeMap = null;
     this.gridSizeBit = byte * 8;
-    if (fill !== 0) {
-      this.map.fill(fill);
-    }
+    if (fill !== 0) this.map.fill(fill);
   }
   massSet(bin) {
     for (let i = 0; i < this.map.length; i++) {
       this.map[i] |= bin;
+    }
+  }
+  massReset(bin) {
+    for (let i = 0; i < this.map.length; i++) {
+      this.map[i] &= (2 ** this.gridSizeBit - 1 - bin);
     }
   }
   massClear() {
@@ -572,31 +655,22 @@ class GridArray {
       entity.moveState.gridArray = this;
     }
   }
-  indexToGrid(index) {
-    let x = index % this.width;
-    let y = Math.floor(index / this.width);
-    return new Grid(x, y);
-  }
-  gridToIndex(grid) {
-    if (this.isOutOfBounds(grid)) throw "Grid is out of bounds - ERROR";
-    return grid.x + grid.y * this.width;
-  }
   iset(index, bin) {
     this.map[index] |= bin;
   }
   set(grid, bin) {
-    if (this.isOutOfBounds(grid)) throw "Grid is out of bounds - ERROR";
+    this.assertBounds(grid);
     this.map[this.gridToIndex(grid)] |= bin;
   }
   setValue(grid, value) {
-    if (this.isOutOfBounds(grid)) throw "Grid is out of bounds - ERROR";
+    this.assertBounds(grid);
     this.map[this.gridToIndex(grid)] = value;
   }
   iclear(index, bin) {
     this.map[index] &= (2 ** this.gridSizeBit - 1 - bin);
   }
   clear(grid, bin) {
-    if (this.isOutOfBounds(grid)) throw "Grid is out of bounds - ERROR";
+    this.assertBounds(grid);
     this.map[this.gridToIndex(grid)] &= (2 ** this.gridSizeBit - 1 - bin);
   }
   icheck(index, bin) {
@@ -620,18 +694,30 @@ class GridArray {
   toWall(grid) {
     this.setValue(grid, MAPDICT.WALL);
   }
+  toHole(grid) {
+    this.setValue(grid, MAPDICT.HOLE);
+  }
   carveDot(grid) {
     this.setValue(grid, MAPDICT.EMPTY);
   }
   isWall(grid) {
     return this.check(grid, MAPDICT.WALL) === MAPDICT.WALL;
   }
+  isHole(grid) {
+    return this.check(grid, MAPDICT.HOLE) === MAPDICT.HOLE;
+  }
   notWall(grid) {
     return !this.isWall(grid);
+  }
+  notHole(grid) {
+    return !this.isHole(grid);
   }
   isMazeWall(grid) {
     if (this.isOutOfBounds(grid)) return false;
     return this.map[this.gridToIndex(grid)] & (MAPDICT.WALL === MAPDICT.WALL);
+  }
+  addDoor(grid) {
+    this.set(grid, MAPDICT.DOOR);
   }
   toDoor(grid) {
     this.setValue(grid, MAPDICT.DOOR);
@@ -683,9 +769,11 @@ class GridArray {
   }
   toShrine(grid) {
     this.setValue(grid, MAPDICT.SHRINE);
+    this.reserve(grid);
   }
   addShrine(grid) {
     this.set(grid, MAPDICT.SHRINE);
+    this.reserve(grid);
   }
   reserve(grid) {
     this.set(grid, MAPDICT.RESERVED);
@@ -704,6 +792,9 @@ class GridArray {
   }
   notTrapDoor(grid) {
     return !this.isTrapDoor(grid);
+  }
+  toBlockWall(grid) {
+    this.setValue(grid, MAPDICT.BLOCKWALL);
   }
   addBlockWall(grid) {
     this.set(grid, MAPDICT.BLOCKWALL);
@@ -768,29 +859,6 @@ class GridArray {
       }
     }
   }
-  isOut(grid) {
-    if (
-      grid.x > this.maxX ||
-      grid.x < this.minX ||
-      grid.y > this.maxY ||
-      grid.y < this.minY
-    ) {
-      return true;
-    } else return false;
-  }
-  isOutOfBounds(grid) {
-    if (
-      grid.x >= this.width ||
-      grid.x < 0 ||
-      grid.y >= this.height ||
-      grid.y < 0
-    ) {
-      return true;
-    } else return false;
-  }
-  outside(grid) {
-    return this.isOutOfBounds(grid);
-  }
   toOtherSide(grid) {
     grid.x = (grid.x + this.width) % this.width;
     grid.y = (grid.y + this.height) % this.height;
@@ -811,35 +879,43 @@ class GridArray {
     return this.value(next, value);
   }
   setNodeMap(where = "nodeMap", path = [0], type = "value", block = [], cls = PathNode) {
-    let map = [];
+    const map = new Array(this.width);
+    const pathSum = path.sum();
+
     for (let x = 0; x < this.width; x++) {
-      map[x] = [];
+      const mapX = map[x] = new Array(this.height);
+
       for (let y = 0; y < this.height; y++) {
+        const grid = new Grid(x, y);
+
         let carve;
         switch (type) {
           case "value":
-            let value = this.map[this.gridToIndex(new Grid(x, y))];
-            carve = path.includes(value);
+            carve = path.includes(this.map[this.gridToIndex(grid)]);
             break;
           case "exclude":
-            carve = !this.check(new Grid(x, y), path.sum());
+            carve = !this.check(grid, pathSum);
             break;
           case "include":
-            carve = this.check(new Grid(x, y), path.sum());
+            carve = this.check(grid, pathSum);
             break;
           default:
-            console.error("nodeMape type error!");
+            console.error("nodeMap type error!");
+            return;
         }
 
         if (carve) {
-          map[x][y] = new cls(x, y);
+          mapX[y] = new cls(x, y);
         } else {
-          map[x][y] = null;
+          mapX[y] = null;
         }
       }
     }
 
-    block.forEach((obj) => (map[obj.x][obj.y] = null));
+    for (const obj of block) {
+      map[obj.x][obj.y] = null;
+    }
+
     this[where] = map;
     return map;
   }
@@ -1086,53 +1162,82 @@ class GridArray {
     }
     return goodNodes;
   }
-  findNextCrossroad(start, dir) {
-    let directions = this.getDirectionsIfNot(start, MAPDICT.WALL, dir.mirror());
+  findNextCrossroad(start, dir, fly) {
+    let exlusion = GROUND_MOVE_GRID_EXCLUSION.sum();
+    if (fly) {
+      exlusion = AIR_MOVE_GRID_EXCLUSION.sum();
+    }
+    //let directions = this.getDirectionsIfNot(start, MAPDICT.WALL, dir.mirror());
+    let directions = this.getDirectionsIfNot(start, exlusion, dir.mirror());
+    //console.log("....findNextCrossroad", start, dir, directions);
     let lastDir = dir;
     while (directions.length <= 1) {
-      if (directions.length === 0) return null; //dead end!
+      if (directions.length === 0) return [null, null]; //dead end!
       start = start.add(directions[0]);
       lastDir = directions[0];
-      directions = this.getDirectionsIfNot(
-        start,
-        MAPDICT.WALL,
-        directions[0].mirror()
-      );
+      //directions = this.getDirectionsIfNot(start, MAPDICT.WALL, directions[0].mirror());
+      directions = this.getDirectionsIfNot(start, exlusion, directions[0].mirror());
     }
     return [start, lastDir];
   }
+
   positionIsNotWall(pos) {
-    let grid = Grid.toClass(pos);
-    let check = this.check(grid, MAPDICT.WALL);
+    const grid = Grid.toClass(pos);
+    const check = this.check(grid, AIR_MOVE_GRID_EXCLUSION.sum());
     return !check;
   }
-  entityNotInWall(pos, dir, r, resolution = 4) {
-    let checks = this.pointsAroundEntity(pos, dir, r, resolution = 4);
+  entityNotInWall(pos, dir, r, resolution = 8) {
+    let checks = this.pointsAroundEntity(pos, dir, r, resolution);
     for (const point of checks) {
       let notWall = this.positionIsNotWall(point);
       if (!notWall) return false;
     }
     return true;
   }
+
+  /**
+ * @param {FP_Grid} pos - position of entity
+ * @param {number} exlusion - binary constant array of MAP_DICT values, @default GROUND_MOVE_GRID_EXCLUSION
+ * @returns {boolean} - true if position is not in wall or other exluded type
+ */
+  positionIsNotExcluded(pos, exclusion = GROUND_MOVE_GRID_EXCLUSION) {
+    const grid = Grid.toClass(pos);
+    const check = this.check(grid, exclusion.sum());
+    return !check;
+  }
+  entityNotInExcusion(pos, dir, r, exclusion = GROUND_MOVE_GRID_EXCLUSION, resolution = 8) {
+    let checks = this.pointsAroundEntity(pos, dir, r, resolution);
+    for (const point of checks) {
+      let notExcluded = this.positionIsNotExcluded(point, exclusion);
+      if (!notExcluded) return false;
+    }
+    return true;
+  }
+
+  entityInWallPoint(pos, dir, r, resolution = 8) {
+    let checks = this.pointsAroundEntity(pos, dir, r, resolution);
+    for (const point of checks) {
+      let isWall = !this.positionIsNotWall(point);
+      if (isWall) return [true, point];
+    }
+    return [false, null];
+  }
   pointsAroundEntity(pos, dir, r, resolution = 4) {
     let checks = [];
-    for (
-      let theta = 0;
-      theta < 2 * Math.PI;
-      theta += (2 * Math.PI) / resolution
-    ) {
+    const increment = (2 * Math.PI) / resolution;
+    for (let theta = 0; theta < 2 * Math.PI; theta += increment) {
       checks.push(pos.translate(dir.rotate(theta), r));
     }
     return checks;
   }
   gridsAroundEntity(pos, dir, r, resolution = 4) {
-    let checks = this.pointsAroundEntity(pos, dir, r, resolution = 4);
+    let checks = this.pointsAroundEntity(pos, dir, r, resolution);
     checks = checks.filter(this.positionIsNotWall, this);
     return checks.map(Grid.toClass);
   }
   pathClear(path) {
     for (const grid of path) {
-      if (this.isWall(grid)) return false;
+      if (this.check(grid, AIR_MOVE_GRID_EXCLUSION.sum())) return false;
     }
     return true;
   }
@@ -1143,10 +1248,13 @@ class GridArray {
     } while (!startGrid.same(lookGrid));
     return true;
   }
-  toString() {
+  toString(clear = null) {
     const offset = 65;
     let str = "";
     for (let byte of this.map) {
+      if (clear) {
+        byte &= (2 ** this.gridSizeBit - 1 - clear);
+      }
       str += String.fromCharCode(byte + offset);
     }
     return str;
@@ -1166,17 +1274,18 @@ class GridArray {
     return GA;
   }
 }
-class NodeArray {
+class NodeArray extends ArrayBasedDataStructure {
   constructor(GA, CLASS, path = [0], ignore = [], type = 'value') {
+    super();
     /**
      * always constructed from GridArray
      */
     this.width = GA.width;
     this.height = GA.height;
-    this.map = Array(this.width * this.height);
-    this.map = this.map.fill(null);
+    this.map = Array.from({ length: this.width * this.height }, () => null);
+    const ignoreSum = 2 ** GA.gridSizeBit - 1 - ignore.sum();
     for (let [index, _] of this.map.entries()) {
-      let check = GA.map[index] & (2 ** GA.gridSizeBit - 1 - ignore.sum());
+      let check = GA.map[index] & ignoreSum;
       let carve;
       switch (type) {
         case 'value':
@@ -1196,32 +1305,11 @@ class NodeArray {
   I_set(index, property, value) {
     this.map[index][property] = value;
   }
-  indexToGrid(index) {
-    let x = index % this.width;
-    let y = Math.floor(index / this.width);
-    return new Grid(x, y);
-  }
-  gridToIndex(grid) {
-    if (this.isOutOfBounds(grid)) {
-      console.error("grid", grid);
-      throw "Grid out of bounds...";
-    }
-    return grid.x + grid.y * this.width;
-  }
-  isOutOfBounds(grid) {
-    if (
-      grid.x >= this.width ||
-      grid.x < 0 ||
-      grid.y >= this.height ||
-      grid.y < 0
-    ) {
-      return true;
-    } else return false;
-  }
 }
-class IndexArray {
+class IndexArray extends ArrayBasedDataStructure {
   constructor(sizeX = 1, sizeY = 1, byte = 1, banks = 1) {
-    if (byte !== 1 && byte !== 2 && byte !== 4) {
+    super();
+    if (![1, 2, 4].includes(byte)) {
       console.error("IndexArray set up with wrong size. Reset to default 8 bit!");
       byte = 1;
     }
@@ -1230,57 +1318,26 @@ class IndexArray {
       console.error("Illegal value for banks. Set to default 4!");
       banks = byte * 4;
     }
-    let buffer = new ArrayBuffer(sizeX * sizeY * byte);
-    let GM;
-    switch (byte) {
-      case 1:
-        GM = new Uint8Array(buffer);
-        break;
-      case 2:
-        GM = new Uint16Array(buffer);
-        break;
-      case 4:
-        GM = new Uint32Array(buffer);
-        break;
-    }
-    this.width = parseInt(sizeX, 10);
-    this.height = parseInt(sizeY, 10);
+    const byteToType = {
+      1: Uint8Array,
+      2: Uint16Array,
+      4: Uint32Array
+    };
+    const GM = new byteToType[byte](sizeX * sizeY);
+    this.width = sizeX;
+    this.height = sizeY;
     this.gridSizeBit = byte * 8;
     this.map = GM;
     this.banks = banks;
-    this.bankBitWidth = (this.gridSizeBit / this.banks) >>> 0;
+    this.bankBitWidth = this.gridSizeBit / this.banks;
     this.layerSize = 2 ** this.bankBitWidth - 1;
-  }
-  indexToGrid(index) {
-    let x = index % this.width;
-    let y = Math.floor(index / this.width);
-    return new Grid(x, y);
-  }
-  gridToIndex(grid) {
-    if (this.isOutOfBounds(grid)) {
-      console.error("grid", grid);
-      throw "Grid out of bounds...";
-    }
-    return grid.x + grid.y * this.width;
-  }
-  isOutOfBounds(grid) {
-    if (
-      grid.x >= this.width ||
-      grid.x < 0 ||
-      grid.y >= this.height ||
-      grid.y < 0
-    ) {
-      return true;
-    } else return false;
   }
   validate(bank, indexValue) {
     if (bank >= this.banks || bank < 0) {
-      console.error("bank", bank, "max:", this.banks - 1);
-      throw "Illegal bank value error.";
+      throw new Error(`Illegal bank value. Expected value between 0 and ${this.banks - 1}, but got ${bank}.`);
     }
     if (indexValue > this.layerSize || indexValue <= 0) {
-      console.error("indexValue", indexValue, "max:", this.layerSize);
-      throw "Illegal indexValue error.";
+      throw new Error(`Illegal indexValue. Expected value between 1 and ${this.layerSize}, but got ${indexValue}.`);
     }
   }
   add(grid, indexValue, bank) {
@@ -1298,49 +1355,47 @@ class IndexArray {
     } else return -1;
   }
   nextFreeBank(grid) {
-    let index = this.gridToIndex(grid);
+    const index = this.gridToIndex(grid);
     let layerValue = this.map[index];
     let bank = 0;
+    const bankBitWidth = this.bankBitWidth;
+    const banks = this.banks;
     while (layerValue > 0) {
-      layerValue = layerValue >>> this.bankBitWidth;
+      layerValue = layerValue >>> bankBitWidth;
       bank++;
-      if (bank >= this.banks) {
+      if (bank >= banks) {
         return -1;
       }
     }
     return bank;
   }
   unroll(grid) {
-    let index = this.gridToIndex(grid);
-    let items = [];
+    const index = this.gridToIndex(grid);
+    const items = [];
     let layerValue = this.map[index];
     for (let i = 0; i < this.banks; i++) {
-      let current = layerValue & this.layerSize;
-      if (current !== 0) {
-        items.push(current);
-      }
-      layerValue = layerValue >>> this.bankBitWidth;
+      const current = layerValue & this.layerSize;
+      if (current) items.push(current);
+      layerValue >>>= this.bankBitWidth;
     }
     return items;
   }
   unrollArray(arr) {
     let items = [];
     for (let a of arr) {
-      items = items.concat(this.unroll(a));
+      items.push(...this.unroll(a));
     }
     return new Set(items);
   }
   clear(grid) {
-    let index = this.gridToIndex(grid);
-    this.map[index] = 0;
+    this.map[this.gridToIndex(grid)] = 0;
   }
   empty(grid) {
     return this.map[this.gridToIndex(grid)] === 0;
   }
   set(grid, indexValue, bank) {
     if (bank === undefined) {
-      let index = this.gridToIndex(grid);
-      this.map[index] = indexValue;
+      this.map[this.gridToIndex(grid)] = indexValue;
     } else {
       this.clear(grid);
       this.validate(bank, indexValue);
@@ -1348,8 +1403,7 @@ class IndexArray {
     }
   }
   get(grid) {
-    let index = this.gridToIndex(grid);
-    return this.map[index];
+    return this.map[this.gridToIndex(grid)];
   }
   has(grid, indexValue) {
     let items = this.unroll(grid);
@@ -1372,18 +1426,22 @@ class IndexArray {
     return false;
   }
 }
-var MINIMAP = {
+
+const MINIMAP = {
   LEGEND: {
     FOG: "#BBB",
     BORDER: "#FFF",
     EMPTY: "#000",
-    ROOM: "#222",
-    DOOR: "#111",
+    ROOM: "#111",
+    DOOR: "#333",
     STAIR: "#008000",
-    WALL: "#8b4513", //brown
+    WALL: "#8b4513",            //brown
     LOCKED_DOOR: "#826644",
     HERO: "#FFF",
     SHRINE: "#FF00FF",
+    HOLE: "#444",
+    BLOCKWALL: "#d2691e",
+    ENEMY: "#ff9800"            //orange
   },
   DATA: {
     PIX_SIZE: 4,
@@ -1397,10 +1455,11 @@ var MINIMAP = {
     h: null,
     rectWidth: 1
   },
-  init(map, W, H, layer = "minimap") {
+  init(map, W, H, player = null, layer = "minimap") {
     this.DATA.dungeon = map;
     this.setLayer(layer);
     this.calcSize(W, H);
+    this.player = player;
   },
   setLayer(layer) {
     this.DATA.layer = layer;
@@ -1410,17 +1469,15 @@ var MINIMAP = {
     this.DATA.y = y;
   },
   calcSize(W, H) {
-    let WPS = (W / this.DATA.dungeon.width) | 0;
-    let HPS = (H / this.DATA.dungeon.height) | 0;
-    this.DATA.PIX_SIZE = Math.min(WPS, HPS);
-    let newW = this.DATA.dungeon.width * this.DATA.PIX_SIZE;
-    let newH = this.DATA.dungeon.height * this.DATA.PIX_SIZE;
-    this.DATA.drawX = this.DATA.x + Math.floor((W - newW) / 2);
-    this.DATA.drawY = this.DATA.y + Math.floor((H - newH) / 2);
-    this.DATA.w = newW;
-    this.DATA.h = newH;
+    const widthRatio = W / this.DATA.dungeon.width;
+    const heightRatio = H / this.DATA.dungeon.height;
+    this.DATA.PIX_SIZE = Math.min(widthRatio, heightRatio) | 0;
+    this.DATA.w = this.DATA.dungeon.width * this.DATA.PIX_SIZE;
+    this.DATA.h = this.DATA.dungeon.height * this.DATA.PIX_SIZE;
+    this.DATA.drawX = this.DATA.x + ((W - this.DATA.w) / 2) | 0;
+    this.DATA.drawY = this.DATA.y + ((H - this.DATA.h) / 2) | 0;
   },
-  draw() {
+  draw(radar, player = null) {
     ENGINE.clearLayer(this.DATA.layer);
     let CTX = LAYER[this.DATA.layer];
     CTX.fillStyle = MINIMAP.LEGEND.FOG;
@@ -1453,13 +1510,11 @@ var MINIMAP = {
           case MAPDICT.DOOR:
             CTX.fillStyle = MINIMAP.LEGEND.DOOR;
             break;
-          case MAPDICT.STAIR + MAPDICT.ROOM:
-          case MAPDICT.STAIR:
-            CTX.fillStyle = MINIMAP.LEGEND.STAIR;
+          case MAPDICT.HOLE:
+            CTX.fillStyle = MINIMAP.LEGEND.HOLE;
             break;
-          case MAPDICT.SHRINE + MAPDICT.ROOM:
-          case MAPDICT.SHRINE:
-            CTX.fillStyle = MINIMAP.LEGEND.SHRINE;
+          case MAPDICT.BLOCKWALL:
+            CTX.fillStyle = MINIMAP.LEGEND.BLOCKWALL;
             break;
           default:
             console.log("ALERT default empty", index, value, clenValue);
@@ -1475,10 +1530,13 @@ var MINIMAP = {
             let specificWall = clenValue - MAPDICT.WALL;
             switch (specificWall) {
               case MAPDICT.STAIR:
-                CTX.fillStyle = MINIMAP.LEGEND.WALL;
+                CTX.fillStyle = MINIMAP.LEGEND.STAIR;
                 break;
               case MAPDICT.DOOR:
                 CTX.fillStyle = MINIMAP.LEGEND.LOCKED_DOOR;
+                break;
+              case MAPDICT.SHRINE:
+                CTX.fillStyle = MINIMAP.LEGEND.SHRINE;
                 break;
               default:
                 console.log("ALERT default wall", index, value, clenValue);
@@ -1508,13 +1566,36 @@ var MINIMAP = {
     }
 
     CTX.fillStyle = MINIMAP.LEGEND.HERO;
-    let heroPos = Grid.toClass(PLAYER.pos);
+
+    let heroPos;
+    if (player) {
+      heroPos = player.pos;
+    } else {
+      heroPos = Grid.toClass(Vector3.to_FP_Grid(this.player.pos));
+    }
 
     CTX.pixelAt(
       this.DATA.drawX + heroPos.x * this.DATA.PIX_SIZE,
       this.DATA.drawY + heroPos.y * this.DATA.PIX_SIZE,
       this.DATA.PIX_SIZE
     );
+
+    //enemy if radar
+    if (radar) {
+      CTX.fillStyle = MINIMAP.LEGEND.ENEMY;
+      const todo = [ENTITY3D, DYNAMIC_ITEM3D];
+      for (const IAM of todo) {
+        for (const entity of IAM.POOL) {
+          if (!entity) continue;
+          const position = Grid.toClass(entity.moveState.grid);
+          CTX.pixelAt(
+            this.DATA.drawX + position.x * this.DATA.PIX_SIZE,
+            this.DATA.drawY + position.y * this.DATA.PIX_SIZE,
+            this.DATA.PIX_SIZE
+          );
+        }
+      }
+    }
   },
   unveil(at, vision = 1) {
     let x = at.x - vision;

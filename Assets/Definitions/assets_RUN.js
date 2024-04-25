@@ -7,7 +7,7 @@
 console.log("%cAssets for RUN ready.", "color: orange");
 
 LoadTextures = [
-    { srcName: "Title/Run480.jpg", name: "Title" },
+    { srcName: "Title/Run_title_512.jpg", name: "Title" },
 ];
 
 LoadPacks = [  //
