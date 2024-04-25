@@ -47,7 +47,7 @@ var INI = {
     MAX_LEVEL: 7,
 };
 var PRG = {
-    VERSION: "1.01",
+    VERSION: "1.02",
     NAME: "R.U.N.",
     YEAR: "2022",
     CSS: "color: #239AFF;",

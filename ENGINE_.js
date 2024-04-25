@@ -1184,32 +1184,33 @@ const ENGINE = {
         });
         return temp;
       }
-      function loadPacks(arrPath = LoadPacks) {
-        console.log(`%c ...loading ${arrPath.length} packs`, ENGINE.CSS);
-        var toLoad = [];
-        arrPath.forEach(function (el) {
-          if (!el.dimension) {
-            el.dimension = 4;
-          }
-          ASSET[el.name] = new LiveSPRITE(`${el.dimension}D`);
-          toLoad.push({
-            srcName: el.srcName,
-            name: el.name,
-            count: el.count,
-            dimension: el.dimension
+
+  
+      async function loadPacks(arrPath = LoadPacks) {
+        try {
+          if (!arrPath) return true;
+          console.log(`%c ...loading ${arrPath.length} packs`, ENGINE.CSS);
+          var toLoad = [];
+          arrPath.forEach(function (el) {
+            el.dimension = el.dimension || 4;
+            ASSET[el.name] = new LiveSPRITE(`${el.dimension}D`);
+            toLoad.push({ srcName: el.srcName, name: el.name, count: el.count, dimension: el.dimension });
           });
-        });
-        ENGINE.LOAD.HMPacks = toLoad.length;
-        if (ENGINE.LOAD.HMPacks) appendCanvas("Packs");
-        const temp = Promise.all(
-          toLoad.map((img) => loadImage(img, "Packs"))
-        ).then(function (obj) {
+          ENGINE.LOAD.HMPacks = toLoad.length;
+          if (ENGINE.LOAD.HMPacks) appendCanvas("Packs");
+          const obj = await Promise.all(toLoad.map((img) => loadImage(img, "Packs")));
           obj.forEach(function (el) {
             ENGINE.packToSprite(el);
           });
-        });
-        return temp;
+          return true;
+        } catch (error) {
+          console.error(`Failed to load packs: ${error}`);
+          return false;
+        }
       }
+
+
+
       function loadSheets(arrPath = LoadSheets, addTag = ExtendSheetTag) {
         console.log(`%c ...loading ${arrPath.length} sheets`, ENGINE.CSS);
         var toLoad = [];
