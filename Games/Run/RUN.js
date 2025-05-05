@@ -47,7 +47,7 @@ const INI = {
     MAX_LEVEL: 7,
 };
 const PRG = {
-    VERSION: "1.05",
+    VERSION: "1.06",
     NAME: "R.U.N.",
     YEAR: "2022",
     CSS: "color: #239AFF;",
